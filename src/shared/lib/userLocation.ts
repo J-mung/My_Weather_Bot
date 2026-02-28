@@ -1,4 +1,4 @@
-import type { LatLon } from "../entities/weather/model/weatherTypes";
+import type { LatLon } from "@/entities/weather/model/weatherTypes";
 
 /**
  * 브라우저에서 현재 위치(위도/경도)를 얻는 유틸리티.

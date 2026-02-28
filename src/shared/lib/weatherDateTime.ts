@@ -1,4 +1,4 @@
-import type { BaseDateTime } from "../entities/weather/model/weatherTypes";
+import type { BaseDateTime } from "@/entities/weather/model/weatherTypes";
 
 /**
  * 기상청 초단기실황용 base_date, base_time 계산
