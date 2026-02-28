@@ -1,3 +1,5 @@
+import type { BaseDateTime } from "../entities/weather/model/weatherTypes";
+
 /**
  * 기상청 초단기실황용 base_date, base_time 계산
  *
@@ -6,7 +8,7 @@
  * @param now
  * @returns
  */
-export const getUltraSrtNcstBaseDateTime = (now: Date = new Date()) => {
+export const getUltraSrtNcstBaseDateTime = (now: Date = new Date()): BaseDateTime => {
   // 1시간 전으로 이동
   now.setHours(now.getHours() - 1);
 
@@ -30,7 +32,7 @@ export const getUltraSrtNcstBaseDateTime = (now: Date = new Date()) => {
  * @param now
  * @returns
  */
-export const getVilageFcstBaseDateTime = (now: Date = new Date()) => {
+export const getVilageFcstBaseDateTime = (now: Date = new Date()): BaseDateTime => {
   const yyyy = now.getFullYear();
   const mm = String(now.getMonth() + 1).padStart(2, "0");
   const dd = String(now.getDate()).padStart(2, "0");
@@ -62,7 +64,7 @@ export const getVilageFcstBaseDateTime = (now: Date = new Date()) => {
   const baseTime = String(baseHour).padStart(2, "0") + "00";
 
   return {
-    baseDate,
-    baseTime,
+    base_date: baseDate,
+    base_time: baseTime,
   };
 };
