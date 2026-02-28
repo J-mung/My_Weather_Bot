@@ -1,10 +1,10 @@
-import { axiosInstance } from "@/shared/api/axios";
 import type { RequestWeatherParams } from "@/entities/weather/model/requestWeatherParams";
-import type { WeatherFcstType } from "@/entities/weather/model/weatherTypes";
+import { axiosInstance } from "@/shared/api/axios";
+import type { ShortFcstResponseType } from "./weatherApiTypes";
 
 export const fetchShortForecast = async (
   params: RequestWeatherParams,
-): Promise<WeatherFcstType> => {
+): Promise<ShortFcstResponseType> => {
   const response = await axiosInstance.get("getVilageFcst", {
     params: {
       ...params,
