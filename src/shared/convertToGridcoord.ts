@@ -1,5 +1,5 @@
-import { GRID_COORD_CONFIG } from "../entities/weather/config/gridcoord.config";
-import type { GridCoord, LatLon } from "../entities/weather/model/weather.types";
+import { GRID_COORD_CONFIG } from "../entities/weather/config/gridCoordConfig";
+import type { GridCoord, LatLon } from "../entities/weather/model/weatherTypes";
 
 export const convertToGridCoord = ({ lat, lon }: LatLon): GridCoord => {
   const { RE, GRID, SLAT1, SLAT2, OLON, OLAT, XO, YO } = GRID_COORD_CONFIG;

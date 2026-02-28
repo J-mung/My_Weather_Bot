@@ -1,4 +1,4 @@
-import { useCurrentWeather } from "./use-current-weather";
+import { useCurrentWeather } from "./useCurrentWeather";
 
 export const CurrentWeatherTester = () => {
   const { data, isFetching, fetchByCurrentLocation } = useCurrentWeather();

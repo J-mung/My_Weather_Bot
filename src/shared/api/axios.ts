@@ -7,7 +7,7 @@ import axios from "axios";
 const createAxiosInstance = (): AxiosInstance => {
   const instance = axios.create({
     baseURL: import.meta.env.VITE_API_BASE_URL,
-    timeout: 10000,
+    timeout: 5000,
   });
 
   // 요청 인터셉터

@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
-import type { CurrentWeatherParams } from "../../../features/get-current-weather/model/current-weather.params";
+import type { CurrentWeatherParams } from "../../../features/get-current-weather/model/currentWeatherParams";
 import { axiosInstance } from "../../../shared/api/axios";
-import type { WeatherNowType } from "../model/weather.types";
+import type { WeatherNowType } from "../model/weatherTypes";
 
 /**
  * 초단기실황 fetch 요청 API

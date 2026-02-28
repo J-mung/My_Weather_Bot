@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { useWeatherNow } from "../../entities/weather/api/weather.api";
-import type { GridCoord } from "../../entities/weather/model/weather.types";
-import { convertToGridCoord } from "../../shared/convert-to-gridcoord";
-import { getUserLocation } from "../../shared/get-user-location";
-import { getUltraSrtNcstBaseDateTime } from "../../shared/weather-date-time";
-import type { CurrentWeatherParams } from "./model/current-weather.params";
+import { useWeatherNow } from "../../entities/weather/api/weatherApi";
+import type { GridCoord } from "../../entities/weather/model/weatherTypes";
+import { convertToGridCoord } from "../../shared/convertToGridcoord";
+import { getUserLocation } from "../../shared/getUserLocation";
+import { getUltraSrtNcstBaseDateTime } from "../../shared/weatherDateTime";
+import type { CurrentWeatherParams } from "./model/currentWeatherParams";
 
 export const useCurrentWeather = () => {
   const [params, setParams] = useState<CurrentWeatherParams | null>(null);
