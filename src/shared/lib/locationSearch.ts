@@ -1,10 +1,10 @@
 import type { GridCoord } from "@/entities/weather/model/weatherTypes";
-import districtGridMap from "@/shared/lib/korea_district_geo.json";
+import districtGeoMapJson from "@/shared/lib/korea_district_geo.json";
 import type { DistrictSearchItem, DistrictsGeoMapItem } from "./locationTypes";
 
 // 타입 안정성을 위해 Map에 타입 지정
-type DistrictGridMap = Record<string, DistrictsGeoMapItem>;
-const typedDistrictGridMap = districtGridMap as DistrictGridMap;
+type DistrictGeoMapRecord = Record<string, DistrictsGeoMapItem>;
+const typedDistrictGeoMap = districtGeoMapJson as DistrictGeoMapRecord;
 
 export const SPACE_REGEX = /\s+/g;
 const DASH_REGEX = /-/g;
@@ -19,8 +19,11 @@ export const parseLocationText = (value: string): string => {
   return value.trim().replace(SPACE_REGEX, "").replace(DASH_REGEX, "").toLowerCase();
 };
 
+/**
+ * 검색 인덱스용 지역 목록 생성
+ */
 export const buildDistrictSearchIndex = (): DistrictSearchItem[] => {
-  return Object.keys(typedDistrictGridMap).map((_district) => ({
+  return Object.keys(typedDistrictGeoMap).map((_district) => ({
     fullName: _district,
     separates: _district.split("-").filter(Boolean),
     parsed: parseLocationText(_district),
@@ -106,7 +109,7 @@ export const toDisplayDistrictName = (item: DistrictSearchItem): string => {
  * @returns
  */
 export const getGridCoordByDistrictName = (districtFullName: string): GridCoord | null => {
-  const gridCoord = typedDistrictGridMap[districtFullName];
+  const gridCoord = typedDistrictGeoMap[districtFullName];
   if (!gridCoord) return null;
 
   const nx = Number(gridCoord.nx);

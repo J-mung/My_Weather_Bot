@@ -20,6 +20,7 @@ export default function MainPage() {
     <div className={mainPageStyles.page}>
       <div className={mainPageStyles.searchWrap}>
         <input
+          id="districtSearch"
           aria-label="검색어 입력"
           className={mainPageStyles.searchInput}
           placeholder="검색어 입력..."

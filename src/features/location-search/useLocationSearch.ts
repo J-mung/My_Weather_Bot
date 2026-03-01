@@ -32,6 +32,10 @@ export const useLocationSearch = (): {
   // JSON 1번만 읽고 메모이제이션
   const searchIndex = useMemo(() => buildDistrictSearchIndex(), []);
 
+  /**
+   * 사용자 입력으로 위치 후보 목록 생성
+   * @returns
+   */
   const runSearch = () => {
     const trimInput = input.trim();
 
@@ -57,6 +61,11 @@ export const useLocationSearch = (): {
     setSelectedGridCoord(null);
   };
 
+  /**
+   * 위치 후보 목록에서 사용자가 1개를 선택 했을 때 선택된 항목의 GridCoord 반환
+   * @param district
+   * @returns
+   */
   const selectDistrict = (district: DistrictSearchItem) => {
     const gridCoord = getGridCoordByDistrictName(district.fullName);
 
@@ -65,7 +74,7 @@ export const useLocationSearch = (): {
 
     if (!gridCoord) {
       setErrorMessage("해당 장소의 정보가 제공되지 않습니다.");
-      return;
+      return null;
     }
 
     setErrorMessage(null);
@@ -74,6 +83,9 @@ export const useLocationSearch = (): {
     return gridCoord;
   };
 
+  /**
+   * 선택된 후보/좌표/에러 상태 초기화
+   */
   const clearSelection = () => {
     setSelectedDistrict(null);
     setSelectedGridCoord(null);
