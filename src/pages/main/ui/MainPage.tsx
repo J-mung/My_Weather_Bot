@@ -1,10 +1,12 @@
 import { useCurrentTemperature } from "@/features/get-current-weather/model/useCurrentTemperature";
+import { useNavigate } from "react-router-dom";
+import { HourlyInfoCard } from "./HourlyInfoCard";
 import { NowInfoCard } from "./NowInfoCard";
 import { mainPageStyles } from "./styles";
 
 export default function MainPage() {
   const { data, isFetching, error } = useCurrentTemperature();
-
+  const navigate = useNavigate();
   return (
     <div className={mainPageStyles.page}>
       <div className={mainPageStyles.searchWrap}>
@@ -13,6 +15,10 @@ export default function MainPage() {
           className={mainPageStyles.searchInput}
           placeholder="검색어 입력..."
           type="text"
+          readOnly
+          onClick={() => {
+            navigate("/search", { replace: true });
+          }}
         />
       </div>
       <section className={mainPageStyles.dailySummary}>
@@ -20,6 +26,10 @@ export default function MainPage() {
         <section className={mainPageStyles.section}>
           <h2 className={mainPageStyles.sectionTitle}>기온 요약</h2>
           <NowInfoCard data={data} isFetching={isFetching} error={error} />
+        </section>
+        <section className={mainPageStyles.section}>
+          <h2 className={mainPageStyles.sectionTitle}>시간대별 날씨</h2>
+          <HourlyInfoCard data={data} isFetching={isFetching} error={error} />
         </section>
       </section>
     </div>
