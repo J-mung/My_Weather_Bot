@@ -3,9 +3,11 @@ import type { RequestWeatherParams } from "@/entities/weather/model/requestWeath
 import { weatherStrategyRegistry } from "@/entities/weather/model/weatherStrategyRegistry";
 import { useQuery } from "@tanstack/react-query";
 import { useCallback, useEffect, useState } from "react";
+import type { GridCoord } from "./weatherTypes";
 
 export const useWeatherQuery = <T extends WeatherApiType>(
   type: T,
+  param: GridCoord,
   options?: { enabled?: boolean },
 ) => {
   const [params, setParams] = useState<RequestWeatherParams | null>(null);
@@ -18,11 +20,13 @@ export const useWeatherQuery = <T extends WeatherApiType>(
   // API type에 따라서 params 재생성
   useEffect(() => {
     const initApiParams = async () => {
-      const newParams = await weatherStrategyRegistry[type].buildParams();
+      let newParams = await weatherStrategyRegistry[type].buildParams();
+      if (Number.isFinite(param.nx) && Number.isFinite(param.ny))
+        newParams = { ...newParams, ...param };
       setParams(newParams);
     };
     void initApiParams();
-  }, [type]);
+  }, [type, param.nx, param.ny]);
 
   // UI에서 데이터 조회 요청할 때 사용
   const refresh = useCallback(async () => {

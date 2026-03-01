@@ -5,13 +5,19 @@ import {
   getTemperatureSummary,
 } from "@/entities/weather/model/temperatureMappers";
 import { useWeatherQuery } from "@/entities/weather/model/useWeatherQuery";
-import type { SummaryDomain, TemperatureSummary } from "@/entities/weather/model/weatherTypes";
+import type {
+  GridCoord,
+  SummaryDomain,
+  TemperatureSummary,
+} from "@/entities/weather/model/weatherTypes";
 
 /**
  * 날씨 정보 반환 훅(현재 기온, 최저/최고 기온, 시간대별 기온)
  * @returns
  */
-export const useCurrentTemperature = (): {
+export const useCurrentTemperature = (
+  param: GridCoord,
+): {
   data: SummaryDomain | null;
   isLoading: boolean;
   isFetching: boolean;
@@ -19,9 +25,9 @@ export const useCurrentTemperature = (): {
   error: Error | null;
   refresh: () => Promise<void>;
 } => {
-  const ultraQuery = useWeatherQuery(WeatherApiType.ULTRA_NOW);
-  const shortQuery = useWeatherQuery(WeatherApiType.SHORT_FORECAST);
-  const todayTempRangeQuery = useWeatherQuery(WeatherApiType.TODAY_TEMP_RANGE);
+  const ultraQuery = useWeatherQuery(WeatherApiType.ULTRA_NOW, param);
+  const shortQuery = useWeatherQuery(WeatherApiType.SHORT_FORECAST, param);
+  const todayTempRangeQuery = useWeatherQuery(WeatherApiType.TODAY_TEMP_RANGE, param);
 
   const isLoading = ultraQuery.isLoading || shortQuery.isLoading || todayTempRangeQuery.isLoading;
   const isFetching =

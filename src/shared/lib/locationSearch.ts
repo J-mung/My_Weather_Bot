@@ -4,7 +4,7 @@ export interface DistrictSearchItem {
   parsed: string; // 서울특별시총로구청운동 (추가 지원 검색 유형 - 참고 "도로명주소" 검색)
 }
 
-const SPACE_REGEX = /\s+/g;
+export const SPACE_REGEX = /\s+/g;
 const DASH_REGEX = /-/g;
 
 /**
