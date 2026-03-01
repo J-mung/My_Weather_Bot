@@ -5,27 +5,36 @@ import {
   getTemperatureSummary,
 } from "@/entities/weather/model/temperatureMappers";
 import { useWeatherQuery } from "@/entities/weather/model/useWeatherQuery";
-import type { TemperatureSummary } from "@/entities/weather/model/weatherTypes";
+import type { SummaryDomain, TemperatureSummary } from "@/entities/weather/model/weatherTypes";
 
 /**
  * 날씨 정보 반환 훅(현재 기온, 최저/최고 기온, 시간대별 기온)
  * @returns
  */
-export const useCurrentTemperature = () => {
+export const useCurrentTemperature = (): {
+  data: SummaryDomain | null;
+  isLoading: boolean;
+  isFetching: boolean;
+  isError: boolean;
+  error: Error | null;
+  refresh: () => Promise<void>;
+} => {
   const ultraQuery = useWeatherQuery(WeatherApiType.ULTRA_NOW);
   const shortQuery = useWeatherQuery(WeatherApiType.SHORT_FORECAST);
+  const todayTempRangeQuery = useWeatherQuery(WeatherApiType.TODAY_TEMP_RANGE);
 
-  const isLoading = ultraQuery.isLoading || shortQuery.isLoading;
-  const isFetching = ultraQuery.isFetching || shortQuery.isFetching;
-  const isError = ultraQuery.isError || shortQuery.isError;
-  const error = ultraQuery.error ?? shortQuery.error ?? null;
+  const isLoading = ultraQuery.isLoading || shortQuery.isLoading || todayTempRangeQuery.isLoading;
+  const isFetching =
+    ultraQuery.isFetching || shortQuery.isFetching || todayTempRangeQuery.isFetching;
+  const isError = ultraQuery.isError || shortQuery.isError || todayTempRangeQuery.isError;
+  const error = ultraQuery.error ?? shortQuery.error ?? todayTempRangeQuery.error ?? null;
 
   // 모든 API로부터 응답을 받을 때까지 대기
   const refresh = async () => {
-    await Promise.all([ultraQuery.refresh(), shortQuery.refresh()]);
+    await Promise.all([ultraQuery.refresh(), shortQuery.refresh(), todayTempRangeQuery.refetch()]);
   };
 
-  if (!ultraQuery.data || !shortQuery.data) {
+  if (!ultraQuery.data || !shortQuery.data || !todayTempRangeQuery.data) {
     return {
       data: null,
       isLoading,
@@ -43,10 +52,13 @@ export const useCurrentTemperature = () => {
   const { todayMin, todayMax, hourly }: TemperatureSummary = getTemperatureSummary(
     shortQuery.data,
     currentDT,
+    todayTempRangeQuery.data,
   );
 
+  const data: SummaryDomain = { current, todayMin, todayMax, hourly };
+
   return {
-    data: { current, todayMin, todayMax, hourly },
+    data: data,
     isLoading,
     isFetching,
     isError,

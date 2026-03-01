@@ -29,7 +29,7 @@ export interface UltraNowDomain {
   nx: number;
   ny: number;
 
-  temperature: number; // 현재 기온(T1H)
+  current: number; // 현재 기온(T1H)
 }
 
 /**
@@ -45,6 +45,16 @@ export interface ShortFcstDomain {
   ny: number;
 
   category: string; // TMP, ...
+  todayMin: number; // 오늘 최저
+  todayMax: number; // 온르 최고
+  hourly: {
+    time: string;
+    temp: number;
+  }[];
+}
+
+export interface SummaryDomain {
+  current: number; // 현재 기온(T1H)
   todayMin: number; // 오늘 최저
   todayMax: number; // 온르 최고
   hourly: {

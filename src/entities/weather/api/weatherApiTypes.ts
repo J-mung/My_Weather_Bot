@@ -65,11 +65,13 @@ export interface ShortFcstResponseType {
 export type WeatherResponseMap = {
   ULTRA_NOW: UltraNowResponseType;
   SHORT_FORECAST: ShortFcstResponseType;
+  TODAY_TEMP_RANGE: ShortFcstResponseType;
 };
 
 export const WeatherApiType = {
   ULTRA_NOW: "ULTRA_NOW",
   SHORT_FORECAST: "SHORT_FORECAST",
+  TODAY_TEMP_RANGE: "TODAY_TEMP_RANGE",
 } as const;
 
 export type WeatherApiType = (typeof WeatherApiType)[keyof typeof WeatherApiType];

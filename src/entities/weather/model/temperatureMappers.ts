@@ -48,6 +48,18 @@ const formatHourLabel = (yyyymmdd: string, hhmm: string): string => {
   return `${mm}/${dd} ${hour}:${minute}`;
 };
 
+const toNumber = (value: string | undefined, fallback = 0): number => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+};
+
+const formatYmd = (date: Date): string => {
+  const yyyy = date.getFullYear();
+  const mm = String(date.getMonth() + 1).padStart(2, "0");
+  const dd = String(date.getDate()).padStart(2, "0");
+  return `${yyyy}${mm}${dd}`;
+};
+
 /**
  * 현재 기온 반환
  * @param now API 응답
@@ -56,7 +68,7 @@ const formatHourLabel = (yyyymmdd: string, hhmm: string): string => {
 export const getCurrentTemperature = (now: UltraNowResponseType): number => {
   const items = now.response.body.items.item;
   const t1h = items.find((_item) => _item.category === "T1H");
-  return Number(t1h?.obsrValue ?? 0); // 값이 없을 때는 0 fallback
+  return toNumber(t1h?.obsrValue, 0); // 값이 없을 때는 0 fallback
 };
 
 /**
@@ -85,27 +97,55 @@ export const getObservationDateTime = (now: UltraNowResponseType): Date | null =
 export const getTemperatureSummary = (
   short: ShortFcstResponseType,
   observationDT: Date = new Date(),
+  shortForDailyExtreme?: ShortFcstResponseType,
 ): TemperatureSummary => {
   const items = short.response.body.items.item;
+  const extremeItems = shortForDailyExtreme?.response.body.items.item ?? items;
+  const targetDate = formatYmd(observationDT);
 
   // 현재(API 요청) 시각 구하기
   const end = new Date(observationDT.getTime() + 24 * 60 * 60 * 1000);
-  const temps: ShortFcstItemType[] = items.filter((_item) => _item.category === "TMP");
+  const tmpItems: ShortFcstItemType[] = items.filter((_item) => _item.category === "TMP");
 
-  // 현재(API 요청) 시각 기준으로 데이터 구하기
-  const hourly = temps
+  // 현재(API 요청) 시각 기준 24시간 TMP 데이터
+  const hourly = tmpItems
     .map((_temp) => ({
       date: parseDateTime(_temp.fcstDate, _temp.fcstTime),
       time: formatHourLabel(_temp.fcstDate, _temp.fcstTime),
-      temp: Number(_temp.fcstValue ?? 0),
+      temp: toNumber(_temp.fcstValue, 0),
+      fcstDate: _temp.fcstDate,
     }))
     .filter((_item) => _item.date !== null && _item.date >= observationDT && _item.date < end)
     .sort((a, b) => a.date!.getTime() - b.date!.getTime())
     .map(({ time, temp }) => ({ time, temp }));
 
-  const values = hourly.map((_hour) => _hour.temp);
-  const todayMin = values.length > 0 ? Math.min(...values) : 0;
-  const todayMax = values.length > 0 ? Math.max(...values) : 0;
+  // 오늘 날짜 기준 TMN/TMX 우선 추출
+  const todayTmnValues = extremeItems
+    .filter((_item) => _item.category === "TMN" && _item.fcstDate === targetDate)
+    .map((_item) => toNumber(_item.fcstValue, 0));
+  const todayTmxValues = extremeItems
+    .filter((_item) => _item.category === "TMX" && _item.fcstDate === targetDate)
+    .map((_item) => toNumber(_item.fcstValue, 0));
+
+  // TMN/TMX가 없으면 오늘 TMP로 fallback
+  const todayTmpValues = tmpItems
+    .filter((_item) => _item.fcstDate === targetDate)
+    .map((_item) => toNumber(_item.fcstValue, 0));
+
+  const fallbackValues = todayTmpValues.length > 0 ? todayTmpValues : hourly.map((_hour) => _hour.temp);
+
+  const todayMin =
+    todayTmnValues.length > 0
+      ? Math.min(...todayTmnValues)
+      : fallbackValues.length > 0
+        ? Math.min(...fallbackValues)
+        : 0;
+  const todayMax =
+    todayTmxValues.length > 0
+      ? Math.max(...todayTmxValues)
+      : fallbackValues.length > 0
+        ? Math.max(...fallbackValues)
+        : 0;
 
   return {
     todayMin,

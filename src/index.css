@@ -1,0 +1,48 @@
+@import "tailwindcss";
+
+:root {
+  /* core */
+  --bg: #f3f6fb;
+  --surface: #ffffff;
+  --surface-soft: #f8fafc;
+  --line: #dbe3ef;
+
+  /* text */
+  --text-main: #0f172a;
+  --text-sub: #64748b;
+  --text-muted: #94a3b8;
+
+  /* brand */
+  --accent: #3b82f6;
+  --accent-strong: #2563eb;
+  --accent-soft: #dbeafe;
+
+  /* state */
+  --success: #16a34a;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+
+  /* shadow */
+  --shadow-soft: 0 8px 24px rgba(15, 23, 42, 0.08);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  color: var(--text-main);
+  background:
+    radial-gradient(circle at 0% 0%, #ffffff 0%, transparent 38%),
+    radial-gradient(circle at 100% 100%, #e9f1ff 0%, transparent 44%), var(--bg);
+  font-family: "Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", "Segoe UI", sans-serif;
+}

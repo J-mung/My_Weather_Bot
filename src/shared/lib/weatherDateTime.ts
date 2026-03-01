@@ -68,3 +68,32 @@ export const getVilageFcstBaseDateTime = (now: Date = new Date()): BaseDateTime 
     base_time: baseTime,
   };
 };
+
+/**
+ * 단기예보 TMN/TMX 안정 조회용 base_date, base_time 계산
+ *    - 별도 계산 이유
+ *      - 오늘의 최고, 최저 기온을 때에 따라 알려주지 않음
+ *      - 기준 시각: 최고 기온(오후 3시) / 최저 기온(오전 6시)
+ *      - 예시)
+ *        - 새벽 2시: 오늘 중 최고, 최저 기온 데이터가 있음
+ *        - 오전 8시: 오늘 중 최저 기온일 때는 지났기 때문에 오늘의 최저 기온 데이터가 없음
+ *        - 오후 2시: 오늘 중 최고, 최저 기온일 때가 지났기 때문에 알 수 없으며, 내일의 최고, 최저 기온 데이터가 있음
+ *    - 당일 02시 자료를 우선 사용
+ *    - 새벽 02시 이전이면 전날 02시 자료 사용
+ */
+export const getVilageFcstTodayTempRangeBaseDateTime = (now: Date = new Date()): BaseDateTime => {
+  const target = new Date(now);
+
+  if (target.getHours() < 2) {
+    target.setDate(target.getDate() - 1);
+  }
+
+  const yyyy = target.getFullYear();
+  const mm = String(target.getMonth() + 1).padStart(2, "0");
+  const dd = String(target.getDate()).padStart(2, "0");
+
+  return {
+    base_date: `${yyyy}${mm}${dd}`,
+    base_time: "0200",
+  };
+};

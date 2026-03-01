@@ -1,11 +1,15 @@
 import { fetchShortForecast } from "@/entities/weather/api/fetchShortForecast";
 import { fetchUltraNow } from "@/entities/weather/api/fetchUltraNow";
-import { type WeatherApiType as WeatherApiTypeValue, type WeatherResponseMap } from "@/entities/weather/api/weatherApiTypes";
+import {
+  type WeatherApiType as WeatherApiTypeValue,
+  type WeatherResponseMap,
+} from "@/entities/weather/api/weatherApiTypes";
 import type { RequestWeatherParams } from "@/entities/weather/model/requestWeatherParams";
 import { buildWeatherApiParams } from "@/shared/lib/weatherApiParams";
 import {
   getUltraSrtNcstBaseDateTime,
   getVilageFcstBaseDateTime,
+  getVilageFcstTodayTempRangeBaseDateTime,
 } from "@/shared/lib/weatherDateTime";
 
 /**
@@ -25,6 +29,10 @@ export const weatherStrategyRegistry: { [K in keyof WeatherResponseMap]: Weather
   },
   SHORT_FORECAST: {
     buildParams: () => buildWeatherApiParams(getVilageFcstBaseDateTime),
+    fetch: fetchShortForecast,
+  },
+  TODAY_TEMP_RANGE: {
+    buildParams: () => buildWeatherApiParams(getVilageFcstTodayTempRangeBaseDateTime),
     fetch: fetchShortForecast,
   },
 };
