@@ -1,13 +1,12 @@
 import type { GridCoord } from "@/entities/weather/model/weatherTypes";
-import districtsJson from "@/shared/lib/korea_districts.json";
-import { getGridCoordByDistrictName } from "@/shared/lib/locationGridCoord";
 import {
   buildDistrictSearchIndex,
+  getGridCoordByDistrictName,
   searchDistricts,
   SPACE_REGEX,
   toDisplayDistrictName,
-  type DistrictSearchItem,
 } from "@/shared/lib/locationSearch";
+import type { DistrictSearchItem } from "@/shared/lib/locationTypes";
 import { useMemo, useState } from "react";
 
 /**
@@ -21,7 +20,7 @@ export const useLocationSearch = (): {
   errorMessage: string | null;
   setInput: (value: string) => void;
   runSearch: () => void;
-  selectDistrict: (district: DistrictSearchItem) => GridCoord | undefined;
+  selectDistrict: (district: DistrictSearchItem) => GridCoord | null;
   clearSelection: () => void;
 } => {
   const [input, setInput] = useState("");
@@ -31,7 +30,7 @@ export const useLocationSearch = (): {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // JSON 1번만 읽고 메모이제이션
-  const searchIndex = useMemo(() => buildDistrictSearchIndex(districtsJson), []);
+  const searchIndex = useMemo(() => buildDistrictSearchIndex(), []);
 
   const runSearch = () => {
     const trimInput = input.trim();

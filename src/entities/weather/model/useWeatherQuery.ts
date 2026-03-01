@@ -22,7 +22,7 @@ export const useWeatherQuery = <T extends WeatherApiType>(
     const initApiParams = async () => {
       let newParams = await weatherStrategyRegistry[type].buildParams();
       if (Number.isFinite(param.nx) && Number.isFinite(param.ny))
-        newParams = { ...newParams, ...param };
+        newParams = { ...newParams, nx: param.nx, ny: param.ny };
       setParams(newParams);
     };
     void initApiParams();

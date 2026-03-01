@@ -46,7 +46,9 @@ export default function SearchPage() {
         />
       </div>
       {errorMessage && <div className={searchPageStyles.section}>{errorMessage}</div>}
-      {candidates && <CandidateList candidates={candidates} selectDistrict={selectDistrict} />}
+      {candidates.length > 0 && (
+        <CandidateList candidates={candidates} selectDistrict={selectDistrict} />
+      )}
     </div>
   );
 }

@@ -1,8 +1,10 @@
-export interface DistrictSearchItem {
-  fullName: string; // 서울특별시-종로구-청운동 (json 조회 key)
-  separates: string[]; // ["서울특별시", "종로구", "청운동"]
-  parsed: string; // 서울특별시총로구청운동 (추가 지원 검색 유형 - 참고 "도로명주소" 검색)
-}
+import type { GridCoord } from "@/entities/weather/model/weatherTypes";
+import districtGridMap from "@/shared/lib/korea_district_geo.json";
+import type { DistrictSearchItem, DistrictsGeoMapItem } from "./locationTypes";
+
+// 타입 안정성을 위해 Map에 타입 지정
+type DistrictGridMap = Record<string, DistrictsGeoMapItem>;
+const typedDistrictGridMap = districtGridMap as DistrictGridMap;
 
 export const SPACE_REGEX = /\s+/g;
 const DASH_REGEX = /-/g;
@@ -17,15 +19,11 @@ export const parseLocationText = (value: string): string => {
   return value.trim().replace(SPACE_REGEX, "").replace(DASH_REGEX, "").toLowerCase();
 };
 
-/**
- * 검색 비교용 정규화 리스트 반환
- * @param districtNames
- */
-export const buildDistrictSearchIndex = (districtNames: string[]): DistrictSearchItem[] => {
-  return districtNames.map((_fullName) => ({
-    fullName: _fullName,
-    separates: _fullName.split("-").filter(Boolean),
-    parsed: parseLocationText(_fullName),
+export const buildDistrictSearchIndex = (): DistrictSearchItem[] => {
+  return Object.keys(typedDistrictGridMap).map((_district) => ({
+    fullName: _district,
+    separates: _district.split("-").filter(Boolean),
+    parsed: parseLocationText(_district),
   }));
 };
 
@@ -100,4 +98,23 @@ export const searchDistricts = (
  */
 export const toDisplayDistrictName = (item: DistrictSearchItem): string => {
   return item.separates.join(" ");
+};
+
+/**
+ * fullName 값으로 json에서 데이터 조회 후 {nx, ny} 형태로 반환
+ * @param districtFullName
+ * @returns
+ */
+export const getGridCoordByDistrictName = (districtFullName: string): GridCoord | null => {
+  const gridCoord = typedDistrictGridMap[districtFullName];
+  if (!gridCoord) return null;
+
+  const nx = Number(gridCoord.nx);
+  const ny = Number(gridCoord.ny);
+
+  if (!Number.isFinite(nx) || !Number.isFinite(ny)) {
+    return null;
+  }
+
+  return { nx, ny };
 };

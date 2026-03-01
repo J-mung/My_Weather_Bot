@@ -1,5 +1,6 @@
 import type { GridCoord } from "@/entities/weather/model/weatherTypes";
-import { toDisplayDistrictName, type DistrictSearchItem } from "@/shared/lib/locationSearch";
+import { toDisplayDistrictName } from "@/shared/lib/locationSearch";
+import type { DistrictSearchItem } from "@/shared/lib/locationTypes";
 import { useNavigate } from "react-router-dom";
 import { searchPageStyles } from "./styles";
 
@@ -8,7 +9,7 @@ export const CandidateList = ({
   selectDistrict,
 }: {
   candidates: DistrictSearchItem[];
-  selectDistrict: (district: DistrictSearchItem) => GridCoord | undefined;
+  selectDistrict: (district: DistrictSearchItem) => GridCoord | null;
 }) => {
   const navigate = useNavigate();
 
