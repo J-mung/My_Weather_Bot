@@ -6,7 +6,7 @@ import { bookmarkPageStyles } from "./styles";
 const previewBookmarkList: BookmarkItem[] = [
   {
     id: "preview-1",
-    displayName: "서울특별시-종로구-청운동",
+    displayName: "서울특별시 종로구 청운동",
     alias: "내 위치",
     nx: 60,
     ny: 127,
@@ -14,7 +14,7 @@ const previewBookmarkList: BookmarkItem[] = [
   },
   {
     id: "preview-2",
-    displayName: "부산광역시-해운대구-우동",
+    displayName: "부산광역시 해운대구 우동",
     alias: "",
     nx: 98,
     ny: 76,
@@ -22,7 +22,7 @@ const previewBookmarkList: BookmarkItem[] = [
   },
   {
     id: "preview-3",
-    displayName: "제주특별자치도-제주시-이도이동",
+    displayName: "제주특별자치도 제주시 이도이동",
     alias: "제주 출장",
     nx: 53,
     ny: 38,

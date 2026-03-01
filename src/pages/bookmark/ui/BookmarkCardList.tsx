@@ -1,5 +1,6 @@
 import type { BookmarkItem } from "@/features/bookmark/model/types";
 import { useEffect, useState } from "react";
+import { BookmarkWeatherSummary } from "./BookmarkWeatherSummary";
 import { CardContextMenu } from "./CardContextMenu";
 import { CardEditForm } from "./CardEditForm";
 import { bookmarkPageStyles } from "./styles";
@@ -60,18 +61,28 @@ export const BookmarkCardList = ({
       <div className={bookmarkPageStyles.bookmarkListWrap}>
         {bookmarkList.map((_bookmark) => {
           const isEditing = editingId === _bookmark.id;
+          const locationLabel = _bookmark.displayName;
+          const title = _bookmark.alias || locationLabel;
 
           return (
             <div key={_bookmark.id} className={bookmarkPageStyles.bookmarkCard}>
               {!isEditing ? (
                 <>
-                  <span className={bookmarkPageStyles.bookmarkCardTitle}>
-                    {_bookmark.displayName}
-                  </span>
-                  <div className={bookmarkPageStyles.bookmarkCardCaption}>
-                    <span className={bookmarkPageStyles.bookmarkCardTemp}>
-                      nx: {_bookmark.nx}, ny: {_bookmark.ny}
-                    </span>
+                  <div className={bookmarkPageStyles.bookmarkCardHeader}>
+                    <div>
+                      <span className={bookmarkPageStyles.bookmarkCardTitle}>{title}</span>
+                      <span className={bookmarkPageStyles.bookmarkCardLocation}>
+                        {locationLabel}
+                      </span>
+                    </div>
+                    <div className={bookmarkPageStyles.bookmarkCardCaption}>
+                      <span className={bookmarkPageStyles.bookmarkCardTemp}>
+                        nx: {_bookmark.nx}, ny: {_bookmark.ny}
+                      </span>
+                    </div>
+                  </div>
+                  <BookmarkWeatherSummary nx={_bookmark.nx} ny={_bookmark.ny} />
+                  <div className={bookmarkPageStyles.bookmarkCardAction}>
                     <CardContextMenu
                       openedMenuId={openedMenuId}
                       bookmarkItem={_bookmark}
