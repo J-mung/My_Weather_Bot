@@ -9,12 +9,16 @@ export const bookmarkPageStyles = {
 
   bookmarkListWrap: "grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3",
   bookmarkCard:
-    "h-36 grid grod-cols-2 rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md",
+    "rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-5 shadow-sm transition hover:shadow-md",
+  bookmarkCardHeader: "flex items-start justify-between gap-3",
   bookmarkCardTitle: "block text-xl font-bold leading-tight text-[var(--text-main)]",
-  bookmarkCardTemp: "mt-2 block text-sm text-[var(--text-sub)]",
+  bookmarkCardLocation: "mt-1 block text-sm text-[var(--text-sub)]",
+  bookmarkCardTemp: "block text-xs text-[var(--text-sub)]",
 
-  bookmarkCardCaption: "relative flex justify-between mt-5",
-  bookmarkMenuWrap: "",
+  bookmarkCardCaption: "",
+  bookmarkCardAction: "mt-3 flex items-center justify-end gap-2",
+
+  bookmarkMenuWrap: "relative",
   bookmarkMenuTrigger:
     "h-8 w-8 rounded-xl border border-[var(--line)] bg-white text-lg leading-none text-[var(--text-sub)] transition hover:bg-slate-100",
   bookmarkMenuPanel:
@@ -32,3 +36,10 @@ export const bookmarkPageStyles = {
   bookmarkEditCancleButton:
     "rounded-xl border border-[var(--line)] bg-white px-3 py-2 text-sm font-semibold text-[var(--text-main)] transition hover:bg-slate-50",
 } as const;
+
+export const bookmarkSummaryStyles = {
+  summaryWrap: "mt-4",
+  summaryMainContent: "text-4xl font-semibold text-[var(--text-main)]",
+  summarySubContent: "mt-2 text-base text-[var(--text-sub)]",
+  summaryNodata: "mt-2 text-sm text-red-500",
+};
