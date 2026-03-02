@@ -63,14 +63,20 @@ export const CardContextMenu = ({
           <button
             type={"button"}
             className={bookmarkPageStyles.bookmarkMenuItem}
-            onClick={() => editHandler(bookmarkItem.id, bookmarkItem.alias)}
+            onClick={(e) => {
+              e.stopPropagation();
+              editHandler(bookmarkItem.id, bookmarkItem.alias);
+            }}
           >
             별칭 수정
           </button>
           <button
             type={"button"}
             className={bookmarkPageStyles.bookmarkMenuItemDanger}
-            onClick={() => deleteHandler(bookmarkItem.id)}
+            onClick={(e) => {
+              e.stopPropagation();
+              deleteHandler(bookmarkItem.id);
+            }}
           >
             삭제
           </button>

@@ -3,17 +3,35 @@ import { v4 as uuidv4 } from "uuid";
 import { type AddBookmarkItem, type BookmarkItem } from "./types";
 
 const BOOKMARK_STORAGE_KEY = "weather_bookmark";
-export const MAX_BOOKMARKS = 6;
+const MAX_BOOKMARKS = 6;
 
 const createBookmarkId = () => uuidv4();
 
-const readBookmarkFromStorage = (): BookmarkItem[] => {
+const isBookmarkItem = (value: unknown): value is BookmarkItem => {
+  if (!value || typeof value !== "object") return false;
+  const candidate = value as Partial<BookmarkItem>;
+
+  return (
+    typeof candidate.id === "string" &&
+    typeof candidate.displayName === "string" &&
+    typeof candidate.alias === "string" &&
+    typeof candidate.nx === "number" &&
+    Number.isFinite(candidate.nx) &&
+    typeof candidate.ny === "number" &&
+    Number.isFinite(candidate.ny) &&
+    typeof candidate.createdAt === "string"
+  );
+};
+
+export const readBookmarkFromStorage = (): BookmarkItem[] => {
   try {
     const storageList = localStorage.getItem(BOOKMARK_STORAGE_KEY);
     if (!storageList) return [];
 
-    const parsed = JSON.parse(storageList) as BookmarkItem[];
-    return Array.isArray(parsed) ? parsed : [];
+    const parsed = JSON.parse(storageList) as unknown;
+    if (!Array.isArray(parsed)) return [];
+
+    return parsed.filter(isBookmarkItem);
   } catch {
     return [];
   }
@@ -78,7 +96,7 @@ export const useBookmarks = () => {
    * @param alias
    */
   const updateAlias = (id: string, alias: string) => {
-    const trimAlias = alias.trim().slice(20);
+    const trimAlias = alias.trim().slice(0, 20);
     setBookmarkList((prev) =>
       prev.map((_bookmark) =>
         _bookmark.id === id ? { ..._bookmark, alias: trimAlias } : _bookmark,
@@ -91,14 +109,18 @@ export const useBookmarks = () => {
    * @param displayName
    * @returns
    */
-  const isBookmarked = (displayName: string) =>
+  const isBookmarked = (displayName: string): boolean =>
     bookmarkList.some((_bookmark) => _bookmark.displayName === displayName);
+
+  const getBookmarkedId = (displayName: string): string | null =>
+    bookmarkList.find((_bookmark) => _bookmark.displayName === displayName)?.id || null;
 
   /**
    * 북마크 목록 현황
-   *    - 예: 1/6
    */
-  const remainingList = useMemo(() => MAX_BOOKMARKS - bookmarkList.length, [bookmarkList.length]);
+  const remainingList = useMemo(() => bookmarkList.length, [bookmarkList.length]);
+
+  const totalBookmarkList = MAX_BOOKMARKS;
 
   return {
     bookmarkList,
@@ -107,6 +129,8 @@ export const useBookmarks = () => {
     deleteBookmark,
     updateAlias,
     isBookmarked,
+    getBookmarkedId,
     remainingList,
+    totalBookmarkList,
   };
 };

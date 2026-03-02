@@ -72,9 +72,7 @@ export const BookmarkCardList = ({
               className={bookmarkPageStyles.bookmarkCard}
               onClick={(e) => {
                 e.stopPropagation();
-                navigate(
-                  `/?nx=${_bookmark.nx}&ny=${_bookmark.ny}&location=${_bookmark.displayName}`,
-                );
+                navigate(`/?id=${_bookmark.id}`);
               }}
             >
               {!isEditing ? (

@@ -12,10 +12,24 @@
   --text-sub: #64748b;
   --text-muted: #94a3b8;
 
+  /* color */
+  --blue-50: #eff6ff;
+  --blue-100: #dbeafe;
+  --blue-200: #bfdbfe;
+  --blue-300: #93c5fd;
+  --blue-400: #60a5fa;
+  --blue-500: #3b82f6;
+  --blue-600: #2563eb;
+  --blue-700: #1d4ed8;
+  --blue-800: #1e40af;
+  --blue-900: #1e3a8a;
+  --blue-950: #172554;
+
   /* brand */
-  --accent: #3b82f6;
-  --accent-strong: #2563eb;
-  --accent-soft: #dbeafe;
+  --accent: var(--blue-500);
+  --accent-strong: var(--blue-600);
+  --accent-hover: var(--blue-200);
+  --accent-soft: var(--blue-100);
 
   /* state */
   --success: #16a34a;
