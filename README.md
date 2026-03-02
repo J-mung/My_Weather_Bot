@@ -54,6 +54,10 @@ npm run dev:worker
 - #2 검색 결과 선택 시 메인 화면으로 이동 후 해당 위치 날씨 조회합니다.
 - #3 검색 화면에서 북마크 추가/삭제 기능을 이용할 수 있습니다.
 
+<img width="1451" height="824" alt="image" src="https://github.com/user-attachments/assets/778ccf2e-fa94-4e17-864b-b7de4d20570f" />
+
+- 일치하는 검색 결과가 없을 경우 메세지로 안내합니다.
+
 ### 3) 북마크
 <img width="1451" height="824" alt="image" src="https://github.com/user-attachments/assets/cc07dd42-8034-43ca-a2cc-e065d95059fe" />
 
@@ -69,6 +73,10 @@ npm run dev:worker
 <img width="1451" height="824" alt="image" src="https://github.com/user-attachments/assets/2e9e6885-08cd-4ec4-b6db-d06583032e69" />
 
 - #1 별칭을 설정할 수 있는 입력폼입니다. 저장 버튼을 눌러 지정할 수 있습니다.
+
+<img width="1451" height="824" alt="image" src="https://github.com/user-attachments/assets/743d4ce0-dda0-4855-ac8d-c4465eb1b603" />
+
+- 등록된 북마크가 없을 경우 위와 같이 안내합니다.
 
 ### 4) API 프록시
 
