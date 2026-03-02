@@ -1,5 +1,6 @@
 import type { BookmarkItem } from "@/features/bookmark/model/types";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { BookmarkWeatherSummary } from "./BookmarkWeatherSummary";
 import { CardContextMenu } from "./CardContextMenu";
 import { CardEditForm } from "./CardEditForm";
@@ -17,6 +18,7 @@ export const BookmarkCardList = ({
   const [openedMenuId, setOpenedMenuId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [aliasInput, setAliasInput] = useState<string>("");
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -65,7 +67,16 @@ export const BookmarkCardList = ({
           const title = _bookmark.alias || locationLabel;
 
           return (
-            <div key={_bookmark.id} className={bookmarkPageStyles.bookmarkCard}>
+            <div
+              key={_bookmark.id}
+              className={bookmarkPageStyles.bookmarkCard}
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(
+                  `/?nx=${_bookmark.nx}&ny=${_bookmark.ny}&location=${_bookmark.displayName}`,
+                );
+              }}
+            >
               {!isEditing ? (
                 <>
                   <div className={bookmarkPageStyles.bookmarkCardHeader}>

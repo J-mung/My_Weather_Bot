@@ -49,7 +49,10 @@ export const CardContextMenu = ({
       <button
         type={"button"}
         className={bookmarkPageStyles.bookmarkMenuTrigger}
-        onClick={() => toggleMenu(bookmarkItem.id)}
+        onClick={(e) => {
+          e.stopPropagation();
+          toggleMenu(bookmarkItem.id);
+        }}
         aria-label={"카드 메뉴 열기"}
         title={"카드 메뉴"}
       >
