@@ -62,7 +62,7 @@ export default function MainPage() {
         />
       </div>
       <div className={mainPageStyles.dailySummary}>
-        <h1 className={"text-xl font-bold mb-3"}>{displayAlias}</h1>
+        <h1 className={"text-xl font-bold mb-3"}>{displayAlias || "현재 위치"}</h1>
         <div className={mainPageStyles.section}>
           <h2 className={mainPageStyles.sectionTitle}>기온 요약</h2>
           <NowInfoCard data={data} isFetching={isFetching} error={error} />

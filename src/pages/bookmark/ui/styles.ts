@@ -1,7 +1,7 @@
 export const bookmarkPageStyles = {
-  page: "space-y-6",
+  page: "space-y-5",
   remainSlotWrap:
-    "flex items-center justify-between rounded-2xl border border-[var(--line)] bg-[var(--surface)] px-5 py-4 shadow-sm",
+    "flex items-center justify-between rounded-xl border border-[var(--line)] bg-[var(--surface)] px-4 py-3 shadow-lg shadow-gray-500/25",
   remainSlotContent: "text-sm font-semibold text-[var(--text-main)]",
 
   bookmarkListNodata:
