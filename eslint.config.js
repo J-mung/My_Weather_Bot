@@ -11,7 +11,7 @@ export default tseslint.config(
   ...tseslint.configs.recommended,
 
   // eslint가 스캔 안 할 것들
-  { ignores: ["dist", "node_modules"] },
+  { ignores: ["dist", "node_modules", ".wrangler"] },
 
   {
     files: ["**/*.{ts,tsx}"],
