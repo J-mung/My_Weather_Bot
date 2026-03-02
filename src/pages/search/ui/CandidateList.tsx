@@ -83,11 +83,15 @@ export const CandidateList = ({
                   alert("해당 장소의 정보가 제공되지 않습니다.");
                   return;
                 }
-                addBookmark({
+
+                const result = addBookmark({
                   displayName: toDisplayDistrictName(_candidate),
                   nx: gridCoord.nx,
                   ny: gridCoord.ny,
                 });
+                if (!result.success) {
+                  alert(result.message);
+                }
               }}
             >
               <span>☆</span>
