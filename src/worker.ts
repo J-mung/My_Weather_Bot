@@ -80,7 +80,10 @@ const handleApiRequest = async (request: Request, env: Env): Promise<Response> =
   }
 
   if (!env.API_BASE_URL || !env.API_KEY) {
-    return new Response("Missing API env", withCors(origin, { status: 500 }));
+    const missing = [!env.API_BASE_URL ? "API_BASE_URL" : null, !env.API_KEY ? "API_KEY" : null]
+      .filter(Boolean)
+      .join(", ");
+    return new Response(`Missing API env: ${missing}`, { status: 500 });
   }
 
   const upstreamUrl = buildUpstreamUrl(request, env, endpoint);
