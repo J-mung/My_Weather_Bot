@@ -1,3 +1,4 @@
+import Button from "@/shared/ui/Button";
 import { useEffect, useRef } from "react";
 import { bookmarkEditStyles } from "./styles";
 
@@ -38,7 +39,7 @@ export const CardEditForm = ({
         }}
       />
       <div className={bookmarkEditStyles.bookmarkEditButtonList}>
-        <button
+        {/* <button
           type={"button"}
           className={bookmarkEditStyles.bookmarkEditSaveButton}
           onClick={(e) => {
@@ -47,7 +48,16 @@ export const CardEditForm = ({
           }}
         >
           저장
-        </button>
+        </button> */}
+        <Button
+          variant={"blue"}
+          size={"default"}
+          label={"저장"}
+          onClick={(e) => {
+            e.stopPropagation();
+            saveEdit();
+          }}
+        />
         <button
           type={"button"}
           className={bookmarkEditStyles.bookmarkEditCancleButton}
