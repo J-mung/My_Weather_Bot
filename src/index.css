@@ -1,4 +1,6 @@
 @import "tailwindcss";
+@import "../src/shared/styles/colors.css";
+@import "../src/shared/styles/component-tokens.css";
 
 :root {
   /* core */

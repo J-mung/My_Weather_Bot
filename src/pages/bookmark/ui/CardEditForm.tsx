@@ -40,7 +40,7 @@ export const CardEditForm = ({
       />
       <div className={bookmarkEditStyles.bookmarkEditButtonList}>
         <Button
-          variant={"blue"}
+          variant={"primary"}
           size={"md"}
           onClick={(e) => {
             e.stopPropagation();
@@ -49,16 +49,16 @@ export const CardEditForm = ({
         >
           저장
         </Button>
-        <button
-          type={"button"}
-          className={bookmarkEditStyles.bookmarkEditCancleButton}
+        <Button
+          variant={"secondary"}
+          size={"md"}
           onClick={(e) => {
             e.stopPropagation();
             cancelEdit();
           }}
         >
           취소
-        </button>
+        </Button>
       </div>
     </div>
   );

@@ -1,0 +1,43 @@
+:root {
+  /* Button: Primary */
+  --btn-primary-bg: var(--color-blue-600);
+  --btn-primary-bg-hover: var(--color-blue-500);
+  --btn-primary-bg-active: var(--color-blue-700);
+  --btn-primary-border: var(--color-blue-600);
+  --btn-primary-border-hover: var(--color-blue-500);
+  --btn-primary-border-active: var(--color-blue-700);
+  --btn-primary-text: var(--color-white);
+  --btn-primary-ring: var(--color-blue-400);
+  --btn-primary-ring-selected: var(--color-blue-300);
+
+  /* Button: Secondary */
+  --btn-secondary-bg: var(--color-white);
+  --btn-secondary-bg-hover: var(--color-slate-50);
+  --btn-secondary-bg-active: var(--color-slate-100);
+  --btn-secondary-border: var(--color-slate-300);
+  --btn-secondary-border-hover: var(--color-slate-200);
+  --btn-secondary-border-active: var(--color-slate-500);
+  --btn-secondary-text: var(--color-slate-700);
+  --btn-secondary-text-hover: var(--color-slate-800);
+  --btn-secondary-text-active: var(--color-slate-900);
+  --btn-secondary-ring: var(--color-slate-300);
+
+  /* Button: Ghost */
+  --btn-ghost-bg: var(--color-transparent);
+  --btn-ghost-bg-hover: var(--color-slate-100);
+  --btn-ghost-bg-active: var(--color-slate-200);
+  --btn-ghost-border: var(--color-transparent);
+  --btn-ghost-text: var(--color-slate-700);
+  --btn-ghost-text-hover: var(--color-slate-900);
+  --btn-ghost-ring: var(--color-slate-300);
+
+  /* Button: Danger */
+  --btn-danger-bg: var(--color-red-600);
+  --btn-danger-bg-hover: var(--color-red-500);
+  --btn-danger-bg-active: var(--color-red-700);
+  --btn-danger-border: var(--color-red-600);
+  --btn-danger-border-hover: var(--color-red-500);
+  --btn-danger-border-active: var(--color-red-700);
+  --btn-danger-text: var(--color-white);
+  --btn-danger-ring: var(--color-red-300);
+}
