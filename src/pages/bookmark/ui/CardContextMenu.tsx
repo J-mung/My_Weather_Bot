@@ -1,4 +1,10 @@
 import type { BookmarkItem } from "@/features/bookmark/model/types";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "@/shared/ui/context-menu";
 import { bookmarkPageStyles } from "./styles";
 
 export const CardContextMenu = ({
@@ -28,14 +34,6 @@ export const CardContextMenu = ({
   };
 
   /**
-   * 카드별 컨텍스트 메뉴 토글
-   * @param id
-   */
-  const toggleMenu = (id: string) => {
-    setOpenedMenuId((prev) => (prev === id ? null : id));
-  };
-
-  /**
    * 북마크 삭제 처리
    * @param id
    */
@@ -45,43 +43,38 @@ export const CardContextMenu = ({
   };
 
   return (
-    <div className={bookmarkPageStyles.bookmarkMenuWrap} data-bookmark-menu={"true"}>
-      <button
-        type={"button"}
-        className={bookmarkPageStyles.bookmarkMenuTrigger}
-        onClick={(e) => {
-          e.stopPropagation();
-          toggleMenu(bookmarkItem.id);
-        }}
-        aria-label={"카드 메뉴 열기"}
-        title={"카드 메뉴"}
-      >
-        ⋯
-      </button>
-      {openedMenuId === bookmarkItem.id && (
-        <div className={bookmarkPageStyles.bookmarkMenuPanel}>
-          <button
-            type={"button"}
-            className={bookmarkPageStyles.bookmarkMenuItem}
-            onClick={(e) => {
-              e.stopPropagation();
-              editHandler(bookmarkItem.id, bookmarkItem.alias);
-            }}
-          >
-            별칭 수정
-          </button>
-          <button
-            type={"button"}
-            className={bookmarkPageStyles.bookmarkMenuItemDanger}
-            onClick={(e) => {
-              e.stopPropagation();
-              deleteHandler(bookmarkItem.id);
-            }}
-          >
-            삭제
-          </button>
-        </div>
-      )}
-    </div>
+    <ContextMenu
+      open={openedMenuId === bookmarkItem.id}
+      onOpenChange={(nextOpen) => setOpenedMenuId(nextOpen ? bookmarkItem.id : null)}
+    >
+      <ContextMenuTrigger>
+        <button
+          type={"button"}
+          className={bookmarkPageStyles.bookmarkMenuTrigger}
+          aria-label={"카드 메뉴 열기"}
+          title={"카드 메뉴"}
+        >
+          ⋯
+        </button>
+      </ContextMenuTrigger>
+
+      <ContextMenuContent align={"end"}>
+        <ContextMenuItem
+          onSelect={() => {
+            editHandler(bookmarkItem.id, bookmarkItem.alias);
+          }}
+        >
+          별칭 수정
+        </ContextMenuItem>
+        <ContextMenuItem
+          tone="danger"
+          onSelect={() => {
+            deleteHandler(bookmarkItem.id);
+          }}
+        >
+          삭제
+        </ContextMenuItem>
+      </ContextMenuContent>
+    </ContextMenu>
   );
 };

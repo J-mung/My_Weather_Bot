@@ -1,5 +1,5 @@
 import type { BookmarkItem } from "@/features/bookmark/model/types";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { BookmarkWeatherSummary } from "./BookmarkWeatherSummary";
 import { CardContextMenu } from "./CardContextMenu";
@@ -19,20 +19,6 @@ export const BookmarkCardList = ({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [aliasInput, setAliasInput] = useState<string>("");
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const targetElement = event.target as Element | null;
-      // 컨텍스트 메뉴 내부 클릭이면 클릭된 버튼 핸들러가 닫기 진행
-      if (targetElement?.closest("[data-bookmark-menu='true']")) return;
-      // 컨텍스트 메뉴 외부 클릭이면 메뉴 바로 닫기
-      setOpenedMenuId(null);
-    };
-
-    // 문서 이벤트로 컨텍스트 메뉴 클릭 반응
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
   /**
    * 별칭 편집 저장
