@@ -2,6 +2,7 @@ import type { GridCoord } from "@/entities/weather/model/weatherTypes";
 import { useBookmarks } from "@/features/bookmark/model/useBookmarks";
 import { toDisplayDistrictName } from "@/shared/lib/locationSearch";
 import type { DistrictSearchItem } from "@/shared/lib/locationTypes";
+import { Button } from "@/shared/ui/button/Button";
 import { useNavigate } from "react-router-dom";
 import { searchPageStyles } from "./styles";
 
@@ -18,9 +19,11 @@ export const CandidateList = ({
   const getSelected = (candidateFullName: string): DistrictSearchItem | null => {
     return candidates.find((_candidate) => _candidate.fullName === candidateFullName) ?? null;
   };
+
   const getGridCoordFromSelected = (selected: DistrictSearchItem): GridCoord | null => {
     return selectDistrict(selected);
   };
+
   const onClickCandidate = (candidateFullName: string) => {
     const selected = getSelected(candidateFullName);
     if (!selected) {
@@ -37,6 +40,48 @@ export const CandidateList = ({
     const locationQuery = encodeURIComponent(toDisplayDistrictName(selected));
     navigate(`/?nx=${gridCoord.nx}&ny=${gridCoord.ny}&location=${locationQuery}`);
   };
+
+  const onClickAddBookmark = (
+    e: React.MouseEvent<HTMLButtonElement, MouseEvent>,
+    candidate: DistrictSearchItem,
+  ) => {
+    e.stopPropagation();
+    const selected = getSelected(candidate.fullName);
+
+    if (!selected) {
+      alert("선택된 장소의 정보에 오류가 있습니다. 잠시 후 다시 시도해 주세요.");
+      return;
+    }
+
+    const gridCoord = getGridCoordFromSelected(selected);
+    if (!gridCoord) {
+      alert("해당 장소의 기상 정보가 제공되지 않습니다.");
+      return;
+    }
+
+    const result = addBookmark({
+      displayName: toDisplayDistrictName(candidate),
+      nx: gridCoord.nx,
+      ny: gridCoord.ny,
+    });
+    if (!result.success) {
+      alert(result.message);
+    }
+  };
+
+  const onClickDeleteBookmark = (
+    e: React.MouseEvent<HTMLButtonElement, MouseEvent>,
+    candidate: DistrictSearchItem,
+  ) => {
+    e.stopPropagation();
+    const id = getBookmarkedId(toDisplayDistrictName(candidate));
+    if (!id) {
+      alert("삭제 도중 오류가 발생 했습니다. 잠시 후 다시 시도해 주세요.");
+      return;
+    }
+    deleteBookmark(id);
+  };
+
   return (
     <>
       {candidates.map((_candidate) => (
@@ -51,51 +96,25 @@ export const CandidateList = ({
             </span>
           </div>
           {isBookmarked(toDisplayDistrictName(_candidate)) === true ? (
-            <button
-              type="button"
-              className={`${searchPageStyles.candidateButtonBase} ${searchPageStyles.candidateButtonActive}`}
+            <Button
+              type={"button"}
+              variant={"primary"}
               onClick={(e) => {
-                e.stopPropagation();
-                const bookmarkId = getBookmarkedId(toDisplayDistrictName(_candidate));
-                if (!bookmarkId) {
-                  alert("삭제 도중 오류가 발생 했습니다. 잠시 후 다시 시도해 주세요.");
-                  return;
-                }
-                deleteBookmark(bookmarkId);
+                onClickDeleteBookmark(e, _candidate);
               }}
             >
               <span>★</span>
-            </button>
+            </Button>
           ) : (
-            <button
-              type="button"
-              className={`${searchPageStyles.candidateButtonBase} ${searchPageStyles.candidateButtonInactive}`}
+            <Button
+              type={"button"}
+              variant={"secondary"}
               onClick={(e) => {
-                e.stopPropagation();
-                const selected = getSelected(_candidate.fullName);
-                if (!selected) {
-                  alert("선택된 장소의 정보에 오류가 있습니다. 잠시 후 다시 시도해 주세요.");
-                  return;
-                }
-
-                const gridCoord = getGridCoordFromSelected(selected);
-                if (!gridCoord) {
-                  alert("해당 장소의 정보가 제공되지 않습니다.");
-                  return;
-                }
-
-                const result = addBookmark({
-                  displayName: toDisplayDistrictName(_candidate),
-                  nx: gridCoord.nx,
-                  ny: gridCoord.ny,
-                });
-                if (!result.success) {
-                  alert(result.message);
-                }
+                onClickAddBookmark(e, _candidate);
               }}
             >
               <span>☆</span>
-            </button>
+            </Button>
           )}
         </div>
       ))}

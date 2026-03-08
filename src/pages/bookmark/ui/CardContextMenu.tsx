@@ -1,11 +1,11 @@
 import type { BookmarkItem } from "@/features/bookmark/model/types";
+import Button from "@/shared/ui/button";
 import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuTrigger,
 } from "@/shared/ui/context-menu";
-import { bookmarkPageStyles } from "./styles";
 
 export const CardContextMenu = ({
   openedMenuId,
@@ -48,14 +48,15 @@ export const CardContextMenu = ({
       onOpenChange={(nextOpen) => setOpenedMenuId(nextOpen ? bookmarkItem.id : null)}
     >
       <ContextMenuTrigger>
-        <button
+        <Button
           type={"button"}
-          className={bookmarkPageStyles.bookmarkMenuTrigger}
-          aria-label={"카드 메뉴 열기"}
+          variant={"secondary"}
+          size={"md"}
           title={"카드 메뉴"}
+          aria-label={"카드 메뉴 열기"}
         >
           ⋯
-        </button>
+        </Button>
       </ContextMenuTrigger>
 
       <ContextMenuContent align={"end"}>
