@@ -18,12 +18,12 @@ export const useLocationSearch = (): {
   selectedDistrict: DistrictSearchItem | null;
   selectedGridCoord: GridCoord | null;
   errorMessage: string | null;
-  setInput: (value: string) => void;
+  setInput: React.Dispatch<React.SetStateAction<string>>;
   runSearch: () => void;
   selectDistrict: (district: DistrictSearchItem) => GridCoord | null;
   clearSelection: () => void;
 } => {
-  const [input, setInput] = useState("");
+  const [input, setInput] = useState<string>("");
   const [candidates, setCandidates] = useState<DistrictSearchItem[]>([]);
   const [selectedDistrict, setSelectedDistrict] = useState<DistrictSearchItem | null>(null);
   const [selectedGridCoord, setSelectedGridCoord] = useState<GridCoord | null>(null);

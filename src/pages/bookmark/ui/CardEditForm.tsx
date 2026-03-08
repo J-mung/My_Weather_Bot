@@ -1,4 +1,5 @@
 import Button from "@/shared/ui/button";
+import { Input } from "@/shared/ui/input/Input";
 import { useEffect, useRef } from "react";
 import { bookmarkEditStyles } from "./styles";
 
@@ -23,19 +24,23 @@ export const CardEditForm = ({
 
   return (
     <div className={bookmarkEditStyles.bookmarkEditForm}>
-      <input
-        type={"text"}
-        className={bookmarkEditStyles.bookmarkEditInput}
+      <Input
         ref={inputRef}
-        maxLength={20}
-        placeholder={"별칭 입력 (최대 20자)"}
         value={aliasInput}
+        type={"text"}
+        maxLength={20}
+        variant={aliasInput.length > 19 ? "error" : "default"}
+        placeholder={"별칭 입력 (최대 20자)"}
         onClick={(e) => {
           e.stopPropagation();
         }}
         onChange={(e) => {
-          e.stopPropagation();
           setAliasInput(e.currentTarget.value);
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            saveEdit();
+          }
         }}
       />
       <div className={bookmarkEditStyles.bookmarkEditButtonList}>

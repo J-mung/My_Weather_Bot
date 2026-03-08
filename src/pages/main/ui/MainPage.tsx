@@ -2,6 +2,7 @@ import type { GridCoord } from "@/entities/weather/model/weatherTypes";
 import type { BookmarkItem } from "@/features/bookmark/model/types";
 import { readBookmarkFromStorage } from "@/features/bookmark/model/useBookmarks";
 import { useCurrentTemperature } from "@/features/get-current-weather/model/useCurrentTemperature";
+import { Input } from "@/shared/ui/input/Input";
 import { useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { HourlyInfoCard } from "./HourlyInfoCard";
@@ -48,17 +49,15 @@ export default function MainPage() {
   return (
     <div className={mainPageStyles.page}>
       <div className={mainPageStyles.searchWrap}>
-        <input
-          id="districtSearch"
-          aria-label="검색어 입력"
-          className={mainPageStyles.searchInput}
-          placeholder="검색어 입력..."
-          type="text"
-          readOnly
+        <Input
           value={displayDistrict}
+          aria-label={"검색어 입력"}
+          variant={"default"}
+          placeholder={"검색어 입력..."}
           onClick={() => {
             navigate("/search", { replace: true });
           }}
+          readOnly
         />
       </div>
       <div className={mainPageStyles.dailySummary}>
