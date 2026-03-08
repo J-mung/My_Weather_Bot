@@ -6,6 +6,7 @@ import {
   ContextMenuItem,
   ContextMenuTrigger,
 } from "@/shared/ui/context-menu";
+import { Icon } from "@/shared/ui/icon";
 
 export const CardContextMenu = ({
   openedMenuId,
@@ -50,12 +51,12 @@ export const CardContextMenu = ({
       <ContextMenuTrigger>
         <Button
           type={"button"}
-          variant={"secondary"}
-          size={"md"}
+          variant={"ghost"}
+          size={"sm"}
           title={"카드 메뉴"}
           aria-label={"카드 메뉴 열기"}
         >
-          ⋯
+          <Icon name={"moreHoriz"} size={"lg"} tone={"default"} />
         </Button>
       </ContextMenuTrigger>
 
@@ -65,7 +66,8 @@ export const CardContextMenu = ({
             editHandler(bookmarkItem.id, bookmarkItem.alias);
           }}
         >
-          별칭 수정
+          <Icon name={"edit"} size={"lg"} />
+          <span>별칭 수정</span>
         </ContextMenuItem>
         <ContextMenuItem
           tone="danger"
@@ -73,7 +75,8 @@ export const CardContextMenu = ({
             deleteHandler(bookmarkItem.id);
           }}
         >
-          삭제
+          <Icon name={"delete"} size={"lg"} />
+          <span>삭제</span>
         </ContextMenuItem>
       </ContextMenuContent>
     </ContextMenu>

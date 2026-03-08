@@ -40,4 +40,10 @@
   --btn-danger-border-active: var(--color-red-700);
   --btn-danger-text: var(--color-white);
   --btn-danger-ring: var(--color-red-300);
+
+  /* Icon tone */
+  --icon-default: var(--text-sub);
+  --icon-subtle: var(--text-muted);
+  --icon-brand: var(--accent-strong);
+  --icon-danger: var(--danger);
 }

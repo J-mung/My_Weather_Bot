@@ -3,6 +3,7 @@ import { useBookmarks } from "@/features/bookmark/model/useBookmarks";
 import { toDisplayDistrictName } from "@/shared/lib/locationSearch";
 import type { DistrictSearchItem } from "@/shared/lib/locationTypes";
 import { Button } from "@/shared/ui/button/Button";
+import { Icon } from "@/shared/ui/icon";
 import { useNavigate } from "react-router-dom";
 import { searchPageStyles } from "./styles";
 
@@ -99,21 +100,23 @@ export const CandidateList = ({
             <Button
               type={"button"}
               variant={"primary"}
+              title={"북마크 삭제"}
               onClick={(e) => {
                 onClickDeleteBookmark(e, _candidate);
               }}
             >
-              <span>★</span>
+              <Icon name={"bookmard"} size={"lg"} />
             </Button>
           ) : (
             <Button
               type={"button"}
               variant={"secondary"}
+              title={"북마크 추가"}
               onClick={(e) => {
                 onClickAddBookmark(e, _candidate);
               }}
             >
-              <span>☆</span>
+              <Icon name={"bookmarkAdd"} size={"lg"} tone={"brand"} />
             </Button>
           )}
         </div>
