@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ContextMenuContext } from "./context-menu.context";
 import type { ContextMenuProps } from "./context-menu.types";
 
 export const ContextMenu = ({
