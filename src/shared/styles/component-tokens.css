@@ -16,7 +16,7 @@
   --btn-secondary-bg-active: var(--color-slate-100);
   --btn-secondary-border: var(--color-slate-300);
   --btn-secondary-border-hover: var(--color-slate-200);
-  --btn-secondary-border-active: var(--color-slate-500);
+  --btn-secondary-border-active: var(--color-slate-200);
   --btn-secondary-text: var(--color-slate-700);
   --btn-secondary-text-hover: var(--color-slate-800);
   --btn-secondary-text-active: var(--color-slate-900);
@@ -46,4 +46,16 @@
   --icon-subtle: var(--text-muted);
   --icon-brand: var(--accent-strong);
   --icon-danger: var(--danger);
+
+  /* Context Menu Item */
+  --context-menu-item-default-bg: var(--color-white);
+  --context-menu-item-default-bg-hover: var(--color-slate-100);
+  --context-menu-item-default-bg-active: var(--color-slate-200);
+  --context-menu-item-default-ring-focus: var(--color-slate-200);
+  --context-menu-item-default-text: var(--text-main);
+  --context-menu-item-danger-bg: var(--color-white);
+  --context-menu-item-danger-bg-hover: var(--color-red-50);
+  --context-menu-item-danger-bg-active: var(--color-red-100);
+  --context-menu-item-danger-ring-focus: var(--color-red-200);
+  --context-menu-item-danger-text: var(--color-red-600);
 }

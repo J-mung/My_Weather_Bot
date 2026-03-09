@@ -4,39 +4,26 @@
 
 :root {
   /* core */
-  --bg: #f3f6fb;
-  --surface: #ffffff;
-  --surface-soft: #f8fafc;
-  --line: #dbe3ef;
+  --bg: var(--color-bg);
+  --surface: var(--color-white);
+  --surface-soft: var(--color-slate-50);
+  --line: var(--color-line);
 
   /* text */
-  --text-main: #0f172a;
-  --text-sub: #64748b;
-  --text-muted: #94a3b8;
-
-  /* color */
-  --blue-50: #eff6ff;
-  --blue-100: #dbeafe;
-  --blue-200: #bfdbfe;
-  --blue-300: #93c5fd;
-  --blue-400: #60a5fa;
-  --blue-500: #3b82f6;
-  --blue-600: #2563eb;
-  --blue-700: #1d4ed8;
-  --blue-800: #1e40af;
-  --blue-900: #1e3a8a;
-  --blue-950: #172554;
+  --text-main: var(--color-slate-900);
+  --text-sub: var(--color-slate-500);
+  --text-muted: var(--color-slate-400);
 
   /* brand */
-  --accent: var(--blue-500);
-  --accent-strong: var(--blue-600);
-  --accent-hover: var(--blue-200);
-  --accent-soft: var(--blue-100);
+  --accent: var(--color-blue-500);
+  --accent-strong: var(--color-blue-600);
+  --accent-hover: var(--color-blue-200);
+  --accent-soft: var(--color-blue-100);
 
   /* state */
-  --success: #16a34a;
-  --warning: #f59e0b;
-  --danger: #ef4444;
+  --success: var(--color-green-600);
+  --warning: var(--color-amber-500);
+  --danger: var(--color-red-500);
 
   /* shadow */
   --shadow-soft: 0 8px 24px rgba(15, 23, 42, 0.08);
@@ -58,7 +45,7 @@ body {
   margin: 0;
   color: var(--text-main);
   background:
-    radial-gradient(circle at 0% 0%, #ffffff 0%, transparent 38%),
-    radial-gradient(circle at 100% 100%, #e9f1ff 0%, transparent 44%), var(--bg);
+    radial-gradient(circle at 0% 0%, var(--color-bg-glow-start) 0%, transparent 38%),
+    radial-gradient(circle at 100% 100%, var(--color-bg-glow-end) 0%, transparent 44%), var(--bg);
   font-family: "Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", "Segoe UI", sans-serif;
 }

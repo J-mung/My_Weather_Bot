@@ -44,6 +44,7 @@ export const contextMenuItemVariants = cva(
     "w-full",
     "items-center",
     "justify-start",
+    "mb-1",
     "gap-2",
     "rounded-lg",
     "px-3",
@@ -53,16 +54,34 @@ export const contextMenuItemVariants = cva(
     "font-semibold",
     "transition",
     "cursor-pointer",
+    // Active
+    "active:scale-95",
+    "cursor-pointer",
+    // Focus
     "focus-visible:outline-none",
     "focus-visible:ring-2",
+    // Disabled
     "disabled:pointer-events-none",
     "disabled:opacity-50",
+    "disabled:cursor-not-allowed",
   ],
   {
     variants: {
       tone: {
-        default: ["text-[var(--text-main)]", "hover:bg-slate-100", "focus-visible:ring-slate-200"],
-        danger: ["text-red-600", "hover:bg-red-50", "focus-visible:ring-red-200"],
+        default: [
+          "text-[var(--context-menu-item-default-text)]",
+          "bg-[var(--context-menu-item-default-bg)]",
+          "hover:bg-[var(--context-menu-item-default-bg-hover)]",
+          "active:bg-[var(--context-menu-item-default-bg-active)]",
+          "focus-visible:ring-[var(--context-menu-item-default-ring-focus)]",
+        ],
+        danger: [
+          "text-[var(--context-menu-item-danger-text)]",
+          "bg-[var(--context-menu-item-danger-bg)]",
+          "hover:bg-[var(--context-menu-item-danger-bg-hover)]",
+          "active:bg-[var(--context-menu-item-danger-bg-active)]",
+          "focus-visible:ring-[var(--context-menu-item-danger-ring-focus)]",
+        ],
       },
       inset: {
         true: ["pl-8"],
