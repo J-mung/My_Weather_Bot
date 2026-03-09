@@ -1,7 +1,7 @@
 import { cn } from "@/shared/lib/cn";
 import type { ContextMenuTriggerProps } from "./context-menu.types";
 import { contextMenuTriggerVariants } from "./context-menu.variants";
-import { useContextMenu } from "./ContextMenu";
+import { useContextMenu } from "./use-context-menu";
 
 export const ContextMenuTrigger = ({
   className,

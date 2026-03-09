@@ -1,7 +1,7 @@
 import { cn } from "@/shared/lib/cn";
 import type { ContextMenuContentProps } from "./context-menu.types";
 import { contextMenuContentVariants } from "./context-menu.variants";
-import { useContextMenu } from "./ContextMenu";
+import { useContextMenu } from "./use-context-menu";
 
 export const ContextMenuContent = ({
   className,

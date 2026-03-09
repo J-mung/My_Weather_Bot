@@ -1,31 +1,5 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ContextMenuProps } from "./context-menu.types";
-
-// Context menu 열림 상태를 각 구성요소들이 공유 하기 위해 useContext
-type ContextMenuContextValue = {
-  open: boolean;
-  setOpen: (open: boolean) => void;
-};
-
-const ContextMenuContext = createContext<ContextMenuContextValue | null>(null);
-
-export const useContextMenu = () => {
-  const context = useContext(ContextMenuContext);
-
-  if (!context) {
-    throw new Error("ContextMenu components mush be used within ContextMenu.");
-  }
-
-  return context;
-};
 
 export const ContextMenu = ({
   open,
