@@ -1,5 +1,5 @@
 import { useBookmarks } from "@/features/bookmark/model/useBookmarks";
-import { BookmarkCardList } from "./BookmarkCardList";
+import { BookmarkCardList } from "./card/BookmarkCardList";
 import { bookmarkPageStyles } from "./styles";
 
 export default function BookmarkPage() {

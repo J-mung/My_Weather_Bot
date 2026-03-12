@@ -15,7 +15,6 @@ export const buttonVariants = cva(
     "active:scale-95",
     "cursor-pointer",
     // Disabled
-    "disabled:pointer-events-none",
     "disabled:opacity-50",
     "disabled:cursor-not-allowed",
     // Focus

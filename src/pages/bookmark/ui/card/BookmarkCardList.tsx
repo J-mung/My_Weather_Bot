@@ -1,10 +1,11 @@
 import type { BookmarkItem } from "@/features/bookmark/model/types";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { BookmarkWeatherSummary } from "./BookmarkWeatherSummary";
+import { BookmarkWeatherSummary } from "../BookmarkWeatherSummary";
+import { bookmarkPageStyles } from "../styles";
+import { BookmarkCard } from "./BookmarkCard";
 import { CardContextMenu } from "./CardContextMenu";
 import { CardEditForm } from "./CardEditForm";
-import { bookmarkPageStyles } from "./styles";
 
 export const BookmarkCardList = ({
   bookmarkList,
@@ -53,53 +54,41 @@ export const BookmarkCardList = ({
           const title = _bookmark.alias || locationLabel;
 
           return (
-            <div
+            <BookmarkCard
               key={_bookmark.id}
-              className={bookmarkPageStyles.bookmarkCard}
+              title={title}
+              locationLabel={locationLabel}
+              nx={_bookmark.nx}
+              ny={_bookmark.ny}
+              isEditing={isEditing}
               onClick={(e) => {
                 e.stopPropagation();
                 navigate(`/?id=${_bookmark.id}`);
               }}
-            >
-              {!isEditing ? (
-                <>
-                  <div className={bookmarkPageStyles.bookmarkCardHeader}>
-                    <div>
-                      <span className={bookmarkPageStyles.bookmarkCardTitle}>{title}</span>
-                      <span className={bookmarkPageStyles.bookmarkCardLocation}>
-                        {locationLabel}
-                      </span>
-                    </div>
-                    <div className={bookmarkPageStyles.bookmarkCardCaption}>
-                      <span className={bookmarkPageStyles.bookmarkCardTemp}>
-                        nx: {_bookmark.nx}, ny: {_bookmark.ny}
-                      </span>
-                    </div>
-                  </div>
-                  <BookmarkWeatherSummary nx={_bookmark.nx} ny={_bookmark.ny} />
-                  <div className={bookmarkPageStyles.bookmarkCardAction}>
-                    <CardContextMenu
-                      openedMenuId={openedMenuId}
-                      bookmarkItem={_bookmark}
-                      setOpenedMenuId={setOpenedMenuId}
-                      setEditingId={setEditingId}
-                      setAliasInput={setAliasInput}
-                      deleteBookmark={deleteBookmark}
-                    />
-                  </div>
-                </>
-              ) : (
+              summary={<BookmarkWeatherSummary nx={_bookmark.nx} ny={_bookmark.ny} />}
+              actions={
+                <CardContextMenu
+                  openedMenuId={openedMenuId}
+                  bookmarkItem={_bookmark}
+                  setOpenedMenuId={setOpenedMenuId}
+                  setEditingId={setEditingId}
+                  setAliasInput={setAliasInput}
+                  deleteBookmark={deleteBookmark}
+                />
+              }
+              editForm={
                 <CardEditForm
                   aliasInput={aliasInput}
                   setAliasInput={setAliasInput}
                   saveEdit={saveEdit}
                   cancelEdit={cancelEdit}
                 />
-              )}
-            </div>
+              }
+            ></BookmarkCard>
           );
         })}
       </div>
+      <div></div>
     </>
   );
 };

@@ -1,7 +1,7 @@
 import Button from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input/Input";
 import { useEffect, useRef } from "react";
-import { bookmarkEditStyles } from "./styles";
+import { bookmarkEditStyles } from "../styles";
 
 export const CardEditForm = ({
   aliasInput,
