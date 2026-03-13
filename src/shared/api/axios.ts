@@ -1,12 +1,19 @@
 import type { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from "axios";
 import axios from "axios";
 
+const API_BASE_URL = {
+  weather: "/api",
+  kakao: "/api/kakao",
+} as const;
+
+export type ApiClientName = keyof typeof API_BASE_URL;
+
 /**
  * 공통 Axios 인스턴스
  */
-const createAxiosInstance = (): AxiosInstance => {
+const createAxiosInstance = (baseURL: string): AxiosInstance => {
   const instance = axios.create({
-    baseURL: "/api",
+    baseURL,
     timeout: 5000,
   });
 
@@ -38,4 +45,11 @@ const createAxiosInstance = (): AxiosInstance => {
   return instance;
 };
 
-export const axiosInstance: AxiosInstance = createAxiosInstance();
+const apiClients: Record<ApiClientName, AxiosInstance> = {
+  weather: createAxiosInstance(API_BASE_URL.weather),
+  kakao: createAxiosInstance(API_BASE_URL.kakao),
+};
+
+export const getApiClient = (name: ApiClientName): AxiosInstance => {
+  return apiClients[name];
+};

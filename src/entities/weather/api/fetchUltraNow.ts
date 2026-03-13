@@ -1,6 +1,8 @@
 import type { RequestWeatherParams } from "@/entities/weather/model/requestWeatherParams";
-import { axiosInstance } from "@/shared/api/axios";
+import { getApiClient } from "@/shared/api/axios";
 import type { UltraNowResponseType } from "./weatherApiTypes";
+
+const weatherApiClient = getApiClient("weather");
 
 /**
  * 초단기실황 fetch 요청 API
@@ -10,7 +12,7 @@ import type { UltraNowResponseType } from "./weatherApiTypes";
 export const fetchUltraNow = async (
   params: RequestWeatherParams,
 ): Promise<UltraNowResponseType> => {
-  const response = await axiosInstance.get("/getUltraSrtNcst", {
+  const response = await weatherApiClient.get("/getUltraSrtNcst", {
     params: {
       ...params,
       numOfRows: 10,

@@ -1,6 +1,8 @@
 interface Env {
   API_BASE_URL: string;
   API_KEY: string;
+  KAKAO_REST_API_KEY: string;
+  KAKAO_LOCAL_API_BASE_URL: string;
   ASSETS: {
     fetch: (request: Request) => Promise<Response>;
   };
@@ -14,6 +16,7 @@ interface Env {
  */
 const ALLOWED_ENDPOINTS = new Set(["getUltraSrtNcst", "getVilageFcst"]);
 const API_PREFIX = "/api/";
+const KAKAO_PREFIX = "/api/kakao/";
 
 /**
  * 브라우저 CORS 처리를 위한 공통 응답 헤더 생성
@@ -52,6 +55,33 @@ const buildUpstreamUrl = (request: Request, env: Env, endpoint: string): URL => 
 
   if (!upstreamUrl.searchParams.has("dataType")) {
     upstreamUrl.searchParams.set("dataType", "JSON");
+  }
+
+  return upstreamUrl;
+};
+
+const buildKakaoCoord2RegionUrl = (request: Request, env: Env): URL => {
+  const incomingUrl = new URL(request.url);
+  const baseUrl = env.KAKAO_LOCAL_API_BASE_URL || "https://dapi.kakao.com";
+  const upstreamUrl = new URL("/v2/local/geo/coord2regioncode.json", baseUrl);
+
+  const x = incomingUrl.searchParams.get("x");
+  const y = incomingUrl.searchParams.get("y");
+
+  if (!x || !y) {
+    throw new Error("Missing x or y query parameter.");
+  }
+
+  upstreamUrl.searchParams.set("x", x);
+  upstreamUrl.searchParams.set("y", y);
+
+  if (incomingUrl.searchParams.has("input_coord")) {
+    upstreamUrl.searchParams.set(
+      "input_coord",
+      incomingUrl.searchParams.get("input_coord") ?? "WGS84",
+    );
+  } else {
+    upstreamUrl.searchParams.set("input_coord", "WGS84");
   }
 
   return upstreamUrl;
@@ -105,6 +135,51 @@ const handleApiRequest = async (request: Request, env: Env): Promise<Response> =
   );
 };
 
+const handleKakaoApiRequest = async (request: Request, env: Env): Promise<Response> => {
+  const origin = request.headers.get("Origin") ?? "";
+
+  if (request.method === "OPTIONS") {
+    return new Response(null, withCors(origin, { status: 204 }));
+  }
+
+  if (request.method !== "GET") {
+    return new Response("Method Not Allowed", withCors(origin, { status: 405 }));
+  }
+
+  if (!env.KAKAO_REST_API_KEY) {
+    return new Response("Missing API env: KAKAO_REST_API_KEY", withCors(origin, { status: 500 }));
+  }
+
+  let upstreamUrl: URL;
+  try {
+    upstreamUrl = buildKakaoCoord2RegionUrl(request, env);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Invalid request";
+    return new Response(message, withCors(origin, { status: 400 }));
+  }
+
+  const upstreamRes = await fetch(upstreamUrl.toString(), {
+    method: "GET",
+    headers: {
+      Authorization: `KakaoAK ${env.KAKAO_REST_API_KEY}`,
+    },
+  });
+
+  const body = await upstreamRes.text();
+
+  return new Response(
+    body,
+    withCors(origin, {
+      status: upstreamRes.status,
+      headers: {
+        "Content-Type":
+          upstreamRes.headers.get("Content-Type") ?? "application/json; charset=utf-8",
+        "Cache-Control": "no-store",
+      },
+    }),
+  );
+};
+
 /**
  * 정적 자산 서빙
  * - 요청 파일이 없으면(SPA 라우팅) index.html fallback 반환
@@ -133,6 +208,10 @@ export default {
    */
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
+
+    if (url.pathname.startsWith(KAKAO_PREFIX)) {
+      return handleKakaoApiRequest(request, env);
+    }
 
     if (url.pathname.startsWith(API_PREFIX)) {
       return handleApiRequest(request, env);
