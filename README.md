@@ -38,6 +38,7 @@ npm run dev:worker
 ## 구현한 기능 설명
 
 ### 1) 현재 위치/선택 위치 날씨 조회
+
 <img width="1451" height="824" alt="image" src="https://github.com/user-attachments/assets/1978957f-fe38-47a6-bd55-92bebbc2c825" />
 
 - #1 입력창을 클릭하여 검색 화면으로 이동합니다.
@@ -47,6 +48,7 @@ npm run dev:worker
 - #3 시간대별 기온을 조회합니다.
 
 ### 2) 지역 검색
+
 <img width="1451" height="824" alt="image" src="https://github.com/user-attachments/assets/393d5776-a836-4e25-9c55-fade7619540f" />
 
 - #1 시/군/구/동 단위 키워드로 지역 검색을 지원합니다.
@@ -58,6 +60,7 @@ npm run dev:worker
 - 일치하는 검색 결과가 없을 경우 메세지로 안내합니다.
 
 ### 3) 북마크
+
 <img width="1451" height="824" alt="image" src="https://github.com/user-attachments/assets/cc07dd42-8034-43ca-a2cc-e065d95059fe" />
 
 - #1 북마크에 대한 정보를 카드형태로 제공합니다.
@@ -67,7 +70,7 @@ npm run dev:worker
   - 지역명/별칭
   - 기상청 좌표(nx, ny)
   - 날씨 정보 (현재 기온, 최고/최저 기온)
-- #3 북마크를 편집, 삭제할 수 있는 컨텍스트 메뉴 버튼입니다.   
+- #3 북마크를 편집, 삭제할 수 있는 컨텍스트 메뉴 버튼입니다.
 
 <img width="1451" height="824" alt="image" src="https://github.com/user-attachments/assets/2e9e6885-08cd-4ec4-b6db-d06583032e69" />
 
