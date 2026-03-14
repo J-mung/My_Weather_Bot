@@ -1,4 +1,4 @@
-import type { GridCoord } from "@/entities/weather/model/weatherTypes";
+import type { GridCoord } from "@/entities/weather/model/weather.types";
 import { useCurrentTemperature } from "@/features/get-current-weather/model/useCurrentTemperature";
 import { bookmarkSummaryStyles } from "./styles";
 
@@ -36,7 +36,7 @@ export const BookmarkWeatherSummary = ({ nx, ny }: GridCoord) => {
     <div className={bookmarkSummaryStyles.summaryWrap}>
       <div className={"flex items-center justify-between"}>
         <p className={bookmarkSummaryStyles.summaryMainContent}>
-          {formatTemperature(data.current)}
+          {formatTemperature(data.temperature)}
         </p>
       </div>
       <p className={bookmarkSummaryStyles.summarySubContent}>
