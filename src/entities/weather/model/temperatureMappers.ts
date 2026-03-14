@@ -1,9 +1,11 @@
 import type {
   ShortFcstItemType,
   ShortFcstResponseType,
+  UltraFcstResponseType,
   UltraNowResponseType,
-} from "@/entities/weather/api/weatherApiTypes";
-import type { TemperatureSummary } from "@/entities/weather/model/weatherTypes";
+} from "@/entities/weather/api/weather-api.types";
+import type { TemperatureSummary } from "@/entities/weather/model/weather.types";
+import { mapPtyToCondition, mapSkyToCondition } from "@/entities/weather/model/weatherCondition";
 /**
  *
  * @param yyyymmdd
@@ -53,6 +55,40 @@ const toNumber = (value: string | undefined, fallback = 0): number => {
   return Number.isFinite(parsed) ? parsed : fallback;
 };
 
+/**
+ * 초단기예보에서 특정 카테고리(SKY, PTY)의 값 중
+ * 현재 시각 이후와 가장 가까운 예보값을 반환
+ *
+ * 현재 기상상태 판단 시에는 강수형태(PTY)를 우선 확인하고,
+ * 강수형태가 없을 때만 하늘상태(SKY)를 사용
+ *
+ * 이 함수는 우선순위를 결정하지 않고
+ * 전달받은 category에 해당하는 가장 가까운 예보값만 찾는 보조 함수
+ * @param forecast
+ * @param category
+ * @param observationDT
+ * @returns
+ */
+const getNearestForecastValue = (
+  forecast: UltraFcstResponseType,
+  category: "SKY" | "PTY",
+  observationDT: Date,
+): number | null => {
+  const candidates = forecast.response.body.items.item
+    .filter((_item) => _item.category === category)
+    .map((_item) => ({
+      date: parseDateTime(_item.fcstDate, _item.fcstTime),
+      value: toNumber(_item.fcstValue, 0),
+    }))
+    .filter((_item) => _item.date !== null)
+    .sort((a, b) => a.date!.getTime() - b.date!.getTime());
+
+  const nearest =
+    candidates.find((_item) => _item.date!.getTime() >= observationDT.getTime()) ?? candidates[0];
+
+  return nearest ? nearest.value : null;
+};
+
 const formatYmd = (date: Date): string => {
   const yyyy = date.getFullYear();
   const mm = String(date.getMonth() + 1).padStart(2, "0");
@@ -61,14 +97,20 @@ const formatYmd = (date: Date): string => {
 };
 
 /**
- * 현재 기온 반환
+ * 현재 기온/습도 반환
  * @param now API 응답
  * @returns
  */
-export const getCurrentTemperature = (now: UltraNowResponseType): number => {
+export const getCurrentTemperature = (
+  now: UltraNowResponseType,
+): { temperature: number; humidity: number } => {
   const items = now.response.body.items.item;
   const t1h = items.find((_item) => _item.category === "T1H");
-  return toNumber(t1h?.obsrValue, 0); // 값이 없을 때는 0 fallback
+  const reh = items.find((_item) => _item.category === "REH");
+  return {
+    temperature: toNumber(t1h?.obsrValue, 0),
+    humidity: toNumber(reh?.obsrValue, 0),
+  }; // 값이 없을 때는 0 fallback
 };
 
 /**
@@ -84,6 +126,44 @@ export const getObservationDateTime = (now: UltraNowResponseType): Date | null =
   }
 
   return parseDateTime(first.baseDate, first.baseTime);
+};
+
+/**
+ * 현재 기상 상태 반환
+ * - 강수 상태를 우선적으로 사용(초단기실황, 초단기예보)
+ * - 강수 상태가 없으면 하늘 상태를 사용(초단기예보)
+ */
+export const getCurrentCondition = (
+  now: UltraNowResponseType,
+  ultraForecast: UltraFcstResponseType,
+  observationDT: Date = new Date(),
+) => {
+  // 실황에 강수 정보가 있으면 가장 우선한다.
+  const currentPty = toNumber(
+    now.response.body.items.item.find((_item) => _item.category === "PTY")?.obsrValue,
+    0,
+  );
+
+  if (currentPty !== 0) {
+    return mapPtyToCondition(currentPty);
+  }
+
+  // 실황에 강수 정보가 없으면 가장 가까운 초단기예보 강수 정보를 사용한다.
+  const forecastPty = getNearestForecastValue(ultraForecast, "PTY", observationDT) ?? 0;
+
+  if (forecastPty !== 0) {
+    return mapPtyToCondition(forecastPty);
+  }
+
+  // 강수 정보가 모두 없을 때만 하늘 상태를 사용한다.
+  const sky = getNearestForecastValue(ultraForecast, "SKY", observationDT);
+
+  if (sky === null) {
+    // SKY도 없으면 현재 상태를 확정할 수 없으므로 중립 상태를 반환한다.
+    return "unavailable";
+  }
+
+  return mapSkyToCondition(sky);
 };
 
 /**
@@ -132,7 +212,8 @@ export const getTemperatureSummary = (
     .filter((_item) => _item.fcstDate === targetDate)
     .map((_item) => toNumber(_item.fcstValue, 0));
 
-  const fallbackValues = todayTmpValues.length > 0 ? todayTmpValues : hourly.map((_hour) => _hour.temp);
+  const fallbackValues =
+    todayTmpValues.length > 0 ? todayTmpValues : hourly.map((_hour) => _hour.temp);
 
   const todayMin =
     todayTmnValues.length > 0

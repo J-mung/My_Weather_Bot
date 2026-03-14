@@ -1,5 +1,5 @@
 import type { RequestWeatherParams } from "@/entities/weather/model/requestWeatherParams";
-import type { BaseDateTime, GridCoord } from "@/entities/weather/model/weatherTypes";
+import type { BaseDateTime, GridCoord } from "@/entities/weather/model/weather.types";
 import { convertToGridCoord } from "@/shared/lib/convertToGridcoord";
 import { getUserLocation } from "@/shared/lib/userLocation";
 

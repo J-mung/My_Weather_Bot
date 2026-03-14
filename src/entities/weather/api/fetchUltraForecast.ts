@@ -1,22 +1,20 @@
 import type { RequestWeatherParams } from "@/entities/weather/model/requestWeatherParams";
 import { getApiClient } from "@/shared/api/axios";
-import type { UltraNowResponseType } from "./weather-api.types";
+import type { UltraFcstResponseType } from "./weather-api.types";
 
 const weatherApiClient = getApiClient("weather");
 
 /**
- * 초단기실황 fetch 요청 API
- * @param gridCoord
- * @returns
+ * 초단기예보 fetch
  */
-export const fetchUltraNow = async (
+export const fetchUltraForecast = async (
   params: RequestWeatherParams,
-): Promise<UltraNowResponseType> => {
-  const response = await weatherApiClient.get("/getUltraSrtNcst", {
+): Promise<UltraFcstResponseType> => {
+  const response = await weatherApiClient.get("/getUltraSrtFcst", {
     params: {
       ...params,
-      numOfRows: 10,
       pageNo: 1,
+      numOfRows: 100,
       dataType: "JSON",
     },
   });

@@ -1,6 +1,6 @@
 import type { RequestWeatherParams } from "@/entities/weather/model/requestWeatherParams";
 import { getApiClient } from "@/shared/api/axios";
-import type { ShortFcstResponseType } from "./weatherApiTypes";
+import type { ShortFcstResponseType } from "./weather-api.types";
 
 const weatherApiClient = getApiClient("weather");
 

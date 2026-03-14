@@ -1,4 +1,4 @@
-import type { GridCoord } from "@/entities/weather/model/weatherTypes";
+import type { GridCoord } from "@/entities/weather/model/weather.types";
 import {
   buildDistrictSearchIndex,
   getGridCoordByDistrictName,

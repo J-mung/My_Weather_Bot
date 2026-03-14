@@ -1,4 +1,4 @@
-import type { SummaryDomain } from "@/entities/weather/model/weatherTypes";
+import type { SummaryDomain } from "@/entities/weather/model/weather.types";
 
 export const HourlyInfoCard = ({
   data,

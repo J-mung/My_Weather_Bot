@@ -1,5 +1,5 @@
 import { fetchRegionNameFromCoord } from "@/entities/kakao/api/fetchRegionNameFromCoord";
-import type { GridCoord } from "@/entities/weather/model/weatherTypes";
+import type { GridCoord } from "@/entities/weather/model/weather.types";
 import type { BookmarkItem } from "@/features/bookmark/model/types";
 import { readBookmarkFromStorage } from "@/features/bookmark/model/useBookmarks";
 import { useCurrentTemperature } from "@/features/get-current-weather/model/useCurrentTemperature";
@@ -48,6 +48,7 @@ export default function MainPage() {
   const { data, isFetching, error } = useCurrentTemperature(param);
   const navigate = useNavigate();
   const [currentRegionName, setCurrentRegionName] = useState("");
+  const [currentRegionError, setCurrentRegionError] = useState("");
 
   useEffect(() => {
     if (displayDistrict) {
@@ -60,14 +61,15 @@ export default function MainPage() {
       try {
         const userLocation = await getUserLocation();
         const regionName = await fetchRegionNameFromCoord(userLocation);
-
         if (!ignore) {
           setCurrentRegionName(regionName);
+          setCurrentRegionError("");
         }
       } catch (fetchError) {
         if (!ignore) {
-          console.error("현재 위치의 지역명을 불러오지 못했습니다.", fetchError);
+          console.warn("현재 위치의 지역명을 불러오지 못했습니다.", fetchError);
           setCurrentRegionName("");
+          setCurrentRegionError("현재 위치를 확인하지 못했습니다. 검색으로 지역을 선택해 주세요.");
         }
       }
     };
@@ -95,12 +97,18 @@ export default function MainPage() {
           }}
           readOnly
         />
+        {currentRegionError && !displayDistrict && (
+          <p className={mainPageStyles.searchStatus}>{currentRegionError}</p>
+        )}
       </div>
       <div className={mainPageStyles.dailySummary}>
-        <h1 className={"text-xl font-bold mb-3"}>{aliasLabel || "현재 위치"}</h1>
         <div className={mainPageStyles.section}>
-          <h2 className={mainPageStyles.sectionTitle}>기온 요약</h2>
-          <NowInfoCard data={data} isFetching={isFetching} error={error} />
+          <NowInfoCard
+            district={aliasLabel || "알 수 없음"}
+            data={data}
+            isFetching={isFetching}
+            error={error}
+          />
         </div>
         <div className={mainPageStyles.section}>
           <h2 className={mainPageStyles.sectionTitle}>시간대별 날씨</h2>

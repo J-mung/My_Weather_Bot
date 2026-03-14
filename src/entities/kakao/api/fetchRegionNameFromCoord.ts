@@ -1,4 +1,4 @@
-import type { LatLon } from "@/entities/weather/model/weatherTypes";
+import type { LatLon } from "@/entities/weather/model/weather.types";
 import { getApiClient } from "@/shared/api/axios";
 import type { KakaoCoord2RegionResponse } from "./types";
 

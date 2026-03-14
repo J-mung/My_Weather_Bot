@@ -1,4 +1,4 @@
-import type { BaseDateTime } from "@/entities/weather/model/weatherTypes";
+import type { BaseDateTime } from "@/entities/weather/model/weather.types";
 
 /**
  * 기상청 초단기실황용 base_date, base_time 계산
@@ -20,6 +20,31 @@ export const getUltraSrtNcstBaseDateTime = (now: Date = new Date()): BaseDateTim
   return {
     base_date: `${yyyy}${mm}${dd}`,
     base_time: `${hh}00`,
+  };
+};
+
+/**
+ * 기상청 초단기예보용 base_date, base_time 계산
+ *
+ *    - 발표 시각: 매시 30분
+ *    - API 제공 시간: 매시 45분 이후
+ *    - 현재 시각이 45분 이전이면 직전 시각 30분 발표를 사용
+ */
+export const getUltraSrtFcstBaseDateTime = (now: Date = new Date()): BaseDateTime => {
+  const target = new Date(now);
+
+  if (target.getMinutes() < 45) {
+    target.setHours(target.getHours() - 1);
+  }
+
+  const yyyy = target.getFullYear();
+  const mm = String(target.getMonth() + 1).padStart(2, "0");
+  const dd = String(target.getDate()).padStart(2, "0");
+  const hh = String(target.getHours()).padStart(2, "0");
+
+  return {
+    base_date: `${yyyy}${mm}${dd}`,
+    base_time: `${hh}30`,
   };
 };
 

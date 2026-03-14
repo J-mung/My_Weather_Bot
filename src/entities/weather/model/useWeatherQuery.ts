@@ -1,9 +1,9 @@
-import type { WeatherApiType, WeatherResponseMap } from "@/entities/weather/api/weatherApiTypes";
+import type { WeatherApiType, WeatherResponseMap } from "@/entities/weather/api/weather-api.types";
 import type { RequestWeatherParams } from "@/entities/weather/model/requestWeatherParams";
 import { weatherStrategyRegistry } from "@/entities/weather/model/weatherStrategyRegistry";
 import { useQuery } from "@tanstack/react-query";
 import { useCallback, useEffect, useState } from "react";
-import type { GridCoord } from "./weatherTypes";
+import type { GridCoord } from "./weather.types";
 
 export const useWeatherQuery = <T extends WeatherApiType>(
   type: T,
