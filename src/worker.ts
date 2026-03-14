@@ -2,7 +2,7 @@ interface Env {
   API_BASE_URL: string;
   API_KEY: string;
   KAKAO_REST_API_KEY: string;
-  KAKAO_LOCAL_API_BASE_URL: string;
+  KAKAO_REST_API_BASE_URL: string;
   ASSETS: {
     fetch: (request: Request) => Promise<Response>;
   };
@@ -62,7 +62,7 @@ const buildUpstreamUrl = (request: Request, env: Env, endpoint: string): URL => 
 
 const buildKakaoCoord2RegionUrl = (request: Request, env: Env): URL => {
   const incomingUrl = new URL(request.url);
-  const baseUrl = env.KAKAO_LOCAL_API_BASE_URL || "https://dapi.kakao.com";
+  const baseUrl = env.KAKAO_REST_API_BASE_URL || "https://dapi.kakao.com";
   const upstreamUrl = new URL("/v2/local/geo/coord2regioncode.json", baseUrl);
 
   const x = incomingUrl.searchParams.get("x");
