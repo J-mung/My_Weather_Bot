@@ -1,3 +1,4 @@
+import { Icon } from "@/shared/ui/icon";
 import { NavLink } from "react-router-dom";
 import { headerClassStyles } from "./styles";
 
@@ -12,7 +13,9 @@ export default function Header() {
     <header className={headerClassStyles.shell} role="banner">
       <div className={headerClassStyles.container}>
         <NavLink className={headerClassStyles.brandLink} to="/">
-          <span className={headerClassStyles.brandIcon}>☁</span>
+          <span className={headerClassStyles.brandIcon}>
+            <Icon name={"cloud"} size={"lg"} />
+          </span>
           <span>MyWeatherBot</span>
         </NavLink>
 
