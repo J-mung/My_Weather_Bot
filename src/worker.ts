@@ -2,7 +2,7 @@ interface Env {
   API_BASE_URL: string;
   API_KEY: string;
   KAKAO_REST_API_KEY: string;
-  KAKAO_LOCAL_API_BASE_URL: string;
+  KAKAO_REST_API_BASE_URL: string;
   ASSETS: {
     fetch: (request: Request) => Promise<Response>;
   };
@@ -14,7 +14,7 @@ interface Env {
  * - Worker가 /api/* 요청을 받아 서버에서 API_KEY를 주입한 뒤 기상청으로 프록시 호출
  * - 같은 Worker에서 정적 dist 자산도 함께 서빙해 단일 배포 경로로 운영 가능
  */
-const ALLOWED_ENDPOINTS = new Set(["getUltraSrtNcst", "getVilageFcst"]);
+const ALLOWED_ENDPOINTS = new Set(["getUltraSrtFcst", "getUltraSrtNcst", "getVilageFcst"]);
 const API_PREFIX = "/api/";
 const KAKAO_PREFIX = "/api/kakao/";
 
@@ -62,7 +62,7 @@ const buildUpstreamUrl = (request: Request, env: Env, endpoint: string): URL => 
 
 const buildKakaoCoord2RegionUrl = (request: Request, env: Env): URL => {
   const incomingUrl = new URL(request.url);
-  const baseUrl = env.KAKAO_LOCAL_API_BASE_URL || "https://dapi.kakao.com";
+  const baseUrl = env.KAKAO_REST_API_BASE_URL || "https://dapi.kakao.com";
   const upstreamUrl = new URL("/v2/local/geo/coord2regioncode.json", baseUrl);
 
   const x = incomingUrl.searchParams.get("x");
