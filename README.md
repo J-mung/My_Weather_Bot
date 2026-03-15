@@ -2,6 +2,9 @@
 
 기상청 API를 활용한 날씨 예보 애플리케이션입니다.
 
+배포 URL
+> https://my-weather-bot.xorb2298.workers.dev/
+
 ## 프로젝트 실행 방법(로컬)
 
 ### 1) 사전 준비
