@@ -11,25 +11,23 @@ export const mainPageStyles = {
 } as const;
 
 export const nowInfoCardStyles = {
-  root: [
-    "rounded-[1.75rem]",
-    "bg-[var(--surface)]",
-    "px-6",
-    "py-7",
-    "md:px-8",
-    "md:py-8",
-  ],
+  root: ["rounded-[1.75rem]", "bg-[var(--surface)]", "px-6", "py-7", "md:px-8", "md:py-8"],
   loading: ["text-sm", "text-[var(--text-sub)]"],
   error: ["text-sm", "text-[var(--danger)]"],
   header: ["flex", "items-start", "justify-between", "gap-4"],
   headerText: ["space-y-2"],
+  titleRow: ["flex", "gap-3"],
   district: [
     "text-4xl",
     "font-extrabold",
     "tracking-tight",
+    "leading-[1.3]",
     "text-[var(--text-main)]",
     "md:text-5xl",
   ],
+  districtLoading: ["animate-pulse", "transition-colors", "duration-300", "text-[var(--text-sub)]"],
+  refreshButton: ["shrink-0"],
+  refreshIconLoading: ["animate-spin"],
   date: ["text-lg", "text-[var(--text-sub)]", "md:text-xl"],
   weatherIcon: ["text-[var(--icon-subtle)]"],
   body: ["mt-12", "flex", "items-end", "gap-6", "md:mt-14", "md:gap-8"],

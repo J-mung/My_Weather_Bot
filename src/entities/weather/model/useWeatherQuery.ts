@@ -30,10 +30,19 @@ export const useWeatherQuery = <T extends WeatherApiType>(
 
   // UI에서 데이터 조회 요청할 때 사용
   const refresh = useCallback(async () => {
-    const newParams = await strategy.buildParams();
+    let newParams = await strategy.buildParams();
+
+    if (Number.isFinite(param.nx) && Number.isFinite(param.ny)) {
+      newParams = {
+        ...newParams,
+        nx: param.nx,
+        ny: param.ny,
+      };
+    }
+
     setParams(newParams);
     return newParams;
-  }, [strategy]);
+  }, [strategy, param.nx, param.ny]);
 
   const query = useQuery<WeatherResponseMap[T]>({
     queryKey: ["weather", type, ...(params ? Object.values(params) : [])],

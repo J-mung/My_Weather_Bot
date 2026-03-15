@@ -18,6 +18,7 @@ export const iconRegistry = {
   rainyHeavy: `${path}/icon_rainy_heavy.svg`,
   rainyLight: `${path}/icon_rainy_light.svg`,
   rainySnow: `${path}/icon_rainy_snow.svg`,
+  refresh: `${path}/icon_refresh.svg`,
   snowing: `${path}/icon_snowing.svg`,
   snowingHeavy: `${path}/icon_snowing_heavy.svg`,
   waterDrop: `${path}/icon_water_drop.svg`,

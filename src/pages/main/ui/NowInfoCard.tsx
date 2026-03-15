@@ -1,14 +1,9 @@
 import { cn } from "@/shared/lib/cn";
+import Button from "@/shared/ui/button";
 import { Icon, type IconName } from "@/shared/ui/icon";
 import { nowInfoCardStyles } from "./styles";
-import type { NowInfoCardProps } from "./types";
+import type { DetailWeatherItem, NowInfoCardProps } from "./types";
 import { weatherConditionMeta } from "./weatherConditionMeta";
-
-type DetailWeatherItem = {
-  icon: IconName;
-  label: "HIGH" | "LOW" | "HUMIDITY";
-  value: number | null;
-};
 
 const formatMetric = (value: number | null, unit: "%" | "°"): string => {
   if (value === null) {
@@ -18,7 +13,14 @@ const formatMetric = (value: number | null, unit: "%" | "°"): string => {
   return `${value}${unit}`;
 };
 
-export const NowInfoCard = ({ district, data, isFetching, error }: NowInfoCardProps) => {
+export const NowInfoCard = ({
+  district,
+  data,
+  isLoading,
+  isFetching,
+  error,
+  refresh,
+}: NowInfoCardProps) => {
   const dateInfo = new Intl.DateTimeFormat("en-GB", {
     weekday: "long",
     day: "numeric",
@@ -39,12 +41,34 @@ export const NowInfoCard = ({ district, data, isFetching, error }: NowInfoCardPr
 
   return (
     <div className={cn(nowInfoCardStyles.root)}>
-      {isFetching && <div className={cn(nowInfoCardStyles.loading)}>Loading...</div>}
+      {isLoading && <div className={cn(nowInfoCardStyles.loading)}>Loading...</div>}
       {data && (
         <>
           <div className={cn(nowInfoCardStyles.header)}>
             <div className={cn(nowInfoCardStyles.headerText)}>
-              <div className={cn(nowInfoCardStyles.district)}>{district}</div>
+              <div className={cn(nowInfoCardStyles.titleRow)}>
+                <span
+                  className={cn(
+                    nowInfoCardStyles.district,
+                    isFetching && nowInfoCardStyles.districtLoading,
+                  )}
+                >
+                  {district}
+                </span>
+                <Button
+                  variant={"ghost"}
+                  size={"icon"}
+                  disabled={isFetching}
+                  className={cn(nowInfoCardStyles.refreshButton)}
+                  onClick={refresh}
+                >
+                  <Icon
+                    name={"refresh"}
+                    tone={"default"}
+                    className={cn(isFetching && nowInfoCardStyles.refreshIconLoading)}
+                  />
+                </Button>
+              </div>
               <div className={cn(nowInfoCardStyles.date)}>{dateInfo}</div>
             </div>
             <Icon

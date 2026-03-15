@@ -45,7 +45,7 @@ export default function MainPage() {
     };
   }, [routelocation.search]);
 
-  const { data, isFetching, error } = useWeatherSummary(param);
+  const { data, isLoading, isFetching, error, refresh } = useWeatherSummary(param);
   const navigate = useNavigate();
   const [currentRegionName, setCurrentRegionName] = useState("");
   const [currentRegionError, setCurrentRegionError] = useState("");
@@ -106,8 +106,10 @@ export default function MainPage() {
           <NowInfoCard
             district={aliasLabel || "알 수 없음"}
             data={data}
+            isLoading={isLoading}
             isFetching={isFetching}
             error={error}
+            refresh={refresh}
           />
         </div>
         <div className={mainPageStyles.section}>
