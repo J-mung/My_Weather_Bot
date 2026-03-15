@@ -4,6 +4,20 @@ import { nowInfoCardStyles } from "./styles";
 import type { NowInfoCardProps } from "./types";
 import { weatherConditionMeta } from "./weatherConditionMeta";
 
+type DetailWeatherItem = {
+  icon: IconName;
+  label: "HIGH" | "LOW" | "HUMIDITY";
+  value: number | null;
+};
+
+const formatMetric = (value: number | null, unit: "%" | "°"): string => {
+  if (value === null) {
+    return `--${unit}`;
+  }
+
+  return `${value}${unit}`;
+};
+
 export const NowInfoCard = ({ district, data, isFetching, error }: NowInfoCardProps) => {
   const dateInfo = new Intl.DateTimeFormat("en-GB", {
     weekday: "long",
@@ -12,15 +26,15 @@ export const NowInfoCard = ({ district, data, isFetching, error }: NowInfoCardPr
     year: "numeric",
   }).format(new Date());
 
-  const detailItems = data
+  const detailItems: DetailWeatherItem[] = data
     ? [
         { icon: "arrowUp" as const, label: "HIGH" as const, value: data.todayMax },
         { icon: "arrowDown" as const, label: "LOW" as const, value: data.todayMin },
-        { icon: "waterDrop" as const, label: "HUMIDITY" as const, value: data.humidity },
+        { icon: "waterDrop" as const, label: "HUMIDITY" as const, value: data.now.humidity },
       ]
     : [];
   const conditionMeta = data
-    ? weatherConditionMeta[data.condition]
+    ? weatherConditionMeta[data.now.condition]
     : weatherConditionMeta["unavailable"];
 
   return (
@@ -41,11 +55,13 @@ export const NowInfoCard = ({ district, data, isFetching, error }: NowInfoCardPr
           </div>
 
           <div className={cn(nowInfoCardStyles.body)}>
-            <div className={cn(nowInfoCardStyles.currentTemp)}>{data.temperature}°</div>
+            <div className={cn(nowInfoCardStyles.currentTemp)}>
+              {formatMetric(data.now.temperature, "°")}
+            </div>
             <div className={cn(nowInfoCardStyles.currentMeta)}>
               <div className={cn(nowInfoCardStyles.currentSummary)}>{conditionMeta.label}</div>
               <div className={cn(nowInfoCardStyles.currentFeelsLike)}>
-                Feels like {data.temperature}°
+                Feels like {formatMetric(data.now.feelsLike, "°")}
               </div>
             </div>
           </div>
@@ -80,7 +96,7 @@ const DetailWeather = ({
 }: {
   icon: IconName;
   label: "HIGH" | "LOW" | "HUMIDITY";
-  value: number;
+  value: number | null;
 }) => {
   const unit = label === "HUMIDITY" ? "%" : "°";
   return (
@@ -92,10 +108,7 @@ const DetailWeather = ({
       />
       <div className={cn(nowInfoCardStyles.detailText)}>
         <span className={cn(nowInfoCardStyles.detailLabel)}>{label}</span>
-        <span className={cn(nowInfoCardStyles.detailValue)}>
-          {value}
-          {unit}
-        </span>
+        <span className={cn(nowInfoCardStyles.detailValue)}>{formatMetric(value, unit)}</span>
       </div>
     </div>
   );

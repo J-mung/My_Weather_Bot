@@ -4,7 +4,11 @@ import type {
   UltraFcstResponseType,
   UltraNowResponseType,
 } from "@/entities/weather/api/weather-api.types";
-import type { TemperatureSummary } from "@/entities/weather/model/weather.types";
+import type {
+  CurrentWeatherNow,
+  TemperatureSummary,
+  WeatherCondition,
+} from "@/entities/weather/model/weather.types";
 import { mapPtyToCondition, mapSkyToCondition } from "@/entities/weather/model/weatherCondition";
 /**
  *
@@ -55,6 +59,99 @@ const toNumber = (value: string | undefined, fallback = 0): number => {
   return Number.isFinite(parsed) ? parsed : fallback;
 };
 
+const toNullableNumber = (value: string | undefined): number | null => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+};
+
+/**
+ * 계산 결과를 정수 단위로 반올림한다.
+ */
+const toRounded = (value: number | null): number | null => {
+  if (value === null || !Number.isFinite(value)) {
+    return null;
+  }
+
+  return Math.round(value);
+};
+
+/**
+ * 체감온도(Wind Chill)를 계산한다.
+ * - 입력 풍속은 기상청 WSD 기준 m/s
+ * - 공식 적용 전 km/h로 변환한다.
+ */
+const calculateWindChill = (temperatureC: number, windSpeedMs: number): number => {
+  const windSpeedKmh = windSpeedMs * 3.6;
+
+  if (windSpeedKmh <= 4.8) {
+    return temperatureC;
+  }
+
+  return (
+    13.12 +
+    0.6215 * temperatureC -
+    11.37 * windSpeedKmh ** 0.16 +
+    0.3965 * temperatureC * windSpeedKmh ** 0.16
+  );
+};
+
+/**
+ * 체감온도(Heat Index)를 계산한다.
+ * - 입력 온도는 섭씨, 공식 계산은 화씨 기반으로 수행한다.
+ */
+const calculateHeatIndex = (temperatureC: number, humidity: number): number => {
+  const temperatureF = temperatureC * (9 / 5) + 32;
+
+  const heatIndexF =
+    -42.379 +
+    2.04901523 * temperatureF +
+    10.14333127 * humidity -
+    0.22475541 * temperatureF * humidity -
+    0.00683783 * temperatureF * temperatureF -
+    0.05481717 * humidity * humidity +
+    0.00122874 * temperatureF * temperatureF * humidity +
+    0.00085282 * temperatureF * humidity * humidity -
+    0.00000199 * temperatureF * temperatureF * humidity * humidity;
+
+  const heatIndexC = (heatIndexF - 32) * (5 / 9);
+
+  return Math.max(temperatureC, heatIndexC);
+};
+
+/**
+ * 연중 공통 기준으로 체감온도를 계산한다.
+ * - 27도 이상: Heat Index
+ * - 10도 이하: Wind Chill
+ * - 11도~26도: 실제 기온
+ */
+const calculateFeelsLike = (
+  temperatureC: number | null,
+  humidity: number | null,
+  windSpeedMs: number | null,
+): number | null => {
+  if (temperatureC === null) {
+    return null;
+  }
+
+  if (temperatureC >= 27) {
+    if (humidity === null) {
+      return null;
+    }
+
+    return toRounded(calculateHeatIndex(temperatureC, humidity));
+  }
+
+  if (temperatureC <= 10) {
+    if (windSpeedMs === null) {
+      return null;
+    }
+
+    return toRounded(calculateWindChill(temperatureC, windSpeedMs));
+  }
+
+  return toRounded(temperatureC);
+};
+
 /**
  * 초단기예보에서 특정 카테고리(SKY, PTY)의 값 중
  * 현재 시각 이후와 가장 가까운 예보값을 반환
@@ -97,20 +194,26 @@ const formatYmd = (date: Date): string => {
 };
 
 /**
- * 현재 기온/습도 반환
+ * 현재 관측값 반환
  * @param now API 응답
  * @returns
  */
-export const getCurrentTemperature = (
+export const getCurrentObservation = (
   now: UltraNowResponseType,
-): { temperature: number; humidity: number } => {
+): {
+  temperature: number | null;
+  humidity: number | null;
+  windSpeedMs: number | null;
+} => {
   const items = now.response.body.items.item;
   const t1h = items.find((_item) => _item.category === "T1H");
   const reh = items.find((_item) => _item.category === "REH");
+  const wsd = items.find((_item) => _item.category === "WSD");
   return {
-    temperature: toNumber(t1h?.obsrValue, 0),
-    humidity: toNumber(reh?.obsrValue, 0),
-  }; // 값이 없을 때는 0 fallback
+    temperature: toNullableNumber(t1h?.obsrValue),
+    humidity: toNullableNumber(reh?.obsrValue),
+    windSpeedMs: toNullableNumber(wsd?.obsrValue),
+  };
 };
 
 /**
@@ -137,7 +240,7 @@ export const getCurrentCondition = (
   now: UltraNowResponseType,
   ultraForecast: UltraFcstResponseType,
   observationDT: Date = new Date(),
-) => {
+): WeatherCondition => {
   // 실황에 강수 정보가 있으면 가장 우선한다.
   const currentPty = toNumber(
     now.response.body.items.item.find((_item) => _item.category === "PTY")?.obsrValue,
@@ -164,6 +267,22 @@ export const getCurrentCondition = (
   }
 
   return mapSkyToCondition(sky);
+};
+
+export const getCurrentWeatherNow = (
+  now: UltraNowResponseType,
+  ultraForecast: UltraFcstResponseType,
+  observationDT: Date = new Date(),
+): CurrentWeatherNow => {
+  const { temperature, humidity, windSpeedMs } = getCurrentObservation(now);
+
+  return {
+    temperature,
+    humidity,
+    windSpeedMs,
+    feelsLike: calculateFeelsLike(temperature, humidity, windSpeedMs),
+    condition: getCurrentCondition(now, ultraForecast, observationDT),
+  };
 };
 
 /**

@@ -68,10 +68,22 @@ export type WeatherCondition =
   | "drizzleSnow"
   | "snowFlurry";
 
+/**
+ * 현재 시점 관측/가공 정보
+ */
+export interface CurrentWeatherNow {
+  temperature: number | null; // 현재 기온(T1H)
+  humidity: number | null; // 현재 습도(REH)
+  windSpeedMs: number | null; // 현재 풍속(WSD, m/s)
+  feelsLike: number | null; // 체감온도
+  condition: WeatherCondition; // 현재 기상 상태
+}
+
+/**
+ * 화면 요약용 날씨 데이터
+ */
 export interface SummaryDomain {
-  temperature: number; // 현재 기온(T1H)
-  humidity: number; // 현재 습도(REH)
-  condition: WeatherCondition; // 현재 체감용 날씨 상태
+  now: CurrentWeatherNow;
   todayMin: number; // 오늘 최저
   todayMax: number; // 오늘 최고
   hourly: {

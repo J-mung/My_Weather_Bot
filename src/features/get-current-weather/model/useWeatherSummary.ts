@@ -1,7 +1,6 @@
 import { WeatherApiType } from "@/entities/weather/api/weather-api.types";
 import {
-  getCurrentCondition,
-  getCurrentTemperature,
+  getCurrentWeatherNow,
   getObservationDateTime,
   getTemperatureSummary,
 } from "@/entities/weather/model/temperatureMappers";
@@ -13,10 +12,13 @@ import type {
 } from "@/entities/weather/model/weather.types";
 
 /**
- * 날씨 정보 반환 훅(현재 기온, 최저/최고 기온, 시간대별 기온)
+ * 메인/북마크 화면에 필요한 날씨 요약 정보를 반환한다.
+ * - 현재 관측값(now): 기온, 습도, 풍속, 체감온도, 상태
+ * - 오늘 최저/최고 기온
+ * - 시간대별 기온
  * @returns
  */
-export const useCurrentTemperature = (
+export const useWeatherSummary = (
   param: GridCoord,
 ): {
   data: SummaryDomain | null;
@@ -79,18 +81,16 @@ export const useCurrentTemperature = (
     };
   }
 
-  // 현재 기온, 습도
-  const { temperature, humidity } = getCurrentTemperature(ultraQuery.data);
   // 초단기실황예보 응답에서 현재 시각 조회 - 현재(API 요청) 시각 기준으로 시간별로 구성하기 위함
   const currentDT = getObservationDateTime(ultraQuery.data) ?? new Date();
-  const condition = getCurrentCondition(ultraQuery.data, ultraForecastQuery.data, currentDT);
+  const now = getCurrentWeatherNow(ultraQuery.data, ultraForecastQuery.data, currentDT);
   const { todayMin, todayMax, hourly }: TemperatureSummary = getTemperatureSummary(
     shortQuery.data,
     currentDT,
     todayTempRangeQuery.data,
   );
 
-  const data: SummaryDomain = { temperature, humidity, condition, todayMin, todayMax, hourly };
+  const data: SummaryDomain = { now, todayMin, todayMax, hourly };
 
   return {
     data: data,

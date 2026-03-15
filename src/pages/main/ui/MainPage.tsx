@@ -2,7 +2,7 @@ import { fetchRegionNameFromCoord } from "@/entities/kakao/api/fetchRegionNameFr
 import type { GridCoord } from "@/entities/weather/model/weather.types";
 import type { BookmarkItem } from "@/features/bookmark/model/types";
 import { readBookmarkFromStorage } from "@/features/bookmark/model/useBookmarks";
-import { useCurrentTemperature } from "@/features/get-current-weather/model/useCurrentTemperature";
+import { useWeatherSummary } from "@/features/get-current-weather/model/useWeatherSummary";
 import { getUserLocation } from "@/shared/lib/userLocation";
 import { Input } from "@/shared/ui/input/Input";
 import { useEffect, useMemo, useState } from "react";
@@ -45,7 +45,7 @@ export default function MainPage() {
     };
   }, [routelocation.search]);
 
-  const { data, isFetching, error } = useCurrentTemperature(param);
+  const { data, isFetching, error } = useWeatherSummary(param);
   const navigate = useNavigate();
   const [currentRegionName, setCurrentRegionName] = useState("");
   const [currentRegionError, setCurrentRegionError] = useState("");
