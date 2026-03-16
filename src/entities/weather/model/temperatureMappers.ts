@@ -6,6 +6,7 @@ import type {
 } from "@/entities/weather/api/weather-api.types";
 import type {
   CurrentWeatherNow,
+  ParsedShortFcstItemType,
   TemperatureSummary,
   WeatherCondition,
 } from "@/entities/weather/model/weather.types";
@@ -41,17 +42,29 @@ const parseDateTime = (yyyymmdd: string, hhmm: string): Date | null => {
   return new Date(year, month - 1, day, hour, minute);
 };
 
+/**
+ * 시간대별 날씨의 시간 Label fomater
+ * @param yyyymmdd
+ * @param hhmm
+ * @returns
+ */
 const formatHourLabel = (yyyymmdd: string, hhmm: string): string => {
-  if (yyyymmdd.length !== 8 || hhmm.length !== 4) {
+  if (!/^\d{8}$/.test(yyyymmdd) || !/^\d{4}$/.test(hhmm)) {
     return `${yyyymmdd} ${hhmm}`;
   }
 
-  const mm = yyyymmdd.slice(4, 6);
-  const dd = yyyymmdd.slice(6, 8);
-  const hour = hhmm.slice(0, 2);
-  const minute = hhmm.slice(2, 4);
+  const year = Number(yyyymmdd.slice(0, 4));
+  const month = Number(yyyymmdd.slice(4, 6)) - 1;
+  const day = Number(yyyymmdd.slice(6, 8));
+  const hour = Number(hhmm.slice(0, 2));
+  const minute = Number(hhmm.slice(2, 4));
 
-  return `${mm}/${dd} ${hour}:${minute}`;
+  const date = new Date(year, month, day, hour, minute);
+
+  return date.toLocaleString("en-US", {
+    hour: "numeric",
+    hour12: true,
+  });
 };
 
 const toNumber = (value: string | undefined, fallback = 0): number => {
@@ -207,7 +220,9 @@ export const getCurrentObservation = (
 } => {
   const items = now.response.body.items.item;
   const t1h = items.find((_item) => _item.category === "T1H");
+  // 여름철(27℃ 이상) 체감온도를 구하기 위해 습도 필요
   const reh = items.find((_item) => _item.category === "REH");
+  // 겨울철(10℃ 이하) 체감온도를 구하기 위해 풍속 필요
   const wsd = items.find((_item) => _item.category === "WSD");
   return {
     temperature: toNullableNumber(t1h?.obsrValue),
@@ -286,6 +301,33 @@ export const getCurrentWeatherNow = (
 };
 
 /**
+ * 예보 데이터 카테고리 컬럼화
+ * @param items
+ * @returns
+ */
+const getParsedFcstItems = (items: ShortFcstItemType[]): ParsedShortFcstItemType[] => {
+  const map = new Map<string, ParsedShortFcstItemType>();
+
+  items.forEach((_item) => {
+    const key = `${_item.fcstDate}_${_item.fcstTime}`;
+
+    if (!map.has(key)) {
+      map.set(key, {
+        date: parseDateTime(_item.fcstDate, _item.fcstTime),
+        time: formatHourLabel(_item.fcstDate, _item.fcstTime),
+        fcstDate: _item.fcstDate,
+        values: {},
+      });
+    }
+
+    const target = map.get(key)!;
+    target.values[_item.category] = toNumber(_item.fcstValue, 0);
+  });
+
+  return Array.from(map.values());
+};
+
+/**
  * 단기예보 데이터 반환
  *    - 당일 최저/최고 기온
  *    - 시간대별 데이터: 현재(API 요청) 시각 기준으로 시간별로 반환
@@ -304,19 +346,29 @@ export const getTemperatureSummary = (
 
   // 현재(API 요청) 시각 구하기
   const end = new Date(observationDT.getTime() + 24 * 60 * 60 * 1000);
-  const tmpItems: ShortFcstItemType[] = items.filter((_item) => _item.category === "TMP");
+  const fcstItems: ShortFcstItemType[] = items.filter(
+    (_item) => _item.category === "TMP" || _item.category === "SKY" || _item.category === "PTY",
+  );
 
   // 현재(API 요청) 시각 기준 24시간 TMP 데이터
-  const hourly = tmpItems
-    .map((_temp) => ({
-      date: parseDateTime(_temp.fcstDate, _temp.fcstTime),
-      time: formatHourLabel(_temp.fcstDate, _temp.fcstTime),
-      temp: toNumber(_temp.fcstValue, 0),
-      fcstDate: _temp.fcstDate,
-    }))
+  const hourly = getParsedFcstItems(fcstItems)
     .filter((_item) => _item.date !== null && _item.date >= observationDT && _item.date < end)
     .sort((a, b) => a.date!.getTime() - b.date!.getTime())
-    .map(({ time, temp }) => ({ time, temp }));
+    .map(({ time, values }) => {
+      const temp = values.TMP;
+      const sky = values.SKY;
+      const pty = values.PTY;
+      let condition: WeatherCondition;
+      if (pty !== 0) {
+        condition = mapPtyToCondition(pty);
+      } else if (sky !== 0) {
+        condition = mapSkyToCondition(sky);
+      } else {
+        condition = "unavailable";
+      }
+
+      return { time, temp, condition };
+    });
 
   // 오늘 날짜 기준 TMN/TMX 우선 추출
   const todayTmnValues = extremeItems
@@ -327,8 +379,8 @@ export const getTemperatureSummary = (
     .map((_item) => toNumber(_item.fcstValue, 0));
 
   // TMN/TMX가 없으면 오늘 TMP로 fallback
-  const todayTmpValues = tmpItems
-    .filter((_item) => _item.fcstDate === targetDate)
+  const todayTmpValues = fcstItems
+    .filter((_item) => _item.category === "TMP" && _item.fcstDate === targetDate)
     .map((_item) => toNumber(_item.fcstValue, 0));
 
   const fallbackValues =

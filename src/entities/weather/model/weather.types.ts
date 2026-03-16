@@ -89,7 +89,18 @@ export interface SummaryDomain {
   hourly: {
     time: string;
     temp: number;
+    condition: WeatherCondition;
   }[];
+}
+
+/**
+ * 카테고리로 컬럼화 진행한 예보 데이터 타입
+ */
+export interface ParsedShortFcstItemType {
+  date: Date | null;
+  time: string;
+  fcstDate: string;
+  values: Record<string, number>;
 }
 
 export interface TemperatureSummary {
@@ -98,6 +109,7 @@ export interface TemperatureSummary {
   hourly: {
     time: string;
     temp: number;
+    condition: WeatherCondition;
   }[];
 }
 

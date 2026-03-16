@@ -49,3 +49,13 @@ body {
     radial-gradient(circle at 100% 100%, var(--color-bg-glow-end) 0%, transparent 44%), var(--bg);
   font-family: "Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", "Segoe UI", sans-serif;
 }
+
+/* scrollbar 숨김 */
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE / Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* Chrome / Safari */
+}
