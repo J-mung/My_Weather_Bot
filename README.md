@@ -26,6 +26,8 @@ npm install
 ```env
 API_BASE_URL="https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0"
 API_KEY="발급받은_서비스키"
+KAKAO_REST_API_BASE_URL="https://dapi.kakao.com"
+KAKAO_REST_API_KEY="카카오_REST_API_키"
 ```
 
 ### 4) 로컬 실행 (Worker + 정적 자산)
@@ -38,7 +40,30 @@ npm run dev:worker
 
 - `/api/getVilageFcst?...` 응답이 `JSON`인지 확인
 
-## 구현한 기능 설명
+## 구현한 기능 설명 (v1.1)
+
+### 1) 현재 위치/선택 위치 날씨 조회
+
+- 현재 위치의 지역명 조회를 위해 Kakao Local API(좌표→행정구역 변환)를 연동했습니다.
+
+<img width="1456" height="832" alt="image" src="https://github.com/user-attachments/assets/c7dcaf2a-cbc6-4201-8881-d479acc2e71b" />
+
+- #1 추가된 날씨 정보를 조회할 수 있도록 기능을 확장했습니다.
+  - 현재 기온
+  - 당일 최고/최저 기온
+  - ✅ 현재 위치 지역명
+  - ✅ 현재 위치의 기상 상태(강수, 구름 등)
+  - ✅ 체감 온도
+  - ✅ 습도
+- #2 시간대별 날씨 정보를 조회할 수 있도록 개선했습니다.
+  - 기온
+  - ✅ 기상 상태(강수, 구름 등)
+- 전체 UI를 개편하여 디자인을 개선했습니다.
+  (단, 로딩 인디케이터 등 일부 세부 UI 조정은 추후 진행 예정)
+- 지역명 우측에 새로고침 버튼을 추가하여 날씨 정보를 즉시 재조회할 수 있도록 개선했습니다.
+- 시간대별 날씨 정보에 x축 스크롤 및 드래그를 추가하였습니다.
+
+## 구현한 기능 설명 (v1.0)
 
 ### 1) 현재 위치/선택 위치 날씨 조회
 
@@ -103,7 +128,18 @@ npm run dev:worker
   - 프록시(`worker.ts`)를 활용해 CORS 이슈를 수정할 수 있었습니다.
   - 런타임에 환경변수를 주입해 주기 때문에 `API_KEY`가 노출되는 이슈를 수정할 수 있었습니다.
 
-### 2) 전략 레지스트리 기반 API 호출 구조
+### 2) Kakao Local API를 통한 현재 위치 지역명 조회
+- 배경:
+  - 브라우저 geolocation은 위/경도만 제공하고, 기상청 api는 지역명을 제공하지 않습니다.
+  - 따라서 현재 위치의 지역명을 얻기 위해서는 별도의 방법이 필요합니다.
+  - 다행히 [kakao map api(좌표로 행정구역정보 변환)](https://developers.kakao.com/docs/latest/ko/local/dev-guide#coord-to-district)을 활용해 구할 수 있었습니다.
+- 진행:
+  - 브라우저 geolocation으로 위/경도를 구하고, kakao map api에 파라미터로 담아서 요청을 보냅니다.
+  - 응답에서 법정동(B)에 해당하는 지역명을 조합해 사용합니다.
+- 결과:
+  - 메인화면에서 지역명을 출력할 수 있게 됐습니다.
+
+### 3) 전략 레지스트리 기반 API 호출 구조
 
 - 배경:
   - API 타입별 파라미터/호출 방식이 다르며, 동일한 API 내에서도 파라미터에서 차이가 있는 걸로 확인했습니다.
@@ -117,9 +153,9 @@ npm run dev:worker
     - `fetch`: API fetch 함수
   - 레지스트리에서 API를 가져오기 위해 Query 훅(`useWeatherQuery.ts`)을 구성 했고, 단일 Query로 구성하여 공통 진입점으로 고정
 - 결과:
-  - API 요청 흐름을 일원화 하여 기능 확장 시 수정 지점을 최소화하여 유지보수성을 높혔습니다.
+  - API 요청 흐름을 일원화 하여 기능 확장 시 수정 지점을 최소화하여 유지보수성을 높였습니다.
 
-### 3) Query 캐시/쿼리 키 설계
+### 4) Query 캐시/쿼리 키 설계
 
 - 배경:
   - 기상청 API는 내부적으로 데이터 생성 시각과 API 제공 시각이 정해져 있습니다.
@@ -133,7 +169,7 @@ npm run dev:worker
   - 동일 조건 재조회 시 불필요한 네트워크 요청이 줄어 들었습니다.
   - `refresh` 함수를 통해 필요한 시점에서만 새로운 데이터를 조회하도록 했습니다.
 
-### 4) 지역 검색 기능
+### 5) 지역 검색 기능
 
 - 배경:
   - korea_district.json을 기반으로 검색하며, API 조회를 위해서는 검색되는 지역의 좌표가 필요합니다.
@@ -145,8 +181,8 @@ npm run dev:worker
     export interface DistrictsGeoMapItem {
       nx: number;   // API 조회용
       ny: number;   // API 조회용
-      lat: number;  // GPS 기반의 현재 위치명 조회용
-      lon: number;  // GPS 기반의 현재 위치명 조회용
+      lat: number;  // GPS 기반의 현재 지역명 조회용
+      lon: number;  // GPS 기반의 현재 지역명 조회용
     }
     ```
   - `korea_district_geo.json` 기반으로 검색 인덱스를 생성하고, 공백/구분자를 제거하여 매칭 진행
