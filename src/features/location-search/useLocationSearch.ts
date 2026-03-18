@@ -1,12 +1,12 @@
 import type { GridCoord } from "@/entities/weather/model/weather.types";
+import type { DistrictSearchItem } from "@/shared/lib/location.types";
 import {
-  buildDistrictSearchIndex,
-  getGridCoordByDistrictName,
+  createDistrictSearchEngine,
   searchDistricts,
   SPACE_REGEX,
   toDisplayDistrictName,
 } from "@/shared/lib/locationSearch";
-import type { DistrictSearchItem } from "@/shared/lib/locationTypes";
+import { resolveGridCoordByRegion } from "@/shared/lib/resolveGridCoord";
 import { useMemo, useState } from "react";
 
 /**
@@ -20,7 +20,7 @@ export const useLocationSearch = (): {
   errorMessage: string | null;
   setInput: React.Dispatch<React.SetStateAction<string>>;
   runSearch: () => void;
-  selectDistrict: (district: DistrictSearchItem) => GridCoord | null;
+  selectDistrict: (district: DistrictSearchItem) => Promise<GridCoord | null>;
   clearSelection: () => void;
 } => {
   const [input, setInput] = useState<string>("");
@@ -30,7 +30,7 @@ export const useLocationSearch = (): {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // JSON 1번만 읽고 메모이제이션
-  const searchIndex = useMemo(() => buildDistrictSearchIndex(), []);
+  const searchEngine = useMemo(() => createDistrictSearchEngine(), []);
 
   /**
    * 사용자 입력으로 위치 후보 목록 생성
@@ -52,7 +52,7 @@ export const useLocationSearch = (): {
       return;
     }
 
-    const results = searchDistricts(trimInput, searchIndex, 20);
+    const results = searchDistricts(trimInput, searchEngine, 20);
     setCandidates(results);
     setErrorMessage(results.length === 0 ? "검색 결과가 없습니다." : null);
 
@@ -66,21 +66,22 @@ export const useLocationSearch = (): {
    * @param district
    * @returns
    */
-  const selectDistrict = (district: DistrictSearchItem) => {
-    const gridCoord = getGridCoordByDistrictName(district.fullName);
-
+  const selectDistrict = async (district: DistrictSearchItem) => {
     setSelectedDistrict(district);
-    setSelectedGridCoord(gridCoord);
 
-    if (!gridCoord) {
-      setErrorMessage("해당 장소의 정보가 제공되지 않습니다.");
+    try {
+      const gridCoord = await resolveGridCoordByRegion(district.fullName);
+
+      setSelectedGridCoord(gridCoord);
+      setErrorMessage(null);
+      setInput(toDisplayDistrictName(district));
+
+      return gridCoord;
+    } catch {
+      setSelectedGridCoord(null);
+      setErrorMessage("해당 장소의 좌표를 확인하지 못했습니다.");
       return null;
     }
-
-    setErrorMessage(null);
-    setInput(toDisplayDistrictName(district));
-
-    return gridCoord;
   };
 
   /**

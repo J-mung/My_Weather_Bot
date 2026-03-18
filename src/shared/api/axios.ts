@@ -50,6 +50,11 @@ const apiClients: Record<ApiClientName, AxiosInstance> = {
   kakao: createAxiosInstance(API_BASE_URL.kakao),
 };
 
+/**
+ * axios 객체 반환 (weather / kakao 택 1)
+ * @param name
+ * @returns
+ */
 export const getApiClient = (name: ApiClientName): AxiosInstance => {
   return apiClients[name];
 };

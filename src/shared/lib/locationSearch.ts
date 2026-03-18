@@ -1,10 +1,8 @@
-import type { GridCoord } from "@/entities/weather/model/weather.types";
-import districtGeoMapJson from "@/shared/lib/korea_district_geo.json";
-import type { DistrictSearchItem, DistrictsGeoMapItem } from "./locationTypes";
+import districtsJson from "@/shared/lib/korea_districts.json";
+import Fuse from "fuse.js";
+import type { DistrictSearchEngine, DistrictSearchItem } from "./location.types";
 
-// 타입 안정성을 위해 Map에 타입 지정
-type DistrictGeoMapRecord = Record<string, DistrictsGeoMapItem>;
-const typedDistrictGeoMap = districtGeoMapJson as DistrictGeoMapRecord;
+const typedDistricts = districtsJson as string[];
 
 export const SPACE_REGEX = /\s+/g;
 const DASH_REGEX = /-/g;
@@ -20,78 +18,66 @@ export const parseLocationText = (value: string): string => {
 };
 
 /**
- * 검색 인덱스용 지역 목록 생성
- */
-export const buildDistrictSearchIndex = (): DistrictSearchItem[] => {
-  return Object.keys(typedDistrictGeoMap).map((_district) => ({
-    fullName: _district,
-    separates: _district.split("-").filter(Boolean),
-    parsed: parseLocationText(_district),
-  }));
-};
-
-/**
- * 검색 일치율에 따라서 점수 부여
- * @param search
- * @param parsedInput
+ * Fuse 검색용 지역 목록 생성
+ *    - 좌표 데이터 없이 지역명 문자열만으로 인덱스를 구성
  * @returns
  */
-const getMatchingRate = (search: DistrictSearchItem, parsedInput: string): number => {
-  const firstSeprate = search.separates[0] ?? ""; // 시/도
-  const remainSeprate = search.separates[search.separates.length - 1] ?? "";
+export const buildDistrictSearchIndex = (): DistrictSearchItem[] => {
+  return typedDistricts.map((_district) => {
+    const separates = _district.split("-").filter(Boolean);
 
-  // 1. 시/도 전체 혹은 접두어 일치 확인
-  if (firstSeprate === parsedInput) return 0; // 시/도 전체 일치
-  if (firstSeprate.startsWith(parsedInput)) return 1; // 시/도 접두어 일치
-
-  // 2. 구/동 전체 혹은 접두어 일치 확인
-  if (remainSeprate === parsedInput) return 2; // 동/구 일치
-  if (remainSeprate.startsWith(parsedInput)) return 3; // 동/구 접두어 일치
-
-  // 3. 전체 접두어 일치 확인
-  if (search.parsed.startsWith(parsedInput)) return 4;
-
-  // 4. 전체 일치 확인
-  if (parsedInput.length >= 3 && search.parsed.includes(parsedInput)) return 5;
-
-  return Number.POSITIVE_INFINITY;
+    return {
+      fullName: _district,
+      separates,
+      parsed: parseLocationText(_district),
+    };
+  });
 };
 
 /**
- * 일치율이 높은 지역으로 목록 반환 (최대 20개))
+ * Fuse 검색 엔진 생성
+ * @returns
+ */
+export const createDistrictSearchEngine = (): DistrictSearchEngine => {
+  const items = buildDistrictSearchIndex();
+
+  const fuse = new Fuse(items, {
+    includeScore: true,
+    threshold: 0.28,
+    ignoreLocation: true,
+    minMatchCharLength: 2,
+    keys: [
+      { name: "fullName", weight: 0.5 },
+      { name: "parsed", weight: 0.3 },
+      { name: "separates", weight: 0.2 },
+    ] satisfies ReadonlyArray<{
+      name: keyof DistrictSearchItem;
+      weight: number;
+    }>,
+  });
+
+  return { items, fuse };
+};
+
+/**
+ * Fuse 기반 지역 검색
  * @param input
- * @param searchIndex
+ * @param engine
  * @param limit
  * @returns
  */
 export const searchDistricts = (
   input: string,
-  searchIndex: DistrictSearchItem[],
+  engine: DistrictSearchEngine,
   limit = 20,
 ): DistrictSearchItem[] => {
   const parsedInput = parseLocationText(input);
 
-  if (!parsedInput) return [];
+  if (!parsedInput) {
+    return [];
+  }
 
-  return searchIndex
-    .map((_search) => ({
-      search: _search,
-      matchingRate: getMatchingRate(_search, parsedInput),
-    }))
-    .filter((_data) => Number.isFinite(_data.matchingRate))
-    .sort((x, y) => {
-      // 서로 다르므로 정렬
-      if (x.matchingRate !== y.matchingRate) return x.matchingRate - y.matchingRate;
-
-      // 동점의 경우 좀더 구체화 해서 정렬 (동 > 구 > 시도)
-      const depthDiff = y.search.separates.length - x.search.separates.length;
-      if (depthDiff !== 0) return depthDiff;
-
-      // 행정구역별 정렬에 실패 했을 경우 fallback으로 json key로 길이 대조해서 정렬
-      return x.search.fullName.length - y.search.fullName.length;
-    })
-    .slice(0, limit)
-    .map((_data) => _data.search); // 일치율은 제거하고 데이터만 반환
+  return engine.fuse.search(parsedInput, { limit }).map((_result) => _result.item);
 };
 
 /**
@@ -101,23 +87,4 @@ export const searchDistricts = (
  */
 export const toDisplayDistrictName = (item: DistrictSearchItem): string => {
   return item.separates.join(" ");
-};
-
-/**
- * fullName 값으로 json에서 데이터 조회 후 {nx, ny} 형태로 반환
- * @param districtFullName
- * @returns
- */
-export const getGridCoordByDistrictName = (districtFullName: string): GridCoord | null => {
-  const gridCoord = typedDistrictGeoMap[districtFullName];
-  if (!gridCoord) return null;
-
-  const nx = Number(gridCoord.nx);
-  const ny = Number(gridCoord.ny);
-
-  if (!Number.isFinite(nx) || !Number.isFinite(ny)) {
-    return null;
-  }
-
-  return { nx, ny };
 };

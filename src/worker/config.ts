@@ -1,0 +1,17 @@
+export const WEATHER_ALLOWED_ENDPOINTS = new Set([
+  "getUltraSrtFcst",
+  "getUltraSrtNcst",
+  "getVilageFcst",
+]);
+export const WEATHER_API_PREFIX = "/api/";
+export const KAKAO_API_PREFIX = "/api/kakao/";
+export const KAKAO_ENDPOINT_KEYS = ["coord2regioncode", "searchAddress"] as const;
+export type KakaoEndpointKey = (typeof KAKAO_ENDPOINT_KEYS)[number];
+
+/**
+ * 요청 api endpoint와 endpoint key type 매핑
+ */
+export const KAKAO_ENDPOINT_KEY_BY_PATH = {
+  "/api/kakao/coord2regioncode": "coord2regioncode",
+  "/api/kakao/search/address": "searchAddress",
+} as const satisfies Record<string, KakaoEndpointKey>;

@@ -1,9 +1,4 @@
-export interface DistrictsGeoMapItem {
-  nx: number;
-  ny: number;
-  lat: number;
-  lon: number;
-}
+import type Fuse from "fuse.js";
 
 export interface DistrictSearchItem {
   fullName: string; // 서울특별시-종로구-청운동 (json₩ 조회 key)
@@ -11,11 +6,13 @@ export interface DistrictSearchItem {
   parsed: string; // 서울특별시총로구청운동 (추가 지원 검색 유형 - 참고 "도로명주소" 검색)
 }
 
-export interface UserDistrict {
-  fullName: string;
-  nx: number;
-  ny: number;
-  lat: number;
-  lon: number;
-  source: "current" | "query";
+export interface DistrictSearchEngine {
+  items: DistrictSearchItem[];
+  fuse: Fuse<DistrictSearchItem>;
+}
+
+// TTL 적용 캐시 타입
+export interface CachedValue<T> {
+  value: T;
+  savedAt: number;
 }
