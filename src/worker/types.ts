@@ -10,3 +10,5 @@ export interface Env {
     fetch: (request: Request) => Promise<Response>;
   };
 }
+
+export type KakaoEndpointKey = "coord2regioncode" | "searchAddress";

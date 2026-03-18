@@ -6,7 +6,7 @@
  */
 
 import { serveAsset } from "./worker/assets";
-import { KAKAO_API_PREFIX, WEATHER_API_PREFIX } from "./worker/config";
+import { KAKAO_API_PREFIX, WEATHER_API_PREFIX } from "./worker/constants";
 import { handleKakaoApiRequest } from "./worker/kakao";
 import type { Env } from "./worker/types";
 import { handleApiRequest } from "./worker/weather";

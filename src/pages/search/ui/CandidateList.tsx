@@ -1,7 +1,7 @@
 import type { GridCoord } from "@/entities/weather/model/weather.types";
 import { useBookmarks } from "@/features/bookmark/model/useBookmarks";
+import { toDisplayDistrictName } from "@/shared/lib/location-search.lib";
 import type { DistrictSearchItem } from "@/shared/lib/location.types";
-import { toDisplayDistrictName } from "@/shared/lib/locationSearch";
 import { Button } from "@/shared/ui/button/Button";
 import { Icon } from "@/shared/ui/icon";
 import { useNavigate } from "react-router-dom";
@@ -107,7 +107,7 @@ export const CandidateList = ({
                 onClickDeleteBookmark(e, _candidate);
               }}
             >
-              <Icon name={"bookmard"} size={"lg"} />
+              <Icon name={"bookmark"} size={"lg"} />
             </Button>
           ) : (
             <Button

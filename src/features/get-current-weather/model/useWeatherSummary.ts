@@ -1,4 +1,4 @@
-import { WeatherApiType } from "@/entities/weather/api/weather-api.types";
+import { WeatherApiType } from "@/entities/weather/api/weather-api.constants";
 import {
   getCurrentWeatherNow,
   getObservationDateTime,

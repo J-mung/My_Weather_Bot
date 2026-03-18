@@ -1,11 +1,5 @@
-import districtsJson from "@/shared/lib/korea_districts.json";
-import Fuse from "fuse.js";
+import { DASH_REGEX, SPACE_REGEX, typedDistricts } from "./location-search.constants";
 import type { DistrictSearchEngine, DistrictSearchItem } from "./location.types";
-
-const typedDistricts = districtsJson as string[];
-
-export const SPACE_REGEX = /\s+/g;
-const DASH_REGEX = /-/g;
 
 /**
  * 검색 비교용 정규화
@@ -32,31 +26,6 @@ export const buildDistrictSearchIndex = (): DistrictSearchItem[] => {
       parsed: parseLocationText(_district),
     };
   });
-};
-
-/**
- * Fuse 검색 엔진 생성
- * @returns
- */
-export const createDistrictSearchEngine = (): DistrictSearchEngine => {
-  const items = buildDistrictSearchIndex();
-
-  const fuse = new Fuse(items, {
-    includeScore: true,
-    threshold: 0.28,
-    ignoreLocation: true,
-    minMatchCharLength: 2,
-    keys: [
-      { name: "fullName", weight: 0.5 },
-      { name: "parsed", weight: 0.3 },
-      { name: "separates", weight: 0.2 },
-    ] satisfies ReadonlyArray<{
-      name: keyof DistrictSearchItem;
-      weight: number;
-    }>,
-  });
-
-  return { items, fuse };
 };
 
 /**

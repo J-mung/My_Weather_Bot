@@ -3,7 +3,7 @@ import { cn } from "@/shared/lib/cn";
 import { Icon } from "@/shared/ui/icon";
 import { useRef } from "react";
 import { hourlyInfoCardStyles } from "./styles";
-import { weatherConditionMeta } from "./weatherConditionMeta";
+import { weatherConditionMeta } from "./weather-condition-meta";
 
 export const HourlyInfoCard = ({
   data,

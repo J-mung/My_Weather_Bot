@@ -1,3 +1,5 @@
+import type { WeatherApiType } from "./weather-api.constants";
+
 export interface ResponseHeaderType {
   resultCode: string;
   resultMsg: string;
@@ -71,12 +73,5 @@ export type WeatherResponseMap = {
   SHORT_FORECAST: ShortFcstResponseType;
   TODAY_TEMP_RANGE: ShortFcstResponseType;
 };
-
-export const WeatherApiType = {
-  ULTRA_NOW: "ULTRA_NOW",
-  ULTRA_FORECAST: "ULTRA_FORECAST",
-  SHORT_FORECAST: "SHORT_FORECAST",
-  TODAY_TEMP_RANGE: "TODAY_TEMP_RANGE",
-} as const;
 
 export type WeatherApiType = (typeof WeatherApiType)[keyof typeof WeatherApiType];

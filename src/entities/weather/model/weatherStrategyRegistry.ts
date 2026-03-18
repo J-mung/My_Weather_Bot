@@ -5,7 +5,7 @@ import {
   type WeatherApiType as WeatherApiTypeValue,
   type WeatherResponseMap,
 } from "@/entities/weather/api/weather-api.types";
-import type { RequestWeatherParams } from "@/entities/weather/model/requestWeatherParams";
+import type { RequestWeatherParams } from "@/entities/weather/model/request-weather-params.types";
 import { buildWeatherApiParams } from "@/shared/lib/weatherApiParams";
 import {
   getUltraSrtFcstBaseDateTime,

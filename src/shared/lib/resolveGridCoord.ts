@@ -1,7 +1,8 @@
 import { fetchLatLonByRegion } from "@/entities/kakao/api/fetchLatLonByRegion";
 import type { GridCoord, LatLon } from "@/entities/weather/model/weather.types";
-import { convertToGridCoord } from "./convertToGridcoord";
-import { GEO_CACHE_TTL, getGeoCacheKey, getGridCacheKey, GRID_CACHE_TTL } from "./locationCache";
+import { convertToGridCoord } from "./convertToGridCoord";
+import { GEO_CACHE_TTL, GRID_CACHE_TTL } from "./location-cache.constants";
+import { getGeoCacheKey, getGridCacheKey } from "./location-cache.lib";
 import { getStorageCache, setStorageCache } from "./storageCache";
 
 /**

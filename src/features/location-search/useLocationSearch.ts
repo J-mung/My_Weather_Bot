@@ -1,11 +1,8 @@
 import type { GridCoord } from "@/entities/weather/model/weather.types";
+import { SPACE_REGEX } from "@/shared/lib/location-search.constants";
+import { createDistrictSearchEngine } from "@/shared/lib/location-search.engine";
+import { searchDistricts, toDisplayDistrictName } from "@/shared/lib/location-search.lib";
 import type { DistrictSearchItem } from "@/shared/lib/location.types";
-import {
-  createDistrictSearchEngine,
-  searchDistricts,
-  SPACE_REGEX,
-  toDisplayDistrictName,
-} from "@/shared/lib/locationSearch";
 import { resolveGridCoordByRegion } from "@/shared/lib/resolveGridCoord";
 import { useMemo, useState } from "react";
 

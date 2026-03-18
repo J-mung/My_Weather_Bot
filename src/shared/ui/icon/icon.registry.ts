@@ -6,7 +6,6 @@ export const iconRegistry = {
   arrowUp: `${path}/icon_arrow_upward.svg`,
   bookmark: `${path}/icon_bookmark.svg`,
   bookmarkAdd: `${path}/icon_bookmark_add.svg`,
-  bookmard: `${path}/icon_bookmark.svg`,
   cloudAlert: `${path}/icon_cloud_alert.svg`,
   cloud: `${path}/icon_cloud.svg`,
   delete: `${path}/icon_delete.svg`,

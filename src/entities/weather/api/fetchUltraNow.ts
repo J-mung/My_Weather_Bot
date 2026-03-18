@@ -1,4 +1,4 @@
-import type { RequestWeatherParams } from "@/entities/weather/model/requestWeatherParams";
+import type { RequestWeatherParams } from "@/entities/weather/model/request-weather-params.types";
 import { getApiClient } from "@/shared/api/axios";
 import type { UltraNowResponseType } from "./weather-api.types";
 

@@ -1,4 +1,4 @@
-import { WEATHER_ALLOWED_ENDPOINTS, WEATHER_API_PREFIX } from "./config";
+import { WEATHER_ALLOWED_ENDPOINTS, WEATHER_API_PREFIX } from "./constants";
 import { withCors } from "./cors";
 import type { Env } from "./types";
 

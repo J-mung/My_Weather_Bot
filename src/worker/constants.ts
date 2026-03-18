@@ -1,3 +1,5 @@
+import type { KakaoEndpointKey } from "./types";
+
 export const WEATHER_ALLOWED_ENDPOINTS = new Set([
   "getUltraSrtFcst",
   "getUltraSrtNcst",
@@ -5,8 +7,10 @@ export const WEATHER_ALLOWED_ENDPOINTS = new Set([
 ]);
 export const WEATHER_API_PREFIX = "/api/";
 export const KAKAO_API_PREFIX = "/api/kakao/";
-export const KAKAO_ENDPOINT_KEYS = ["coord2regioncode", "searchAddress"] as const;
-export type KakaoEndpointKey = (typeof KAKAO_ENDPOINT_KEYS)[number];
+export const KAKAO_ENDPOINT_KEYS = [
+  "coord2regioncode",
+  "searchAddress",
+] as const satisfies readonly KakaoEndpointKey[];
 
 /**
  * 요청 api endpoint와 endpoint key type 매핑

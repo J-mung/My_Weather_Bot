@@ -1,5 +1,5 @@
 import type { WeatherApiType, WeatherResponseMap } from "@/entities/weather/api/weather-api.types";
-import type { RequestWeatherParams } from "@/entities/weather/model/requestWeatherParams";
+import type { RequestWeatherParams } from "@/entities/weather/model/request-weather-params.types";
 import { weatherStrategyRegistry } from "@/entities/weather/model/weatherStrategyRegistry";
 import { useQuery } from "@tanstack/react-query";
 import { useCallback, useEffect, useState } from "react";

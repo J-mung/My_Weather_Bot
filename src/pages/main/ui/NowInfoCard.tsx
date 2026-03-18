@@ -3,7 +3,7 @@ import Button from "@/shared/ui/button";
 import { Icon, type IconName } from "@/shared/ui/icon";
 import { nowInfoCardStyles } from "./styles";
 import type { DetailWeatherItem, NowInfoCardProps } from "./types";
-import { weatherConditionMeta } from "./weatherConditionMeta";
+import { weatherConditionMeta } from "./weather-condition-meta";
 
 const formatMetric = (value: number | null, unit: "%" | "°"): string => {
   if (value === null) {

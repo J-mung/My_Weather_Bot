@@ -1,6 +1,6 @@
-import { KAKAO_ENDPOINT_KEY_BY_PATH, type KakaoEndpointKey } from "./config";
+import { KAKAO_ENDPOINT_KEY_BY_PATH } from "./constants";
 import { withCors } from "./cors";
-import type { Env } from "./types";
+import type { Env, KakaoEndpointKey } from "./types";
 
 /**
  * 카카오 api 요청 endpoint인지 확인
