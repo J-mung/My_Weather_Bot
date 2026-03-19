@@ -1,24 +1,30 @@
 import type { GridCoord } from "@/entities/weather/model/weather.types";
 import { useBookmarks } from "@/features/bookmark/model/useBookmarks";
-import { toDisplayDistrictName } from "@/shared/lib/location-search.lib";
-import type { DistrictSearchItem } from "@/shared/lib/location.types";
+import {
+  buildDisplayHighlightParts,
+  toDisplayDistrictName,
+} from "@/shared/lib/location-search.lib";
+import type { DistrictSearchItem, DistrictSearchResult } from "@/shared/lib/location.types";
 import { Button } from "@/shared/ui/button/Button";
 import { Icon } from "@/shared/ui/icon";
+import type { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { searchPageStyles } from "./styles";
 
 export const CandidateList = ({
   candidates,
+  input,
   selectDistrict,
 }: {
-  candidates: DistrictSearchItem[];
+  candidates: DistrictSearchResult[];
+  input: string;
   selectDistrict: (district: DistrictSearchItem) => Promise<GridCoord | null>;
 }) => {
   const navigate = useNavigate();
   const { addBookmark, deleteBookmark, isBookmarked, getBookmarkedId } = useBookmarks();
 
-  const getSelected = (candidateFullName: string): DistrictSearchItem | null => {
-    return candidates.find((_candidate) => _candidate.fullName === candidateFullName) ?? null;
+  const getSelected = (candidateFullName: string): DistrictSearchResult | null => {
+    return candidates.find((_candidate) => _candidate.item.fullName === candidateFullName) ?? null;
   };
 
   const getGridCoordFromSelected = async (
@@ -34,13 +40,13 @@ export const CandidateList = ({
       return;
     }
 
-    const gridCoord = await getGridCoordFromSelected(selected);
+    const gridCoord = await getGridCoordFromSelected(selected.item);
     if (!gridCoord) {
       alert("해당 장소의 정보가 제공되지 않습니다.");
       return;
     }
 
-    const locationQuery = encodeURIComponent(toDisplayDistrictName(selected));
+    const locationQuery = encodeURIComponent(toDisplayDistrictName(selected.item));
     navigate(`/?nx=${gridCoord.nx}&ny=${gridCoord.ny}&location=${locationQuery}`);
   };
 
@@ -56,7 +62,7 @@ export const CandidateList = ({
       return;
     }
 
-    const gridCoord = await getGridCoordFromSelected(selected);
+    const gridCoord = await getGridCoordFromSelected(selected.item);
     if (!gridCoord) {
       alert("해당 장소의 기상 정보가 제공되지 않습니다.");
       return;
@@ -85,26 +91,48 @@ export const CandidateList = ({
     deleteBookmark(id);
   };
 
+  const highlightText = (candidate: DistrictSearchResult): ReactNode => {
+    const parts = buildDisplayHighlightParts(candidate.item.displayName, input);
+
+    return (
+      <>
+        {parts.map((part, idx) => (
+          <span
+            key={`${candidate.item.fullName}-${idx}`}
+            className={
+              part.matched
+                ? searchPageStyles.candidateHighlight
+                : searchPageStyles.candidateName
+            }
+          >
+            {part.text}
+          </span>
+        ))}
+      </>
+    );
+  };
+
   return (
     <>
       {candidates.map((_candidate) => (
         <div
-          key={_candidate.fullName}
+          key={_candidate.item.fullName}
           className={searchPageStyles.candidate}
-          onClick={() => onClickCandidate(_candidate.fullName)}
+          onClick={() => onClickCandidate(_candidate.item.fullName)}
         >
-          <div className={searchPageStyles.candidateContent} data-full-name={_candidate.fullName}>
-            <span className={searchPageStyles.candidateName}>
-              {toDisplayDistrictName(_candidate)}
-            </span>
+          <div
+            className={searchPageStyles.candidateContent}
+            data-full-name={_candidate.item.fullName}
+          >
+            {highlightText(_candidate)}
           </div>
-          {isBookmarked(toDisplayDistrictName(_candidate)) === true ? (
+          {isBookmarked(toDisplayDistrictName(_candidate.item)) === true ? (
             <Button
               type={"button"}
               variant={"primary"}
               title={"북마크 삭제"}
               onClick={(e) => {
-                onClickDeleteBookmark(e, _candidate);
+                onClickDeleteBookmark(e, _candidate.item);
               }}
             >
               <Icon name={"bookmark"} size={"lg"} />
@@ -115,7 +143,7 @@ export const CandidateList = ({
               variant={"secondary"}
               title={"북마크 추가"}
               onClick={(e) => {
-                onClickAddBookmark(e, _candidate);
+                onClickAddBookmark(e, _candidate.item);
               }}
             >
               <Icon name={"bookmarkAdd"} size={"lg"} tone={"brand"} />

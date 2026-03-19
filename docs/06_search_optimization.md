@@ -120,10 +120,14 @@ Fuse.js를 사용해 fuzzy search를 수행한다.
 캐시 키는 입력 문자열 그대로 쓰지 않고,
 공백과 대소문자 차이를 줄인 정규화된 문자열을 사용한다.
 
-예:
+의사코드:
 
-```ts
-const normalizeRegionKey = (region: string) => region.trim().replace(/\s+/g, " ").toLowerCase();
+```txt
+지역명 캐시 키 생성
+-> 앞뒤 공백 제거
+-> 연속 공백을 하나로 정리
+-> 소문자 변환
+-> geo-cache prefix와 버전 정보 결합
 ```
 
 #### 2. LatLng -> Grid 캐시
@@ -132,10 +136,13 @@ const normalizeRegionKey = (region: string) => region.trim().replace(/\s+/g, " "
 
 - 동일하거나 매우 가까운 좌표에 대해 격자 계산을 반복하지 않는다.
 
-캐시 키 예:
+의사코드:
 
-```ts
-const getGridKey = (lat: number, lon: number) => `${lat.toFixed(4)}_${lon.toFixed(4)}`;
+```txt
+격자 캐시 키 생성
+-> 위도와 경도를 소수점 4자리 수준으로 정규화
+-> lat/lon 문자열을 결합
+-> grid-cache prefix와 버전 정보 결합
 ```
 
 ### TTL 영속 캐시 정책
@@ -159,13 +166,13 @@ const getGridKey = (lat: number, lon: number) => `${lat.toFixed(4)}_${lon.toFixe
 
 캐시 엔트리는 값과 저장 시각을 함께 보관한다.
 
-예:
+의사코드:
 
-```ts
-interface CachedValue<T> {
-  value: T;
-  savedAt: number;
-}
+```txt
+캐시 엔트리
+-> 실제 값(value)
+-> 저장 시각(savedAt)
+를 함께 보관
 ```
 
 TTL 예시는 다음과 같다.
@@ -245,11 +252,16 @@ TTL 예시는 다음과 같다.
 TTL 만료 외에도,
 데이터 구조가 바뀌면 버전 키를 변경해 강제로 캐시를 초기화할 수 있어야 한다.
 
-예:
+의사코드:
 
-```ts
-const GEO_CACHE_KEY = "geo-cache:v1";
-const GRID_CACHE_KEY = "grid-cache:v1";
+```txt
+캐시 버전 상수 정의
+-> geo-cache:v1
+-> grid-cache:v1
+
+데이터 구조 변경 시
+-> 버전 값 증가
+-> 기존 캐시는 자연스럽게 무효화
 ```
 
 #### 4. Worker 프록시 유지
@@ -258,6 +270,236 @@ Kakao API는 브라우저에서 직접 호출하지 않고,
 기존 Worker 프록시 구조를 유지하는 것이 맞다.
 
 ### 한 줄 요약
+
+Client-side Fuse 검색 + Kakao Geocoding + TTL 영속 캐시 구조로,
+정적 좌표 데이터셋 의존을 줄이면서 검색 품질과 조회 성능을 함께 확보한다.
+
+### 실시간 검색 및 일치 데이터 하이라이트
+
+검색 UX를 더 강화하기 위해, Fuse.js를 단순 후보 검색 도구가 아니라
+실시간 추천과 하이라이트 데이터 제공까지 담당하는 검색 엔진으로 활용한다.
+
+#### 1. 실시간 검색
+
+기존의 `엔터 입력 시 검색` 방식 대신,
+입력값이 바뀔 때마다 검색 결과를 갱신하는 방식으로 전환한다.
+
+권장 방식:
+
+- `input` state는 그대로 유지
+- `useEffect` 기반으로 검색 실행
+- 너무 잦은 검색을 막기 위해 `150~200ms` debounce 적용
+
+의사코드:
+
+```txt
+입력값 변경 감지
+-> 입력값 trim
+
+입력값이 비어 있으면
+-> 후보 목록 초기화
+-> 에러 메시지 제거
+-> 종료
+
+그 외에는
+-> debounce 대기(150~200ms)
+-> Fuse 검색 실행
+-> 결과 목록 저장
+-> 결과가 없으면 "검색 결과 없음" 메시지 저장
+```
+
+적용 의도:
+
+- 사용자가 버튼이나 엔터 없이 즉시 후보를 탐색할 수 있다.
+- 2만 건 수준의 지역명 사전은 Fuse 기반 client-side 검색으로 충분히 빠르게 처리 가능하다.
+
+#### 2. Fuse `includeMatches` 기반 하이라이트
+
+일치 구간 하이라이트는 별도 substring 추론 로직보다,
+Fuse가 계산한 `matches` 데이터를 그대로 활용하는 편이 더 정확하다.
+
+의사코드:
+
+```txt
+Fuse 검색 엔진 생성
+-> score 포함
+-> matches 포함
+-> 위치 기반 가중치 무시
+-> 최소 매치 길이 설정
+-> fullName / parsed / separates 필드에 가중치 부여
+```
+
+이렇게 하면 검색 결과에서 다음 정보를 함께 받을 수 있다.
+
+- 검색 결과 item
+- score
+- 일치한 필드 정보
+- 문자열 내 일치 인덱스(`indices`)
+
+#### 2-1. Fuse 옵션 설명
+
+실제 구현 시에는 아래와 같은 Fuse 설정을 기준으로 시작하는 것이 적절하다.
+
+```ts
+const fuse = new Fuse(items, {
+  includeScore: true,
+  includeMatches: true,
+  threshold: 0.28,
+  ignoreLocation: true,
+  minMatchCharLength: 2,
+  keys: [
+    { name: "fullName", weight: 0.5 },
+    { name: "parsed", weight: 0.3 },
+    { name: "separates", weight: 0.2 },
+  ],
+});
+```
+
+옵션별 의미는 다음과 같다.
+
+1. `includeScore`
+- 검색 결과에 유사도 점수를 포함한다.
+- 점수가 낮을수록 더 적합한 결과다.
+- 현재는 바로 노출하지 않더라도, 후속 정렬 보정이나 디버깅 시 유용하다.
+
+2. `includeMatches`
+- 어떤 필드의 어느 구간이 검색어와 일치했는지 `matches` 데이터로 반환한다.
+- 이 옵션이 있어야 `CandidateList`에서 문자열 하이라이트가 가능하다.
+
+3. `threshold`
+- fuzzy match 허용 범위를 정한다.
+- 값이 클수록 더 느슨하게 검색하고, 작을수록 더 엄격하게 검색한다.
+- 현재 검색 대상이 지역명처럼 비교적 정형화된 문자열이기 때문에, 너무 높게 잡으면 부정확한 결과가 늘 수 있다.
+- 시작값으로는 `0.25 ~ 0.35` 정도가 적절하다.
+
+4. `ignoreLocation`
+- 문자열 내 특정 위치보다 전체 유사도를 우선해서 검색한다.
+- 지역명 검색은 접두사 일치도 중요하지만, 중간/후반 단어 매치도 충분히 의미가 있으므로 `true`가 실용적이다.
+
+5. `minMatchCharLength`
+- 너무 짧은 부분 일치를 무시한다.
+- 한글 한 글자 수준 매치는 결과 노이즈를 크게 만들 수 있으므로, 최소 길이를 두는 편이 안전하다.
+- 현재 기준으로는 `2`가 적절하다.
+
+6. `keys`
+- 어떤 필드를 어떤 가중치로 검색할지 정의한다.
+- 현재 권장 구성:
+  - `fullName`: 가장 높은 가중치
+  - `parsed`: 공백/구분자 제거 검색 보조
+  - `separates`: 행정구역 단계별 검색 보조
+
+각 필드의 역할은 다음과 같다.
+
+```ts
+type DistrictSearchItem = {
+  fullName: string;   // "서울특별시-종로구-청운동"
+  separates: string[]; // ["서울특별시", "종로구", "청운동"]
+  parsed: string;     // "서울특별시종로구청운동"
+};
+```
+
+- `fullName`
+  - 화면 표시 기준이 되는 문자열이다.
+  - 검색과 하이라이트의 기준으로 가장 적합하다.
+
+- `parsed`
+  - 공백이나 구분자를 제거한 검색 보조 필드다.
+  - 사용자가 띄어쓰기 없이 입력해도 매치될 수 있게 도와준다.
+
+- `separates`
+  - 행정구역 단위 배열이다.
+  - 특정 단계 이름만 입력했을 때도 검색 품질을 보완할 수 있다.
+
+#### 2-2. 옵션 조정 기준
+
+Fuse 옵션은 고정값이라기보다 검색 품질에 맞춰 조정해야 한다.
+
+권장 조정 기준:
+
+1. 검색 결과가 너무 넓게 잡히면
+- `threshold`를 더 낮춘다.
+- `keys`에서 `parsed` 가중치를 줄인다.
+
+2. 띄어쓰기 없는 입력을 더 잘 잡아야 하면
+- `parsed` 가중치를 높인다.
+
+3. 하이라이트 품질이 중요하면
+- `includeMatches`는 유지
+- 화면 렌더링에는 `fullName` match를 우선 사용한다.
+
+#### 3. 검색 결과 타입 확장
+
+하이라이트 렌더링을 위해 검색 결과 타입을 단순 `DistrictSearchItem[]`에서
+`matches`와 `score`를 포함하는 구조로 확장한다.
+
+의사코드:
+
+```txt
+검색 결과 타입
+-> 원본 item
+-> Fuse score
+-> Fuse matches
+
+searchDistricts 실행
+-> 검색어 정규화
+-> 비어 있으면 빈 배열 반환
+-> Fuse 검색 수행
+-> 각 결과에서 item / score / matches만 추출해 반환
+```
+
+#### 4. 하이라이트 렌더링 방식
+
+하이라이트는 `matches` 안의 `indices`를 이용해 문자열을 분할한 뒤,
+일치 구간만 별도 스타일로 감싸서 렌더링한다.
+
+의사코드:
+
+```txt
+하이라이트 문자열 생성
+-> Fuse matches에서 indices 추출
+-> 원본 문자열을 앞부분 / 일치 구간 / 뒷부분으로 분할
+-> 각 조각에 matched 여부 부여
+
+렌더링
+-> matched = true 인 조각만 강조 스타일 적용
+-> 나머지는 일반 텍스트로 출력
+```
+
+#### 5. 하이라이트 적용 기준
+
+Fuse는 `fullName`, `parsed`, `separates` 등 여러 필드를 검색할 수 있다.
+하지만 화면 하이라이트는 표시 문자열과 인덱스가 일치해야 하므로,
+우선순위는 `fullName` 기준 매치로 두는 것이 안전하다.
+
+권장 정책:
+
+1. `matches` 중 `key === "fullName"`인 결과를 우선 사용
+2. 해당 match가 없으면 일반 텍스트로 렌더링
+
+이 방식은 `parsed`처럼 공백 제거 문자열을 그대로 화면에 쓰지 않아도 된다는 장점이 있다.
+
+#### 6. 기대 효과
+
+- 입력 즉시 검색 결과를 보여줄 수 있다.
+- 어떤 단어가 일치했는지 바로 파악 가능하다.
+- Fuse의 검색 결과와 하이라이트 결과가 동일한 기준을 사용하므로 UX 일관성이 높다.
+
+#### 7. 구현 시 주의점
+
+- 입력마다 검색으로 전환하면 기존 `runSearch()`의 역할을 훅 내부 자동 검색으로 옮겨야 한다.
+- 입력값이 바뀌면 이전에 선택된 후보와 좌표는 초기화하는 정책이 필요하다.
+- `matches`를 활용할 경우 `CandidateList`의 `candidates` 타입도 함께 변경해야 한다.
+- 하이라이트 정확도를 높이려면 표시 문자열과 검색 대상 문자열 형식을 최대한 맞춰야 한다.
+
+### 추가 구현 순서
+
+기존 구현 순서 이후, 검색 UX 강화를 위한 후속 작업은 다음 순서로 진행한다.
+
+1. Fuse 설정에 `includeMatches: true` 추가
+2. 검색 결과 타입을 `DistrictSearchResult` 구조로 확장
+3. `useLocationSearch`를 debounce 기반 실시간 검색으로 전환
+4. `CandidateList`에서 `matches` 기반 하이라이트 렌더링 적용
+5. 검색 결과 하이라이트 전용 스타일 추가
 
 검색은 지역명 사전 + Fuse.js로 처리하고,
 선택된 결과에 대해서만 Geocoding과 기상청 격자 변환을 수행하며,
