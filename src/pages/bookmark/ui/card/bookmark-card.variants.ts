@@ -44,8 +44,4 @@ export const bookmarkCardLocationVariants = cva(["mt-1", "block", "text-[var(--t
   },
 });
 
-export const bookmarkCardCaptionClass = ["block", "min-w-7xl"];
-
-export const bookmarkCardTempClass = ["block", "text-xs", "text-[var(--text-sub)]"];
-
 export const bookmarkCardBtnListClass = ["mt-3", "flex", "items-center", "justify-end", "gap-2"];

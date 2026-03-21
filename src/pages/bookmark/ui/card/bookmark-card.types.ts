@@ -8,8 +8,6 @@ import type {
 export type BookmarkCardProps = HTMLAttributes<HTMLDivElement> & {
   title: string;
   locationLabel: string;
-  nx: number;
-  ny: number;
   isEditing: boolean;
   summary: ReactNode;
   actions?: ReactNode;

@@ -14,7 +14,10 @@ const formatMetric = (value: number | null, unit: "%" | "°"): string => {
 };
 
 export const NowInfoCard = ({
-  district,
+  primaryDistrict,
+  secondaryDistrict,
+  fullDistrict,
+  isAlias,
   data,
   isLoading,
   isFetching,
@@ -47,14 +50,37 @@ export const NowInfoCard = ({
           <div className={cn(nowInfoCardStyles.header)}>
             <div className={cn(nowInfoCardStyles.headerText)}>
               <div className={cn(nowInfoCardStyles.titleRow)}>
-                <span
-                  className={cn(
-                    nowInfoCardStyles.district,
-                    isFetching && nowInfoCardStyles.districtLoading,
-                  )}
-                >
-                  {district}
-                </span>
+                <div className={cn(nowInfoCardStyles.titleGroup)}>
+                  <div className={cn(nowInfoCardStyles.mobileTitle, "md:hidden")}>
+                    {secondaryDistrict && (
+                      <div className={cn(nowInfoCardStyles.districtSecondary)}>
+                        {secondaryDistrict}
+                      </div>
+                    )}
+                    <span
+                      className={cn(
+                        nowInfoCardStyles.districtPrimary,
+                        isAlias && nowInfoCardStyles.districtPrimaryAlias,
+                        isFetching && nowInfoCardStyles.districtLoading,
+                      )}
+                    >
+                      {primaryDistrict}
+                    </span>
+                  </div>
+
+                  <div className={cn(nowInfoCardStyles.desktopTitle, "hidden md:block")}>
+                    <span
+                      className={cn(
+                        nowInfoCardStyles.districtDesktop,
+                        isAlias && nowInfoCardStyles.districtDesktopAlias,
+                        isFetching && nowInfoCardStyles.districtLoading,
+                      )}
+                    >
+                      {fullDistrict}
+                    </span>
+                  </div>
+                </div>
+
                 <Button
                   variant={"ghost"}
                   size={"icon"}

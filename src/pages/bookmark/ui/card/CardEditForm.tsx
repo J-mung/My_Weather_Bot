@@ -1,4 +1,5 @@
 import Button from "@/shared/ui/button";
+import { cn } from "@/shared/lib/cn";
 import { Input } from "@/shared/ui/input/Input";
 import { useEffect, useRef } from "react";
 import { bookmarkEditStyles } from "../styles";
@@ -20,10 +21,10 @@ export const CardEditForm = ({
     if (!inputRef.current) return;
 
     inputRef.current.focus();
-  });
+  }, []);
 
   return (
-    <div className={bookmarkEditStyles.bookmarkEditForm}>
+    <div className={cn(bookmarkEditStyles.bookmarkEditForm)}>
       <Input
         ref={inputRef}
         value={aliasInput}
@@ -43,7 +44,7 @@ export const CardEditForm = ({
           }
         }}
       />
-      <div className={bookmarkEditStyles.bookmarkEditButtonList}>
+      <div className={cn(bookmarkEditStyles.bookmarkEditButtonList)}>
         <Button
           variant={"primary"}
           size={"md"}

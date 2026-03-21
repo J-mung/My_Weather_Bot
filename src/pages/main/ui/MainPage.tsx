@@ -3,10 +3,12 @@ import type { GridCoord } from "@/entities/weather/model/weather.types";
 import type { BookmarkItem } from "@/features/bookmark/model/types";
 import { readBookmarkFromStorage } from "@/features/bookmark/model/useBookmarks";
 import { useWeatherSummary } from "@/features/get-current-weather/model/useWeatherSummary";
+import { cn } from "@/shared/lib/cn";
 import { getUserLocation } from "@/shared/lib/userLocation";
 import { Input } from "@/shared/ui/input/Input";
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { buildDistrictDisplay } from "../lib/district-display.lib";
 import { HourlyInfoCard } from "./HourlyInfoCard";
 import { NowInfoCard } from "./NowInfoCard";
 import { mainPageStyles } from "./styles";
@@ -83,10 +85,14 @@ export default function MainPage() {
 
   const locationLabel = displayDistrict || currentRegionName;
   const aliasLabel = displayAlias || currentRegionName;
+  const districtDisplay = buildDistrictDisplay({
+    district: locationLabel || "알 수 없음",
+    alias: aliasLabel || "",
+  });
 
   return (
-    <div className={mainPageStyles.page}>
-      <div className={mainPageStyles.searchWrap}>
+    <div className={cn(mainPageStyles.page)}>
+      <div className={cn(mainPageStyles.searchWrap)}>
         <Input
           value={locationLabel}
           aria-label={"검색어 입력"}
@@ -98,13 +104,16 @@ export default function MainPage() {
           readOnly
         />
         {currentRegionError && !displayDistrict && (
-          <p className={mainPageStyles.searchStatus}>{currentRegionError}</p>
+          <p className={cn(mainPageStyles.searchStatus)}>{currentRegionError}</p>
         )}
       </div>
-      <div className={mainPageStyles.dailySummary}>
-        <div className={mainPageStyles.section}>
+      <div className={cn(mainPageStyles.dailySummary)}>
+        <div className={cn(mainPageStyles.section)}>
           <NowInfoCard
-            district={aliasLabel || "알 수 없음"}
+            primaryDistrict={districtDisplay.primaryDistrict}
+            secondaryDistrict={districtDisplay.secondaryDistrict}
+            fullDistrict={districtDisplay.fullDistrict}
+            isAlias={districtDisplay.isAlias}
             data={data}
             isLoading={isLoading}
             isFetching={isFetching}
@@ -112,8 +121,8 @@ export default function MainPage() {
             refresh={refresh}
           />
         </div>
-        <div className={mainPageStyles.section}>
-          <h2 className={mainPageStyles.sectionTitle}>시간대별 날씨</h2>
+        <div className={cn(mainPageStyles.section)}>
+          <h2 className={cn(mainPageStyles.sectionTitle)}>시간대별 날씨</h2>
           <HourlyInfoCard data={data} isFetching={isFetching} error={error} />
         </div>
       </div>

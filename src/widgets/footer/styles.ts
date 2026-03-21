@@ -1,7 +1,63 @@
 export const footerClassStyles = {
-  shell: "sticky border-t border-[var(--line)] bg-[color:var(--surface)]/70",
-  container:
-    "mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-4 text-sm text-[var(--text-sub)] sm:px-6",
-  versionBadge:
-    "rounded-full bg-[var(--surface-soft)] px-2 py-1 text-xs font-semibold text-[var(--text-sub)]",
+  // desktop 전용
+  desktopShell: [
+    "hidden",
+    "border-t",
+    "border-[var(--line)]",
+    "bg-[color:var(--surface)]/70",
+    "sm:block",
+  ],
+  desktopContainer: [
+    "mx-auto",
+    "flex",
+    "w-full",
+    "max-w-6xl",
+    "items-center",
+    "justify-between",
+    "px-4",
+    "py-4",
+    "text-sm",
+    "text-[var(--text-sub)]",
+    "sm:px-6",
+  ],
+  versionBadge: [
+    "rounded-full",
+    "bg-[var(--surface-soft)]",
+    "px-2",
+    "py-1",
+    "text-xs",
+    "font-semibold",
+    "text-[var(--text-sub)]",
+  ],
+
+  // mobile 전용
+  mobileNavShell: [
+    "fixed",
+    "inset-x-0",
+    "bottom-0",
+    "z-30",
+    "border-t",
+    "border-[var(--line)]",
+    "bg-[color:var(--surface)]/95",
+    "backdrop-blur",
+    "transition-transform",
+    "duration-500",
+    "ease-out",
+    "sm:hidden",
+  ],
+  mobileNavVisible: ["translate-y-0"],
+  mobileNavHidden: ["translate-y-full"],
+  mobileNavContainer: [
+    "mx-auto",
+    "flex",
+    "w-full",
+    "max-w-6xl",
+    "items-center",
+    "justify-between",
+    "px-4",
+    "py-3",
+  ],
+  mobileNavItemBase: ["rounded-lg", "px-3", "py-2", "transition"],
+  mobileNavItemActive: [],
+  mobileNavItemInactive: [],
 } as const;

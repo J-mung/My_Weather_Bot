@@ -1,5 +1,6 @@
 import type { GridCoord } from "@/entities/weather/model/weather.types";
 import { useBookmarks } from "@/features/bookmark/model/useBookmarks";
+import { cn } from "@/shared/lib/cn";
 import {
   buildDisplayHighlightParts,
   toDisplayDistrictName,
@@ -101,8 +102,8 @@ export const CandidateList = ({
             key={`${candidate.item.fullName}-${idx}`}
             className={
               part.matched
-                ? searchPageStyles.candidateHighlight
-                : searchPageStyles.candidateName
+                ? cn(searchPageStyles.candidateHighlight)
+                : cn(searchPageStyles.candidateName)
             }
           >
             {part.text}
@@ -117,11 +118,11 @@ export const CandidateList = ({
       {candidates.map((_candidate) => (
         <div
           key={_candidate.item.fullName}
-          className={searchPageStyles.candidate}
+          className={cn(searchPageStyles.candidate)}
           onClick={() => onClickCandidate(_candidate.item.fullName)}
         >
           <div
-            className={searchPageStyles.candidateContent}
+            className={cn(searchPageStyles.candidateContent)}
             data-full-name={_candidate.item.fullName}
           >
             {highlightText(_candidate)}

@@ -1,4 +1,5 @@
 import { useLocationSearch } from "@/features/location-search/useLocationSearch";
+import { cn } from "@/shared/lib/cn";
 import { Input } from "@/shared/ui/input/Input";
 import { useEffect, useRef } from "react";
 import { CandidateList } from "./CandidateList";
@@ -18,11 +19,11 @@ export default function SearchPage() {
     if (!inputRef.current) return;
 
     inputRef.current.focus();
-  });
+  }, []);
 
   return (
-    <div className={searchPageStyles.page}>
-      <div className={searchPageStyles.searchWrap}>
+    <div className={cn(searchPageStyles.page)}>
+      <div className={cn(searchPageStyles.searchWrap)}>
         <Input
           ref={inputRef}
           value={input}
@@ -33,7 +34,7 @@ export default function SearchPage() {
           type={"text"}
         />
       </div>
-      {errorMessage && <div className={searchPageStyles.section}>{errorMessage}</div>}
+      {errorMessage && <div className={cn(searchPageStyles.section)}>{errorMessage}</div>}
       {candidates.length > 0 && (
         <CandidateList candidates={candidates} input={input} selectDistrict={selectDistrict} />
       )}

@@ -1,5 +1,6 @@
 import type { GridCoord } from "@/entities/weather/model/weather.types";
 import { useWeatherSummary } from "@/features/get-current-weather/model/useWeatherSummary";
+import { cn } from "@/shared/lib/cn";
 import { bookmarkSummaryStyles } from "./styles";
 
 /**
@@ -22,9 +23,9 @@ export const BookmarkWeatherSummary = ({ nx, ny }: GridCoord) => {
 
   if (isLoading) {
     return (
-      <div className={bookmarkSummaryStyles.summaryWrap}>
-        <p className={bookmarkSummaryStyles.summaryMainContent}>--°</p>
-        <p className={bookmarkSummaryStyles.summarySubContent}>최고 --° · 최저 --°</p>
+      <div className={cn(bookmarkSummaryStyles.summaryWrap)}>
+        <p className={cn(bookmarkSummaryStyles.summaryMainContent)}>--°</p>
+        <p className={cn(bookmarkSummaryStyles.summarySubContent)}>최고 --° · 최저 --°</p>
       </div>
     );
   }
@@ -32,21 +33,21 @@ export const BookmarkWeatherSummary = ({ nx, ny }: GridCoord) => {
   // No Data
   if (isError || !data) {
     return (
-      <div className={bookmarkSummaryStyles.summaryWrap}>
-        <p className={bookmarkSummaryStyles.summaryMainContent}>-</p>
-        <p className={bookmarkSummaryStyles.summaryNodata}>날씨 정보를 불러오지 못했습니다.</p>
+      <div className={cn(bookmarkSummaryStyles.summaryWrap)}>
+        <p className={cn(bookmarkSummaryStyles.summaryMainContent)}>-</p>
+        <p className={cn(bookmarkSummaryStyles.summaryNodata)}>날씨 정보를 불러오지 못했습니다.</p>
       </div>
     );
   }
 
   return (
-    <div className={bookmarkSummaryStyles.summaryWrap}>
-      <div className={"flex items-center justify-between"}>
-        <p className={bookmarkSummaryStyles.summaryMainContent}>
+    <div className={cn(bookmarkSummaryStyles.summaryWrap)}>
+      <div className={cn("flex items-center justify-between")}>
+        <p className={cn(bookmarkSummaryStyles.summaryMainContent)}>
           {formatCurrentTemperature(data.now.temperature)}
         </p>
       </div>
-      <p className={bookmarkSummaryStyles.summarySubContent}>
+      <p className={cn(bookmarkSummaryStyles.summarySubContent)}>
         최고 {formatTemperature(data.todayMax)} / 최저 {formatTemperature(data.todayMin)}
       </p>
     </div>

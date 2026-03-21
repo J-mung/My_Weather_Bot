@@ -1,4 +1,5 @@
 import { useBookmarks } from "@/features/bookmark/model/useBookmarks";
+import { cn } from "@/shared/lib/cn";
 import { BookmarkCardList } from "./card/BookmarkCardList";
 import { bookmarkPageStyles } from "./styles";
 
@@ -7,13 +8,13 @@ export default function BookmarkPage() {
     useBookmarks();
 
   return (
-    <div className={bookmarkPageStyles.page}>
-      <div className={bookmarkPageStyles.remainSlotWrap}>
-        <span className={bookmarkPageStyles.remainSlotContent}>
+    <div className={cn(bookmarkPageStyles.page)}>
+      <div className={cn(bookmarkPageStyles.remainSlotWrap)}>
+        <span className={cn(bookmarkPageStyles.remainSlotContent)}>
           북마크 현황 : {remainingList} / {totalBookmarkList}
         </span>
         {isFull && (
-          <span className={bookmarkPageStyles.remainSlotContent}>
+          <span className={cn(bookmarkPageStyles.remainSlotContent)}>
             북마크는 최대 6개까지 가능합니다.
           </span>
         )}

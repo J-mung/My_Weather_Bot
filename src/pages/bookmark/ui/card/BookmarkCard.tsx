@@ -6,11 +6,9 @@ import type {
 } from "./bookmark-card.types";
 import {
   bookmarkCardBtnListClass,
-  bookmarkCardCaptionClass,
   bookmarkCardClass,
   bookmarkCardHeaderClass,
   bookmarkCardLocationVariants,
-  bookmarkCardTempClass,
   bookmarkCardTitleVariants,
 } from "./bookmark-card.variants";
 
@@ -43,8 +41,6 @@ export const BookmarkCardLocation = ({
 export const BookmarkCard = ({
   title,
   locationLabel,
-  nx,
-  ny,
   isEditing,
   summary,
   actions,
@@ -57,14 +53,9 @@ export const BookmarkCard = ({
       {!isEditing ? (
         <>
           <div className={cn(bookmarkCardHeaderClass)}>
-            <div className={"flex-1"}>
+            <div className={cn("min-w-0", "flex-1")}>
               <BookmarkCardTitle className={"truncate"}>{title}</BookmarkCardTitle>
               <BookmarkCardLocation className={"truncate"}>{locationLabel}</BookmarkCardLocation>
-            </div>
-            <div className={cn(bookmarkCardCaptionClass)}>
-              <span className={cn(bookmarkCardTempClass)}>
-                nx: {nx}, ny: {ny}
-              </span>
             </div>
           </div>
           {summary}

@@ -1,4 +1,5 @@
 import type { BookmarkItem } from "@/features/bookmark/model/types";
+import { cn } from "@/shared/lib/cn";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { BookmarkWeatherSummary } from "../BookmarkWeatherSummary";
@@ -43,11 +44,11 @@ export const BookmarkCardList = ({
   return (
     <>
       {bookmarkList.length === 0 && (
-        <div className={bookmarkPageStyles.bookmarkListNodata}>
+        <div className={cn(bookmarkPageStyles.bookmarkListNodata)}>
           <span>등록된 즐겨찾기가 없습니다.</span>
         </div>
       )}
-      <div className={bookmarkPageStyles.bookmarkListWrap}>
+      <div className={cn(bookmarkPageStyles.bookmarkListWrap)}>
         {bookmarkList.map((_bookmark) => {
           const isEditing = editingId === _bookmark.id;
           const locationLabel = _bookmark.displayName;
@@ -58,8 +59,6 @@ export const BookmarkCardList = ({
               key={_bookmark.id}
               title={title}
               locationLabel={locationLabel}
-              nx={_bookmark.nx}
-              ny={_bookmark.ny}
               isEditing={isEditing}
               onClick={(e) => {
                 e.stopPropagation();
