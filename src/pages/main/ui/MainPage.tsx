@@ -5,7 +5,7 @@ import { readBookmarkFromStorage } from "@/features/bookmark/model/useBookmarks"
 import { useWeatherSummary } from "@/features/get-current-weather/model/useWeatherSummary";
 import { cn } from "@/shared/lib/cn";
 import { getUserLocation } from "@/shared/lib/userLocation";
-import { Input } from "@/shared/ui/input/Input";
+import { IconInput } from "@/shared/ui/input";
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { buildDistrictDisplay } from "../lib/district-display.lib";
@@ -93,15 +93,19 @@ export default function MainPage() {
   return (
     <div className={cn(mainPageStyles.page)}>
       <div className={cn(mainPageStyles.searchWrap)}>
-        <Input
-          value={locationLabel}
-          aria-label={"검색어 입력"}
-          variant={"default"}
+        <IconInput
+          value={displayDistrict}
           placeholder={"검색어 입력..."}
+          aria-label={"검색어 입력..."}
+          showIconButton={false}
           onClick={() => {
-            navigate("/search", { replace: true });
+            const searchParams = new URLSearchParams({
+              location: displayDistrict,
+            });
+            navigate(`/search?${searchParams.toString()}`, { replace: true });
           }}
           readOnly
+          disabled={false}
         />
         {currentRegionError && !displayDistrict && (
           <p className={cn(mainPageStyles.searchStatus)}>{currentRegionError}</p>
