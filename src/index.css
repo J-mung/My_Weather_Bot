@@ -59,3 +59,9 @@ body {
 .scrollbar-hide::-webkit-scrollbar {
   display: none; /* Chrome / Safari */
 }
+
+@keyframes skeleton-shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}

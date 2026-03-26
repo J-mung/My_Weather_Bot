@@ -1,6 +1,7 @@
 import { cn } from "@/shared/lib/cn";
 import Button from "@/shared/ui/button";
 import { Icon, type IconName } from "@/shared/ui/icon";
+import { NowInfoSkeletonCard } from "./NowInfoSkeletonCard";
 import { nowInfoCardStyles } from "./styles";
 import type { DetailWeatherItem, NowInfoCardProps } from "./types";
 import { weatherConditionMeta } from "./weather-condition-meta";
@@ -44,7 +45,7 @@ export const NowInfoCard = ({
 
   return (
     <div className={cn(nowInfoCardStyles.root)}>
-      {isLoading && <div className={cn(nowInfoCardStyles.loading)}>Loading...</div>}
+      {isLoading && <NowInfoSkeletonCard />}
       {data && (
         <>
           <div className={cn(nowInfoCardStyles.header)}>
