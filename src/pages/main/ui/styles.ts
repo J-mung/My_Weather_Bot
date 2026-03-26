@@ -26,6 +26,12 @@ export const mainPageStyles = {
     "md:p-6",
   ],
   sectionTitle: "mb-3 text-sm font-bold tracking-wide text-[var(--text-sub)] uppercase",
+  sectionTitleFetching: [
+    "animate-pulse",
+    "transition-colors",
+    "duration-300",
+    "text-[var(--text-sub)]",
+  ],
 } as const;
 
 export const nowInfoCardStyles = {
@@ -59,7 +65,12 @@ export const nowInfoCardStyles = {
     "text-[var(--text-main)]",
   ],
   districtDesktopAlias: ["truncate"],
-  districtLoading: ["animate-pulse", "transition-colors", "duration-300", "text-[var(--text-sub)]"],
+  districtFetching: [
+    "animate-pulse",
+    "transition-colors",
+    "duration-300",
+    "text-[var(--text-sub)]",
+  ],
   refreshButton: ["shrink-0"],
   refreshIconLoading: ["animate-spin"],
   date: ["text-lg", "text-[var(--text-sub)]", "md:text-xl"],

@@ -2,16 +2,17 @@ import type { SummaryDomain } from "@/entities/weather/model/weather.types";
 import { cn } from "@/shared/lib/cn";
 import { Icon } from "@/shared/ui/icon";
 import { useRef } from "react";
+import { HourlyInfoSkeletonCard } from "./HourlyInfoSkeletonCard";
 import { hourlyInfoCardStyles } from "./styles";
 import { weatherConditionMeta } from "./weather-condition-meta";
 
 export const HourlyInfoCard = ({
   data,
-  isFetching,
+  isLoading,
   error,
 }: {
   data: SummaryDomain | null;
-  isFetching: boolean;
+  isLoading: boolean;
   error: Error | null;
 }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -51,7 +52,7 @@ export const HourlyInfoCard = ({
 
   return (
     <div className={cn(hourlyInfoCardStyles.viewport)}>
-      {isFetching && <div className={cn(hourlyInfoCardStyles.loading)}>Loading...</div>}
+      {isLoading && <HourlyInfoSkeletonCard />}
       {/* 마우스 drag로 스크롤 가능 */}
       <div
         ref={scrollRef}

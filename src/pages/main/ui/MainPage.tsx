@@ -126,8 +126,15 @@ export default function MainPage() {
           />
         </div>
         <div className={cn(mainPageStyles.section)}>
-          <h2 className={cn(mainPageStyles.sectionTitle)}>시간대별 날씨</h2>
-          <HourlyInfoCard data={data} isFetching={isFetching} error={error} />
+          <h2
+            className={cn(
+              mainPageStyles.sectionTitle,
+              isFetching && mainPageStyles.sectionTitleFetching,
+            )}
+          >
+            시간대별 날씨
+          </h2>
+          <HourlyInfoCard data={data} isLoading={isLoading} error={error} />
         </div>
       </div>
     </div>

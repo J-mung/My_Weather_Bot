@@ -62,7 +62,7 @@ export const NowInfoCard = ({
                       className={cn(
                         nowInfoCardStyles.districtPrimary,
                         isAlias && nowInfoCardStyles.districtPrimaryAlias,
-                        isFetching && nowInfoCardStyles.districtLoading,
+                        isFetching && nowInfoCardStyles.districtFetching,
                       )}
                     >
                       {primaryDistrict}
@@ -74,7 +74,7 @@ export const NowInfoCard = ({
                       className={cn(
                         nowInfoCardStyles.districtDesktop,
                         isAlias && nowInfoCardStyles.districtDesktopAlias,
-                        isFetching && nowInfoCardStyles.districtLoading,
+                        isFetching && nowInfoCardStyles.districtFetching,
                       )}
                     >
                       {fullDistrict}
