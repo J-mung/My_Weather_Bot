@@ -1,4 +1,5 @@
 import type { GridCoord } from "@/entities/weather/model/weather.types";
+import { isAppError } from "@/shared/api/types";
 import { SPACE_REGEX } from "@/shared/lib/location-search.constants";
 import { createDistrictSearchEngine } from "@/shared/lib/location-search.engine";
 import { searchDistricts, toDisplayDistrictName } from "@/shared/lib/location-search.lib";
@@ -39,7 +40,7 @@ export const useLocationSearch = (): {
       if (!trimInput) {
         setCandidates([]);
         setErrorMessage(null);
-        return;
+        return null;
       }
 
       const parsedInput = trimInput.replace(SPACE_REGEX, "");
@@ -73,7 +74,13 @@ export const useLocationSearch = (): {
       setInput(toDisplayDistrictName(district));
 
       return gridCoord;
-    } catch {
+    } catch (error: unknown) {
+      if (isAppError(error)) {
+        setSelectedGridCoord(null);
+        setErrorMessage(error.meta.description);
+        return null;
+      }
+
       setSelectedGridCoord(null);
       setErrorMessage("해당 장소의 좌표를 확인하지 못했습니다.");
       return null;

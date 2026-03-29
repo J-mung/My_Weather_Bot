@@ -1,6 +1,8 @@
 import type { WeatherApiType, WeatherResponseMap } from "@/entities/weather/api/weather-api.types";
 import type { RequestWeatherParams } from "@/entities/weather/model/request-weather-params.types";
 import { weatherStrategyRegistry } from "@/entities/weather/model/weatherStrategyRegistry";
+import { APP_ERROR } from "@/shared/api/app-errors";
+import { AppError } from "@/shared/api/types";
 import { useQuery } from "@tanstack/react-query";
 import { useCallback, useEffect, useState } from "react";
 import type { GridCoord } from "./weather.types";
@@ -44,11 +46,11 @@ export const useWeatherQuery = <T extends WeatherApiType>(
     return newParams;
   }, [strategy, param.nx, param.ny]);
 
-  const query = useQuery<WeatherResponseMap[T]>({
+  const query = useQuery<WeatherResponseMap[T], AppError>({
     queryKey: ["weather", type, ...(params ? Object.values(params) : [])],
     queryFn: async () => {
       if (!params) {
-        throw new Error("요청 파라미터가 없습니다.");
+        throw new AppError(APP_ERROR.WEATHER_PARAMETER);
       }
 
       return strategy.fetch(params);

@@ -37,13 +37,11 @@ export const CandidateList = ({
   const onClickCandidate = async (candidateFullName: string) => {
     const selected = getSelected(candidateFullName);
     if (!selected) {
-      alert("선택된 장소의 정보에 오류가 있습니다. 잠시 후 다시 시도해 주세요.");
       return;
     }
 
     const gridCoord = await getGridCoordFromSelected(selected.item);
     if (!gridCoord) {
-      alert("해당 장소의 정보가 제공되지 않습니다.");
       return;
     }
 

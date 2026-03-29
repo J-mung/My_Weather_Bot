@@ -10,6 +10,7 @@ import type {
   SummaryDomain,
   TemperatureSummary,
 } from "@/entities/weather/model/weather.types";
+import type { AppError } from "@/shared/api/types";
 
 /**
  * 메인/북마크 화면에 필요한 날씨 요약 정보를 반환한다.
@@ -25,7 +26,7 @@ export const useWeatherSummary = (
   isLoading: boolean;
   isFetching: boolean;
   isError: boolean;
-  error: Error | null;
+  error: AppError | null;
   refresh: () => Promise<void>;
 } => {
   const ultraQuery = useWeatherQuery(WeatherApiType.ULTRA_NOW, param);

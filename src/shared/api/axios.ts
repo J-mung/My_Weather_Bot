@@ -1,5 +1,6 @@
 import type { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from "axios";
 import axios from "axios";
+import { API_ERROR, type ApiError } from "./types";
 
 const API_BASE_URL = {
   weather: "/api",
@@ -31,14 +32,27 @@ const createAxiosInstance = (baseURL: string): AxiosInstance => {
     (response) => response,
     (error: AxiosError) => {
       if (error.response) {
-        console.error("API Error: ", error.response?.status, error.response.data);
-      } else if (error.request) {
-        console.error("Network Error: ", error.message);
-      } else {
-        console.error("Unexcepted Error: ", error.message);
+        return Promise.reject<ApiError>({
+          type: API_ERROR.HTTP,
+          status: error.response.status,
+          statusText: error.response.statusText,
+          data: error.response.data,
+          message: error.message,
+          cause: error,
+        });
       }
-
-      return Promise.reject(error);
+      if (error.request) {
+        return Promise.reject<ApiError>({
+          type: API_ERROR.NETWORK,
+          message: "서버 응답을 받지 못했습니다.",
+          cause: error,
+        });
+      }
+      return Promise.reject<ApiError>({
+        type: API_ERROR.UNEXPECTED,
+        message: error.message || "알 수 없는 오류가 발생했습니다.",
+        cause: error,
+      });
     },
   );
 
