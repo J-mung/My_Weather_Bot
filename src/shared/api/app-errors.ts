@@ -41,7 +41,7 @@ export const appErrorMetaMap = {
   },
   [APP_ERROR.ULTRA_FORECAST]: {
     title: "날씨 정보를 찾지 못했어요.",
-    description: "날씨 정보를 불러오는 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.",
+    description: "날씨 정보를 불러오는 중 문제가 발생했습니다.\n잠시 후 다시 시도해 주세요.",
     actionLabel: "다시 시도",
   },
   [APP_ERROR.ULTRA_FORECAST_NOT_FOUND]: {
@@ -51,18 +51,17 @@ export const appErrorMetaMap = {
   },
   [APP_ERROR.ULTRA_FORECAST_RETRY_LATER]: {
     title: "날씨 정보를 찾지 못했어요.",
-    description:
-      "날씨 정보를 불러오는 요청이 많거나 서버가 불안정합니다. 잠시 후 다시 시도해 주세요.",
+    description: "날씨 정보 조회 요청이 많거나 서버가 불안정합니다.\n잠시 후 다시 시도해 주세요.",
     actionLabel: "다시 시도",
   },
   [APP_ERROR.ULTRA_FORECAST_UNEXPECTED]: {
     title: "날씨 정보를 찾지 못했어요.",
-    description: "알 수 없는 에러로 날씨 정보를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.",
+    description: "알 수 없는 에러로 날씨 정보를 불러오지 못했습니다.\n잠시 후 다시 시도해 주세요.",
     actionLabel: "다시 시도",
   },
   [APP_ERROR.ULTRA_NOW]: {
     title: "날씨 정보를 찾지 못했어요.",
-    description: "날씨 정보를 불러오는 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.",
+    description: "날씨 정보를 불러오는 중 문제가 발생했습니다.\n잠시 후 다시 시도해 주세요.",
     actionLabel: "다시 시도",
   },
   [APP_ERROR.ULTRA_NOW_NOT_FOUND]: {
@@ -72,18 +71,17 @@ export const appErrorMetaMap = {
   },
   [APP_ERROR.ULTRA_NOW_RETRY_LATER]: {
     title: "날씨 정보를 찾지 못했어요.",
-    description:
-      "날씨 정보를 불러오는 요청이 많거나 서버가 불안정합니다. 잠시 후 다시 시도해 주세요.",
+    description: "날씨 정보 조회 요청이 많거나 서버가 불안정합니다.\n잠시 후 다시 시도해 주세요.",
     actionLabel: "다시 시도",
   },
   [APP_ERROR.ULTRA_NOW_UNEXPECTED]: {
     title: "날씨 정보를 찾지 못했어요.",
-    description: "알 수 없는 에러로 날씨 정보를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.",
+    description: "알 수 없는 에러로 날씨 정보를 불러오지 못했습니다.\n잠시 후 다시 시도해 주세요.",
     actionLabel: "다시 시도",
   },
   [APP_ERROR.SHORT_FORECAST]: {
     title: "날씨 정보를 찾지 못했어요.",
-    description: "날씨 정보를 불러오는 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.",
+    description: "날씨 정보를 불러오는 중 문제가 발생했습니다.\n잠시 후 다시 시도해 주세요.",
     actionLabel: "다시 시도",
   },
   [APP_ERROR.SHORT_FORECAST_NOT_FOUND]: {
@@ -93,67 +91,66 @@ export const appErrorMetaMap = {
   },
   [APP_ERROR.SHORT_FORECAST_RETRY_LATER]: {
     title: "날씨 정보를 찾지 못했어요.",
-    description:
-      "날씨 정보를 불러오는 요청이 많거나 서버가 불안정합니다. 잠시 후 다시 시도해 주세요.",
+    description: "날씨 정보 조회 요청이 많거나 서버가 불안정합니다.\n잠시 후 다시 시도해 주세요.",
     actionLabel: "다시 시도",
   },
   [APP_ERROR.SHORT_FORECAST_UNEXPECTED]: {
     title: "날씨 정보를 찾지 못했어요.",
-    description: "알 수 없는 에러로 날씨 정보를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.",
+    description: "알 수 없는 에러로 날씨 정보를 불러오지 못했습니다.\n잠시 후 다시 시도해 주세요.",
     actionLabel: "다시 시도",
   },
   [APP_ERROR.LOCATION_LOOKUP]: {
     title: "위치를 찾지 못했어요",
-    description: "지역 정보를 불러오는 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.",
+    description: "지역 정보를 불러오는 중 문제가 발생했습니다.\n잠시 후 다시 시도해 주세요.",
     actionLabel: "다시 시도",
   },
   [APP_ERROR.LOCATION_LOOKUP_NOT_FOUND]: {
     title: "위치를 찾지 못했어요",
-    description: "현재 위치에 해당하는 지역 정보를 찾지 못했습니다. 잠시 후 다시 시도해 주세요.",
+    description: "현재 위치에 해당하는 지역 정보를 찾지 못했습니다.\n잠시 후 다시 시도해 주세요.",
     actionLabel: "다시 시도",
   },
   [APP_ERROR.LOCATION_LOOKUP_RETRY_LATER]: {
     title: "위치 조회가 지연되고 있어요",
     description:
-      "지역 정보를 불러오는 요청이 많거나 서버가 불안정합니다. 잠시 후 다시 시도해 주세요.",
+      "지역 정보를 불러오는 요청이 많거나 서버가 불안정합니다.\n잠시 후 다시 시도해 주세요.",
     actionLabel: "다시 시도",
   },
   [APP_ERROR.LOCATION_LOOKUP_UNEXPECTED]: {
     title: "위치를 찾지 못했어요.",
-    description: "알 수 없는 에러로 지역 정보를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.",
+    description: "알 수 없는 에러로 지역 정보를 불러오지 못했습니다.\n잠시 후 다시 시도해 주세요.",
     actionLabel: "다시 시도",
   },
   [APP_ERROR.LATLON_LOOKUP]: {
     title: "위치를 찾지 못했어요",
     description:
-      "날씨 정보를 조회하기 위한 지역 정보를 불러오는 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.",
+      "날씨 정보를 조회하기 위한 지역 정보를 불러오는 중 문제가 발생했습니다.\n잠시 후 다시 시도해 주세요.",
     actionLabel: "다시 시도",
   },
   [APP_ERROR.LATLON_LOOKUP_NOT_FOUND]: {
     title: "위치를 찾지 못했어요.",
     description:
-      "날씨 정보를 조회하기 위한 현재 위치에 해당하는 지역 정보를 찾지 못했습니다. 잠시 후 다시 시도해 주세요.",
+      "날씨 정보를 조회하기 위한 현재 위치에 해당하는 지역 정보를 찾지 못했습니다.\n잠시 후 다시 시도해 주세요.",
     actionLabel: "다시 시도",
   },
   [APP_ERROR.LATLON_LOOKUP_RETRY_LATER]: {
     title: "위치를 찾지 못했어요.",
     description:
-      "지역 정보를 불러오는 요청이 많거나 서버가 불안정합니다. 잠시 후 다시 시도해 주세요.",
+      "지역 정보를 불러오는 요청이 많거나 서버가 불안정합니다.\n잠시 후 다시 시도해 주세요.",
     actionLabel: "다시 시도",
   },
   [APP_ERROR.LATLON_LOOKUP_UNEXPECTED]: {
     title: "위치를 찾지 못했어요.",
-    description: "알 수 없는 에러로 지역 정보를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.",
+    description: "알 수 없는 에러로 지역 정보를 불러오지 못했습니다.\n잠시 후 다시 시도해 주세요.",
     actionLabel: "다시 시도",
   },
   [APP_ERROR.WEATHER_FETCH]: {
     title: "날씨 정보를 불러오지 못했어요",
-    description: "날씨 정보를 가져오는 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.",
+    description: "날씨 정보를 가져오는 중 문제가 발생했습니다.\n잠시 후 다시 시도해 주세요.",
     actionLabel: "다시 시도",
   },
   [APP_ERROR.BOOKMARK_ACTION]: {
     title: "북마크 저장에 실패했어요",
-    description: "북마크를 저장하는 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.",
+    description: "북마크를 저장하는 중 문제가 발생했습니다.\n잠시 후 다시 시도해 주세요.",
     actionLabel: "다시 시도",
   },
 } satisfies Record<string, AppErrorMeta>;

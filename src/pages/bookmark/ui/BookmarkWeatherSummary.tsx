@@ -1,6 +1,8 @@
 import type { GridCoord } from "@/entities/weather/model/weather.types";
 import { useWeatherSummary } from "@/features/get-current-weather/model/useWeatherSummary";
 import { cn } from "@/shared/lib/cn";
+import { Icon } from "@/shared/ui/icon";
+import { Skeleton } from "@/shared/ui/skeleton";
 import { bookmarkSummaryStyles } from "./styles";
 
 /**
@@ -19,37 +21,45 @@ const formatCurrentTemperature = (value: number | null): string => {
 
 export const BookmarkWeatherSummary = ({ nx, ny }: GridCoord) => {
   // GridCoord로 북마크된 위치의 날씨 정보 조회
-  const { data, isLoading, isError } = useWeatherSummary({ nx, ny });
+  const { data, isLoading, error } = useWeatherSummary({ nx, ny });
 
   if (isLoading) {
     return (
       <div className={cn(bookmarkSummaryStyles.summaryWrap)}>
-        <p className={cn(bookmarkSummaryStyles.summaryMainContent)}>--°</p>
-        <p className={cn(bookmarkSummaryStyles.summarySubContent)}>최고 --° · 최저 --°</p>
+        <div className={cn(bookmarkSummaryStyles.summaryMainContent)}>
+          <Skeleton className={cn(["h-9 w-15"])} />
+        </div>
+        <div className={cn(bookmarkSummaryStyles.summarySubContent)}>
+          <Skeleton className={cn(["h-9 w-37"])} />
+        </div>
       </div>
     );
   }
 
   // No Data
-  if (isError || !data) {
+  if (error) {
     return (
       <div className={cn(bookmarkSummaryStyles.summaryWrap)}>
-        <p className={cn(bookmarkSummaryStyles.summaryMainContent)}>-</p>
-        <p className={cn(bookmarkSummaryStyles.summaryNodata)}>날씨 정보를 불러오지 못했습니다.</p>
+        <Icon name={"error"} size={"lg"} tone={"danger"} />
+        <span className={cn(bookmarkSummaryStyles.summaryNodata)}>{error.meta.description}</span>
       </div>
     );
   }
 
   return (
     <div className={cn(bookmarkSummaryStyles.summaryWrap)}>
-      <div className={cn("flex items-center justify-between")}>
-        <p className={cn(bookmarkSummaryStyles.summaryMainContent)}>
-          {formatCurrentTemperature(data.now.temperature)}
-        </p>
-      </div>
-      <p className={cn(bookmarkSummaryStyles.summarySubContent)}>
-        최고 {formatTemperature(data.todayMax)} / 최저 {formatTemperature(data.todayMin)}
-      </p>
+      {data && (
+        <>
+          <div className={cn("flex items-center justify-between")}>
+            <p className={cn(bookmarkSummaryStyles.summaryMainContent)}>
+              {formatCurrentTemperature(data.now.temperature)}
+            </p>
+          </div>
+          <p className={cn(bookmarkSummaryStyles.summarySubContent)}>
+            최고 {formatTemperature(data.todayMax)} / 최저 {formatTemperature(data.todayMin)}
+          </p>
+        </>
+      )}
     </div>
   );
 };

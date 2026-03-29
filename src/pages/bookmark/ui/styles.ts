@@ -157,8 +157,8 @@ export const bookmarkEditStyles = {
 };
 
 export const bookmarkSummaryStyles = {
-  summaryWrap: ["mt-4"],
+  summaryWrap: ["flex", "flex-col", "mt-4", "gap-2"],
   summaryMainContent: ["text-3xl", "font-semibold", "text-[var(--text-main)]", "sm:text-4xl"],
   summarySubContent: ["mt-2", "text-base", "text-[var(--text-sub)]", "sm:text-base"],
-  summaryNodata: ["mt-2", "text-sm", "text-red-500"],
+  summaryNodata: ["mt-2", "text-sm", "whitespace-pre-wrap"],
 };
