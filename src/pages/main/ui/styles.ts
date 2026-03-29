@@ -37,7 +37,16 @@ export const mainPageStyles = {
 export const nowInfoCardStyles = {
   root: ["rounded-[1.75rem]", "bg-[var(--surface)]", "px-6", "py-7", "md:px-8", "md:py-8"],
   loading: ["text-sm", "text-[var(--text-sub)]"],
-  error: ["text-sm", "text-[var(--danger)]"],
+  error: [
+    "text-xl",
+    "flex",
+    "flex-col",
+    "items-center",
+    "justify-center",
+    "gap-3",
+    "md:gap-10",
+    "md:flex-row",
+  ],
   header: ["flex", "flex-col", "gap-4", "md:flex-row", "md:items-start", "md:justify-between"],
   headerText: ["space-y-2"],
   titleRow: ["flex", "items-start", "gap-3"],
@@ -153,5 +162,14 @@ export const hourlyInfoCardStyles = {
   detailIcon: ["text-[var(--icon-subtle)]"],
   detailValue: ["text-2xl", "font-extrabold", "leading-none", "text-[var(--text-main)]"],
   loading: ["text-sm", "text-[var(--text-sub)]"],
-  error: ["text-sm", "text-[var(--danger)]"],
+  error: [
+    "text-xl",
+    "flex",
+    "flex-col",
+    "items-center",
+    "justify-center",
+    "gap-3",
+    "md:gap-10",
+    "md:flex-row",
+  ],
 };

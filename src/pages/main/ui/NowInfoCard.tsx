@@ -43,6 +43,34 @@ export const NowInfoCard = ({
     ? weatherConditionMeta[data.now.condition]
     : weatherConditionMeta["unavailable"];
 
+  if (error) {
+    return (
+      <div className={cn(nowInfoCardStyles.root, nowInfoCardStyles.error)}>
+        <Icon
+          name={"error"}
+          size={"lg"}
+          tone={"danger"}
+          className={"h-25 w-25 md:h-30 md:w-30"}
+        />
+        <div className={"flex flex-fill flex-col gap-5"}>
+          <span className={"max-w-100 min-w-50 whitespace-pre-wrap"}>{error.meta.description}</span>
+          <Button
+            variant={"ghost"}
+            size={"md"}
+            className={"gap-2"}
+            onClick={(e) => {
+              e.stopPropagation();
+              refresh();
+            }}
+          >
+            <Icon name={"refresh"} size={"md"} className={isFetching ? "animate-spin" : ""} />
+            {error.meta.actionLabel}
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={cn(nowInfoCardStyles.root)}>
       {isLoading && <NowInfoSkeletonCard />}
@@ -130,11 +158,6 @@ export const NowInfoCard = ({
             ))}
           </div>
         </>
-      )}
-      {error && (
-        <div className={cn(nowInfoCardStyles.error)}>
-          <span>{error.message}</span>
-        </div>
       )}
     </div>
   );

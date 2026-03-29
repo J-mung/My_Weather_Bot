@@ -12,6 +12,7 @@ export const iconRegistry = {
   close: `${path}/icon_close.svg`,
   delete: `${path}/icon_delete.svg`,
   edit: `${path}/icon_edit.svg`,
+  error: `${path}/icon_error.svg`,
   menu: `${path}/icon_menu.svg`,
   moreHoriz: `${path}/icon_more_horiz.svg`,
   partlyCloudyDay: `${path}/icon_partly_cloudy_day.svg`,

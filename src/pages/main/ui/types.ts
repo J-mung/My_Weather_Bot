@@ -1,5 +1,14 @@
 import type { SummaryDomain } from "@/entities/weather/model/weather.types";
+import type { AppError } from "@/shared/api/types";
 import type { IconName } from "@/shared/ui/icon";
+
+export interface HourlyInfoCardProps {
+  data: SummaryDomain | null;
+  isLoading: boolean;
+  isFetching: boolean;
+  error: AppError | null;
+  refresh: () => Promise<void>;
+}
 
 export interface NowInfoCardProps {
   primaryDistrict: string;
@@ -9,7 +18,7 @@ export interface NowInfoCardProps {
   data: SummaryDomain | null;
   isLoading: boolean;
   isFetching: boolean;
-  error: Error | null;
+  error: AppError | null;
   refresh: () => Promise<void>;
 }
 

@@ -1,20 +1,19 @@
-import type { SummaryDomain } from "@/entities/weather/model/weather.types";
 import { cn } from "@/shared/lib/cn";
+import Button from "@/shared/ui/button";
 import { Icon } from "@/shared/ui/icon";
 import { useRef } from "react";
 import { HourlyInfoSkeletonCard } from "./HourlyInfoSkeletonCard";
 import { hourlyInfoCardStyles } from "./styles";
+import type { HourlyInfoCardProps } from "./types";
 import { weatherConditionMeta } from "./weather-condition-meta";
 
 export const HourlyInfoCard = ({
   data,
   isLoading,
+  isFetching,
   error,
-}: {
-  data: SummaryDomain | null;
-  isLoading: boolean;
-  error: Error | null;
-}) => {
+  refresh,
+}: HourlyInfoCardProps) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   // 드래그 상태 계산을 위한 reference
   const dragStateRef = useRef({
@@ -50,6 +49,34 @@ export const HourlyInfoCard = ({
 
   const hourly = data?.hourly;
 
+  if (error) {
+    return (
+      <div className={cn(hourlyInfoCardStyles.viewport, hourlyInfoCardStyles.error)}>
+        <Icon
+          name={"error"}
+          size={"lg"}
+          tone={"danger"}
+          className={"h-25 w-25 md:h-30 md:w-30"}
+        />
+        <div className={"flex flex-fill flex-col gap-5"}>
+          <span className={"max-w-100 min-w-50 whitespace-pre-wrap"}>{error.meta.description}</span>
+          <Button
+            variant={"ghost"}
+            size={"md"}
+            className={"gap-2"}
+            onClick={(e) => {
+              e.stopPropagation();
+              refresh();
+            }}
+          >
+            <Icon name={"refresh"} size={"md"} className={isFetching ? "animate-spin" : ""} />
+            {error.meta.actionLabel}
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={cn(hourlyInfoCardStyles.viewport)}>
       {isLoading && <HourlyInfoSkeletonCard />}
@@ -78,7 +105,6 @@ export const HourlyInfoCard = ({
             ))}
           </div>
         )}
-        {error && <div className={cn(hourlyInfoCardStyles.error)}>{error.message}</div>}
       </div>
     </div>
   );

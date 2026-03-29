@@ -3,6 +3,7 @@ import type { GridCoord } from "@/entities/weather/model/weather.types";
 import type { BookmarkItem } from "@/features/bookmark/model/types";
 import { readBookmarkFromStorage } from "@/features/bookmark/model/useBookmarks";
 import { useWeatherSummary } from "@/features/get-current-weather/model/useWeatherSummary";
+import { isAppError } from "@/shared/api/types";
 import { cn } from "@/shared/lib/cn";
 import { getUserLocation } from "@/shared/lib/userLocation";
 import { IconInput } from "@/shared/ui/input";
@@ -67,12 +68,20 @@ export default function MainPage() {
           setCurrentRegionName(regionName);
           setCurrentRegionError("");
         }
-      } catch (fetchError) {
-        if (!ignore) {
-          console.warn("현재 위치의 지역명을 불러오지 못했습니다.", fetchError);
-          setCurrentRegionName("");
-          setCurrentRegionError("현재 위치를 확인하지 못했습니다. 검색으로 지역을 선택해 주세요.");
+      } catch (fetchError: unknown) {
+        if (ignore) return;
+        setCurrentRegionName("");
+
+        if (isAppError(fetchError)) {
+          alert(fetchError.meta.description);
+          setCurrentRegionError(fetchError.meta.description);
+          return;
         }
+
+        alert("지역 정보를 불러오는 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.");
+        setCurrentRegionError(
+          "지역 정보를 불러오는 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.",
+        );
       }
     };
 
@@ -134,7 +143,13 @@ export default function MainPage() {
           >
             시간대별 날씨
           </h2>
-          <HourlyInfoCard data={data} isLoading={isLoading} error={error} />
+          <HourlyInfoCard
+            data={data}
+            isLoading={isLoading}
+            isFetching={isFetching}
+            error={error}
+            refresh={refresh}
+          />
         </div>
       </div>
     </div>
