@@ -269,7 +269,6 @@ npm run dev:worker
 ## 사용 기술 스택
 
 ### Frontend
-
 - React 19
 - TypeScript
 - Vite
@@ -277,13 +276,16 @@ npm run dev:worker
 - TanStack Query
 - Axios
 - Tailwind CSS v4
+- Fuse.js
 - uuid
 
 ### Infra / Deployment
+- Cloudflare Workers (정적 자산 배포 + API 프록시)
 
-- Cloudflare Workers (정적 자산 + API 프록시)
-- Wrangler
-
-### Data
-
+### Data / External API
 - 기상청 단기예보 API (공공데이터포털)
+- Kakao Local API (주소 → 좌표 변환)
+
+### Client Storage
+- localStorage
+
