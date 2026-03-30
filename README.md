@@ -40,6 +40,25 @@ npm run dev:worker
 
 - `/api/getVilageFcst?...` 응답이 `JSON`인지 확인
 
+## 구현한 기능 설명 (v1.3)
+
+### 1) UI 개선
+
+> Skeleton UI
+<img width="2906" height="1642" alt="image" src="https://github.com/user-attachments/assets/45216a1f-ffd4-40cc-93de-fcc36c83ab1b" />
+<img width="2906" height="1642" alt="image" src="https://github.com/user-attachments/assets/7483e58b-0a6e-41af-921e-200a78181985" />
+
+> Error UI
+<img width="2906" height="1642" alt="image" src="https://github.com/user-attachments/assets/7b7360a7-7259-407f-9bd8-2ab9692ab1d7" />
+<img width="2906" height="1642" alt="image" src="https://github.com/user-attachments/assets/23216abe-b3b6-4abf-b242-ce54e223ca36" />
+
+- ⚠️ 기상청 API 일일 트래픽 한도 초과 이슈를 확인했고, 이에 대한 개선이 필요해 보입니다.
+  - Error UI를 적용하고 테스트하는 과정에서 확인한 이슈
+  - 북마크 화면 진입 시, 북마크한 지역 수만큼 기상청 API 요청이 개별적으로 발생하고 있었음
+  - 이는 API 요청 시 수치예보 모델 격자 좌표를 parameter로 전달해야 했고, 각 지역을 좌표와 1:1로 매핑하는 방식으로 처리하고 있었기 때문
+  - 그 결과 예상보다 빠르게 일일 트래픽 한도에 도달했고, 일부 요청이 제한되는 문제가 발생
+  - 위와 같은 이유로 개선 필요
+
 ## 구현한 기능 설명 (v1.2)
 
 ### 1) 주소 검색 방식 개선
