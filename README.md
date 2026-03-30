@@ -40,11 +40,61 @@ npm run dev:worker
 
 - `/api/getVilageFcst?...` 응답이 `JSON`인지 확인
 
+## 구현한 기능 설명 (v1.2)
+
+### 1) 주소 검색 방식 개선
+
+> 검색 예시: 서울특별시 종로구
+<img width="1456" height="832" alt="image" src="https://github.com/user-attachments/assets/a78c5f6a-56df-4fbe-b4be-f3cc81c67dd0" />
+
+> 검색 예시: **사**울특별시 종로구
+<img width="1456" height="832" alt="image" src="https://github.com/user-attachments/assets/9c4826b6-01d5-437c-9110-ca455f055696" />
+
+> 검색 예시: 로구 청
+<img width="1453" height="821" alt="image" src="https://github.com/user-attachments/assets/4046d174-7660-4a07-81d1-aaa6a2256d89" />
+
+- #1 Kakao Local API(주소→좌표 변환)를 연동하여 정적 데이터셋 의존성을 제거했습니다.
+  - ✅ Kakao Local API(주소→좌표 변환)를 연동하여 입력된 주소로 좌표를 직접 구함
+  - ✅ 좌표 데이터를 지니고 있는 정적 데이터 `DistrictsGeoMapItem` 타입 제거
+- #2 Fuse.js 라이브러리를 도입하여 부분 검색 기능을 개선했습니다.
+  - ✅ 오타 허용
+  - ✅ 글자 단위의 부분 검색 허용
+  - ✅ 일치하는 글자에 하이라이트
+- #3 자주 검색되는 지역명에 대해선 캐시 및 TTL 적용하여 좌표 계산 비용 절약
+  - ✅ localStorage에 캐시 저장
+  - ✅ 지역명→위/경도 TTL: 7일
+  - ✅ 위/경도→수치예보 모델 격자 좌표 TTL: 30일   
+    ※ 위/경도 정보는 지역명에 비해 변동성이 낮으므로 더 오래 유지해도 무방함
+
+- 기존 버전은 지역명-좌표 데이터를 key-value의 쌍으로 정의하고 있었습니다.
+  ```TypeScript
+    export interface DistrictsGeoMapItem {
+      nx: number;   // API 조회용
+      ny: number;   // API 조회용
+      lat: number;  // GPS 기반의 현재 지역명 조회용
+      lon: number;  // GPS 기반의 현재 지역명 조회용
+    }
+    ```
+  - 위/경도, 수치예보 모델 격자 좌표가 데이터셋 크기가 크고 유지 비용이 높음
+  - 지역명과 좌표 데이터가 강하게 결합되어 있음
+  - 지역명 또는 좌표 데이터의 기준 변경에 매우 취약
+  - 이러한 이유로 Kakao Local API를 연동하여 정적 데이터셋에 대한 의존성을 제거했습니다.
+
+- 검색 기능을 이용하는 데에 있어 다소 불편한 점을 개선했습니다.
+  - 입력 도중 발생하는 오타도 어느 정도 허용
+  - 단어 단위가 아닌 글자 단위로 검색
+  - 실시간 검색 및 생성된 후보 리스트 중 일치 데이터에 하이라이트
+  - Fuse.js 라이브러리를 통해 개선할 수 있었습니다.
+
+- 캐시 및 TTL을 적용해 반복 조회 시 API 호출 비용을 절감했습니다.
+  - 지역명, 위/경도, 수치예보 모델 격자 좌표 등은 변동성이 매우 낮은 데이터
+  - 동일한 요청에 대해 동일한 결과를 기대할 수 있어 캐시 전략을 적용하기 적절
+  - 그 결과, 불필요한 외부 API 호출을 줄이고 검색 응답 속도를 개선할 수 있었습니다.
+
+
 ## 구현한 기능 설명 (v1.1)
 
 ### 1) 현재 위치/선택 위치 날씨 조회
-
-- 현재 위치의 지역명 조회를 위해 Kakao Local API(좌표→행정구역 변환)를 연동했습니다.
 
 <img width="1456" height="832" alt="image" src="https://github.com/user-attachments/assets/c7dcaf2a-cbc6-4201-8881-d479acc2e71b" />
 
@@ -58,6 +108,11 @@ npm run dev:worker
 - #2 시간대별 날씨 정보를 조회할 수 있도록 개선했습니다.
   - 기온
   - ✅ 기상 상태(강수, 구름 등)
+
+- 현재 위치의 지역명 조회를 위해 Kakao Local API(좌표→행정구역 변환)를 연동했습니다.
+- 데이터 조회 흐름
+<img width="819" height="494" alt="image" src="https://github.com/user-attachments/assets/e91a533c-84c3-4c19-a2d3-4223a0eaaf73" />
+
 - 전체 UI를 개편하여 디자인을 개선했습니다.
   (단, 로딩 인디케이터 등 일부 세부 UI 조정은 추후 진행 예정)
 - 지역명 우측에 새로고침 버튼을 추가하여 날씨 정보를 즉시 재조회할 수 있도록 개선했습니다.
