@@ -74,7 +74,7 @@ export type WeatherCondition =
 export interface CurrentWeatherNow {
   temperature: number | null; // 현재 기온(T1H)
   humidity: number | null; // 현재 습도(REH)
-  windSpeedMs: number | null; // 현재 풍속(WSD, m/s)
+  windSpeedMs: number | null; // 현재 풍속(WSD, m/s), 겨울철 체감온도를 구할 때 필요
   feelsLike: number | null; // 체감온도
   condition: WeatherCondition; // 현재 기상 상태
 }

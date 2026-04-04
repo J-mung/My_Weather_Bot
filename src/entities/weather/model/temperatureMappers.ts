@@ -11,6 +11,7 @@ import type {
   WeatherCondition,
 } from "@/entities/weather/model/weather.types";
 import { mapPtyToCondition, mapSkyToCondition } from "@/entities/weather/model/weatherCondition";
+import type { BookmarkSummaryData } from "@/features/bookmark/model/types";
 /**
  *
  * @param yyyymmdd
@@ -284,6 +285,16 @@ export const getCurrentCondition = (
   return mapSkyToCondition(sky);
 };
 
+/**
+ * 현재 날씨 정보 조회
+ *  - 현재 기온
+ *  - 습도
+ *  - 풍속 / 체감온도 / 기상 상태
+ * @param now
+ * @param ultraForecast
+ * @param observationDT
+ * @returns
+ */
 export const getCurrentWeatherNow = (
   now: UltraNowResponseType,
   ultraForecast: UltraFcstResponseType,
@@ -297,6 +308,21 @@ export const getCurrentWeatherNow = (
     windSpeedMs,
     feelsLike: calculateFeelsLike(temperature, humidity, windSpeedMs),
     condition: getCurrentCondition(now, ultraForecast, observationDT),
+  };
+};
+
+export const getBookmarkSummary = (
+  now: UltraNowResponseType,
+  short: ShortFcstResponseType,
+  observationDt: Date = new Date(),
+): BookmarkSummaryData => {
+  const { temperature } = getCurrentObservation(now);
+  const { todayMin, todayMax } = getTemperatureSummary(short, observationDt);
+
+  return {
+    temperature,
+    todayMin,
+    todayMax,
   };
 };
 

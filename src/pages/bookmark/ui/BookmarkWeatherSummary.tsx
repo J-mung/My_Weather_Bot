@@ -1,5 +1,5 @@
 import type { GridCoord } from "@/entities/weather/model/weather.types";
-import { useWeatherSummary } from "@/features/get-current-weather/model/useWeatherSummary";
+import { useBookmarkSummary } from "@/features/bookmark/model/useBookmarkSummary";
 import { cn } from "@/shared/lib/cn";
 import { Icon } from "@/shared/ui/icon";
 import { Skeleton } from "@/shared/ui/skeleton";
@@ -21,8 +21,7 @@ const formatCurrentTemperature = (value: number | null): string => {
 
 export const BookmarkWeatherSummary = ({ nx, ny }: GridCoord) => {
   // GridCoord로 북마크된 위치의 날씨 정보 조회
-  const { data, isLoading, error } = useWeatherSummary({ nx, ny });
-
+  const { data, isLoading, error } = useBookmarkSummary({ nx, ny });
   if (isLoading) {
     return (
       <div className={cn(bookmarkSummaryStyles.summaryWrap)}>
@@ -52,7 +51,7 @@ export const BookmarkWeatherSummary = ({ nx, ny }: GridCoord) => {
         <>
           <div className={cn("flex items-center justify-between")}>
             <p className={cn(bookmarkSummaryStyles.summaryMainContent)}>
-              {formatCurrentTemperature(data.now.temperature)}
+              {formatCurrentTemperature(data.temperature)}
             </p>
           </div>
           <p className={cn(bookmarkSummaryStyles.summarySubContent)}>

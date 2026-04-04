@@ -1,4 +1,4 @@
-import type { RequestWeatherParams } from "@/entities/weather/model/request-weather-params.types";
+import type { RequestWeatherParams } from "@/entities/weather/model/weather-model.types";
 import { APP_ERROR } from "@/shared/api/app-errors";
 import { getApiClient } from "@/shared/api/axios";
 import { API_ERROR, AppError, isApiError } from "@/shared/api/types";
@@ -7,7 +7,7 @@ import type { UltraFcstResponseType } from "./weather-api.types";
 const weatherApiClient = getApiClient("weather");
 
 /**
- * 초단기예보 fetch
+ * 초단기예보 fetch (하늘상태)
  */
 export const fetchUltraForecast = async (
   params: RequestWeatherParams,
