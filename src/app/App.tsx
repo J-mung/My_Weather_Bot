@@ -1,6 +1,8 @@
 import { router as defaultRouter } from "@/app/router";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { createAsyncStoragePersister } from "@tanstack/query-async-storage-persister";
+import { QueryClient } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import { RouterProvider } from "react-router-dom";
 
 const queryClient = new QueryClient({
@@ -12,12 +14,40 @@ const queryClient = new QueryClient({
   },
 });
 
+const localStorageAsync = {
+  getItem: async (key: string) => {
+    return window.localStorage.getItem(key);
+  },
+  setItem: async (key: string, value: string) => {
+    window.localStorage.setItem(key, value);
+  },
+  removeItem: async (key: string) => {
+    window.localStorage.removeItem(key);
+  },
+};
+
+const queryPersister = createAsyncStoragePersister({
+  storage: localStorageAsync,
+});
+
 function App({ router = defaultRouter }) {
   return (
-    <QueryClientProvider client={queryClient}>
+    <PersistQueryClientProvider
+      client={queryClient}
+      persistOptions={{
+        persister: queryPersister,
+        maxAge: 1000 * 60 * 5,
+        dehydrateOptions: {
+          // 저장할 쿼리 지정 - key가 weather로 시작하는 쿼리
+          shouldDehydrateQuery: (query) => {
+            return query.queryKey[0] === "weather";
+          },
+        },
+      }}
+    >
       <RouterProvider router={router} />
       <ReactQueryDevtools initialIsOpen={false} />
-    </QueryClientProvider>
+    </PersistQueryClientProvider>
   );
 }
 
