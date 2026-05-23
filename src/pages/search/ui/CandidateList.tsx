@@ -10,6 +10,7 @@ import { Button } from "@/shared/ui/button/Button";
 import { Icon } from "@/shared/ui/icon";
 import type { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
+import { writeRecentSearch } from "../lib/recent-searches";
 import { searchPageStyles } from "./styles";
 
 export const CandidateList = ({
@@ -46,6 +47,12 @@ export const CandidateList = ({
     }
 
     const locationQuery = encodeURIComponent(toDisplayDistrictName(selected.item));
+    writeRecentSearch({
+      displayName: toDisplayDistrictName(selected.item),
+      fullName: selected.item.fullName,
+      nx: gridCoord.nx,
+      ny: gridCoord.ny,
+    });
     navigate(`/?nx=${gridCoord.nx}&ny=${gridCoord.ny}&location=${locationQuery}`);
   };
 
