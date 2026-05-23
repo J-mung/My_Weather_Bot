@@ -10,8 +10,10 @@ import { IconInput } from "@/shared/ui/input";
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { buildDistrictDisplay } from "../lib/district-display.lib";
+import { FavoritePreviewPanel } from "./FavoritePreviewPanel";
 import { HourlyInfoCard } from "./HourlyInfoCard";
 import { NowInfoCard } from "./NowInfoCard";
+import { OutfitRecommendationCard } from "./OutfitRecommendationCard";
 import { mainPageStyles } from "./styles";
 
 export default function MainPage() {
@@ -50,8 +52,25 @@ export default function MainPage() {
 
   const { data, isLoading, isFetching, error, refresh } = useWeatherSummary(param);
   const navigate = useNavigate();
+  const [favoritePreviewList, setFavoritePreviewList] = useState<BookmarkItem[]>(() =>
+    readBookmarkFromStorage(),
+  );
   const [currentRegionName, setCurrentRegionName] = useState("");
   const [currentRegionError, setCurrentRegionError] = useState("");
+
+  useEffect(() => {
+    const syncFavoritePreviewList = () => {
+      setFavoritePreviewList(readBookmarkFromStorage());
+    };
+
+    window.addEventListener("focus", syncFavoritePreviewList);
+    window.addEventListener("storage", syncFavoritePreviewList);
+
+    return () => {
+      window.removeEventListener("focus", syncFavoritePreviewList);
+      window.removeEventListener("storage", syncFavoritePreviewList);
+    };
+  }, []);
 
   useEffect(() => {
     if (displayDistrict) {
@@ -98,6 +117,9 @@ export default function MainPage() {
     district: locationLabel || "알 수 없음",
     alias: aliasLabel || "",
   });
+  const searchParams = new URLSearchParams({
+    location: displayDistrict,
+  });
 
   return (
     <div className={cn(mainPageStyles.page)}>
@@ -108,9 +130,6 @@ export default function MainPage() {
           aria-label={"검색어 입력..."}
           showIconButton={false}
           onClick={() => {
-            const searchParams = new URLSearchParams({
-              location: displayDistrict,
-            });
             navigate(`/search?${searchParams.toString()}`, { replace: true });
           }}
           readOnly
@@ -120,37 +139,114 @@ export default function MainPage() {
           <p className={cn(mainPageStyles.searchStatus)}>{currentRegionError}</p>
         )}
       </div>
-      <div className={cn(mainPageStyles.dailySummary)}>
-        <div className={cn(mainPageStyles.section)}>
-          <NowInfoCard
-            primaryDistrict={districtDisplay.primaryDistrict}
-            secondaryDistrict={districtDisplay.secondaryDistrict}
-            fullDistrict={districtDisplay.fullDistrict}
-            isAlias={districtDisplay.isAlias}
-            data={data}
-            isLoading={isLoading}
-            isFetching={isFetching}
-            error={error}
-            refresh={refresh}
-          />
+
+      <div className={cn(mainPageStyles.dashboardGrid)}>
+        <div className={cn(mainPageStyles.mainColumn)}>
+          <div className={cn(mainPageStyles.section, mainPageStyles.heroSection)}>
+            <NowInfoCard
+              primaryDistrict={districtDisplay.primaryDistrict}
+              secondaryDistrict={districtDisplay.secondaryDistrict}
+              fullDistrict={districtDisplay.fullDistrict}
+              isAlias={districtDisplay.isAlias}
+              data={data}
+              isLoading={isLoading}
+              isFetching={isFetching}
+              error={error}
+              refresh={refresh}
+            />
+          </div>
+          {!error && (
+            <div className={cn(mainPageStyles.section)}>
+              <OutfitRecommendationCard
+                recommendation={data?.outfitRecommendation ?? null}
+                isLoading={isLoading}
+                isFetching={isFetching}
+              />
+            </div>
+          )}
+          <div className={cn(mainPageStyles.section)}>
+            <div className={cn(mainPageStyles.sectionHeader)}>
+              <h2
+                className={cn(
+                  mainPageStyles.sectionTitle,
+                  isFetching && mainPageStyles.sectionTitleFetching,
+                )}
+              >
+                Hourly Forecast
+              </h2>
+              <span className={cn(mainPageStyles.sectionActionText)}>24-hour view</span>
+            </div>
+            <HourlyInfoCard
+              data={data}
+              isLoading={isLoading}
+              isFetching={isFetching}
+              error={error}
+              refresh={refresh}
+            />
+          </div>
+
+          {!error && (
+            <div className={cn(mainPageStyles.metricGrid)}>
+              <div className={cn(mainPageStyles.metricCard)}>
+                <div className={cn(mainPageStyles.metricHeader)}>
+                  <span>Humidity</span>
+                </div>
+                <strong className={cn(mainPageStyles.metricValue)}>
+                  {data?.now.humidity ?? "--"}
+                  <span className={cn(mainPageStyles.metricUnit)}>%</span>
+                </strong>
+                <p className={cn(mainPageStyles.metricDescription)}>
+                  습도에 따라 체감이 달라질 수 있어요.
+                </p>
+              </div>
+
+              <div className={cn(mainPageStyles.metricCard)}>
+                <div className={cn(mainPageStyles.metricHeader)}>
+                  <span>Wind</span>
+                </div>
+                <strong className={cn(mainPageStyles.metricValue)}>
+                  {data?.now.windSpeedMs ?? "--"}
+                  <span className={cn(mainPageStyles.metricUnit)}>m/s</span>
+                </strong>
+                <p className={cn(mainPageStyles.metricDescription)}>
+                  강풍이면 겉옷과 우산 고정에 주의하세요.
+                </p>
+              </div>
+            </div>
+          )}
+
+          <div className={cn(mainPageStyles.mapCtaCard)}>
+            <div className={cn(mainPageStyles.mapTexture)} />
+            <button
+              type={"button"}
+              className={cn(mainPageStyles.mapCtaButton)}
+              onClick={() => {
+                navigate(`/search?${searchParams.toString()}`);
+              }}
+            >
+              View Precipitation Map
+            </button>
+          </div>
         </div>
-        <div className={cn(mainPageStyles.section)}>
-          <h2
-            className={cn(
-              mainPageStyles.sectionTitle,
-              isFetching && mainPageStyles.sectionTitleFetching,
-            )}
-          >
-            시간대별 날씨
-          </h2>
-          <HourlyInfoCard
-            data={data}
-            isLoading={isLoading}
-            isFetching={isFetching}
-            error={error}
-            refresh={refresh}
-          />
-        </div>
+
+        <FavoritePreviewPanel
+          bookmarks={favoritePreviewList}
+          onBookmarkClick={(bookmark) => {
+            const nextSearchParams = new URLSearchParams({
+              location: bookmark.displayName,
+              nx: String(bookmark.nx),
+              ny: String(bookmark.ny),
+              id: bookmark.id,
+            });
+            navigate(`/?${nextSearchParams.toString()}`);
+          }}
+          onAddClick={() => {
+            navigate("/search");
+          }}
+          onManageClick={() => {
+            navigate("/bookmark");
+          }}
+        />
       </div>
     </div>
   );

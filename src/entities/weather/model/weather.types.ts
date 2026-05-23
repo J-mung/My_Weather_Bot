@@ -79,11 +79,32 @@ export interface CurrentWeatherNow {
   condition: WeatherCondition; // 현재 기상 상태
 }
 
+export type OutfitComfortLevel =
+  | "hot"
+  | "warm"
+  | "mild"
+  | "cool"
+  | "chilly"
+  | "cold"
+  | "freezing"
+  | "unavailable";
+
+export interface OutfitRecommendation {
+  level: OutfitComfortLevel;
+  title: string;
+  summary: string;
+  items: string[];
+  cautions: string[];
+  basisTemperature: number | null;
+  basisSource: "feelsLike" | "temperature" | "unavailable";
+}
+
 /**
  * 화면 요약용 날씨 데이터
  */
 export interface SummaryDomain {
   now: CurrentWeatherNow;
+  outfitRecommendation: OutfitRecommendation;
   todayMin: number; // 오늘 최저
   todayMax: number; // 오늘 최고
   hourly: {

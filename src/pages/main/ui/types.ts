@@ -1,4 +1,5 @@
-import type { SummaryDomain } from "@/entities/weather/model/weather.types";
+import type { OutfitRecommendation, SummaryDomain } from "@/entities/weather/model/weather.types";
+import type { BookmarkItem } from "@/features/bookmark/model/types";
 import type { AppError } from "@/shared/api/types";
 import type { IconName } from "@/shared/ui/icon";
 
@@ -20,6 +21,24 @@ export interface NowInfoCardProps {
   isFetching: boolean;
   error: AppError | null;
   refresh: () => Promise<void>;
+}
+
+export interface OutfitRecommendationCardProps {
+  recommendation: OutfitRecommendation | null;
+  isLoading: boolean;
+  isFetching: boolean;
+}
+
+export interface FavoritePreviewPanelProps {
+  bookmarks: BookmarkItem[];
+  onBookmarkClick: (bookmark: BookmarkItem) => void;
+  onAddClick: () => void;
+  onManageClick: () => void;
+}
+
+export interface FavoritePreviewCardProps {
+  bookmark: BookmarkItem;
+  onClick: () => void;
 }
 
 export type DetailWeatherItem = {

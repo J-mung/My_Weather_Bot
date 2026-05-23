@@ -145,3 +145,8 @@ vite.config.ts.timestamp-*
 
 # Wrangler
 .wrangler
+
+# Local agent docs
+AGENT/
+AGENTS.md
+.AGENTS.md

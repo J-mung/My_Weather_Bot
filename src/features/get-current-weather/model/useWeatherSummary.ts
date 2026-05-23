@@ -4,6 +4,7 @@ import {
   getObservationDateTime,
   getTemperatureSummary,
 } from "@/entities/weather/model/temperatureMappers";
+import { getOutfitRecommendation } from "@/entities/weather/model/outfitRecommendation";
 import { useWeatherQuery } from "@/entities/weather/model/useWeatherQuery";
 import type {
   GridCoord,
@@ -90,8 +91,9 @@ export const useWeatherSummary = (
     currentDT,
     todayTempRangeQuery.data,
   );
+  const outfitRecommendation = getOutfitRecommendation(now);
 
-  const data: SummaryDomain = { now, todayMin, todayMax, hourly };
+  const data: SummaryDomain = { now, outfitRecommendation, todayMin, todayMax, hourly };
 
   return {
     data: data,

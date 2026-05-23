@@ -46,12 +46,7 @@ export const NowInfoCard = ({
   if (error) {
     return (
       <div className={cn(nowInfoCardStyles.root, nowInfoCardStyles.error)}>
-        <Icon
-          name={"error"}
-          size={"lg"}
-          tone={"danger"}
-          className={"h-25 w-25 md:h-30 md:w-30"}
-        />
+        <Icon name={"error"} size={"lg"} tone={"danger"} className={"h-25 w-25 md:h-30 md:w-30"} />
         <div className={"flex flex-fill flex-col gap-5"}>
           <span className={"max-w-100 min-w-50 whitespace-pre-wrap"}>{error.meta.description}</span>
           <Button
@@ -129,7 +124,7 @@ export const NowInfoCard = ({
             <Icon
               name={conditionMeta.icon}
               tone={"subtle"}
-              className={cn(nowInfoCardStyles.weatherIcon, "h-17", "w-17")}
+              className={cn(nowInfoCardStyles.weatherIcon)}
             />
           </div>
 
