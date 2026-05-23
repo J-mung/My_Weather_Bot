@@ -1,11 +1,13 @@
 import { cva } from "class-variance-authority";
 
 export const bookmarkCardClass = [
-  "rounded-2xl",
+  "min-h-44",
+  "rounded-[1.35rem]",
   "border",
   "border-[var(--line)]",
-  "bg-[var(--surface)]",
-  "p-5 shadow-sm",
+  "bg-white",
+  "p-4",
+  "shadow-sm",
   "transition",
   "cursor-pointer",
   "hover:shadow-md",
@@ -21,7 +23,7 @@ export const bookmarkCardTitleVariants = cva(
     variants: {
       size: {
         sm: ["text-lg", "font-semibold"],
-        md: ["text-xl", "font-bold"],
+        md: ["text-lg", "font-extrabold", "sm:text-xl"],
         lg: ["text-2xl", "font-extrabold"],
       },
     },
@@ -34,7 +36,7 @@ export const bookmarkCardTitleVariants = cva(
 export const bookmarkCardLocationVariants = cva(["mt-1", "block", "text-[var(--text-sub)]"], {
   variants: {
     size: {
-      sm: ["text-sm"],
+      sm: ["text-xs", "sm:text-sm"],
       md: ["text-base"],
       lg: ["text-lg"],
     },

@@ -49,13 +49,11 @@ export const BookmarkWeatherSummary = ({ nx, ny }: GridCoord) => {
     <div className={cn(bookmarkSummaryStyles.summaryWrap)}>
       {data && (
         <>
-          <div className={cn("flex items-center justify-between")}>
-            <p className={cn(bookmarkSummaryStyles.summaryMainContent)}>
-              {formatCurrentTemperature(data.temperature)}
-            </p>
-          </div>
+          <p className={cn(bookmarkSummaryStyles.summaryMainContent)}>
+            {formatCurrentTemperature(data.temperature)}
+          </p>
           <p className={cn(bookmarkSummaryStyles.summarySubContent)}>
-            최고 {formatTemperature(data.todayMax)} / 최저 {formatTemperature(data.todayMin)}
+            High {formatTemperature(data.todayMax)} · Low {formatTemperature(data.todayMin)}
           </p>
         </>
       )}

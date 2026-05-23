@@ -1,4 +1,5 @@
 import { cn } from "@/shared/lib/cn";
+import { Icon } from "@/shared/ui/icon";
 import type {
   BookmarkCardLocationProps,
   BookmarkCardProps,
@@ -57,6 +58,7 @@ export const BookmarkCard = ({
               <BookmarkCardTitle className={"truncate"}>{title}</BookmarkCardTitle>
               <BookmarkCardLocation className={"truncate"}>{locationLabel}</BookmarkCardLocation>
             </div>
+            <Icon name={"cloud"} tone={"subtle"} className={"h-8 w-8"} />
           </div>
           {summary}
           {actions && <div className={cn(bookmarkCardBtnListClass)}>{actions}</div>}

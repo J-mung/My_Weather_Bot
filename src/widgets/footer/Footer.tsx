@@ -55,24 +55,52 @@ export default function Footer() {
       >
         <div className={cn(footerClassStyles.mobileNavContainer)}>
           <NavLink
-            to="/bookmark"
+            to="/"
             className={({ isActive }) =>
               cn(
-                `${footerClassStyles.mobileNavItemBase} ${isActive ? footerClassStyles.mobileNavItemActive : footerClassStyles.mobileNavItemInactive}`,
+                footerClassStyles.mobileNavItemBase,
+                isActive
+                  ? footerClassStyles.mobileNavItemActive
+                  : footerClassStyles.mobileNavItemInactive,
               )
             }
           >
-            <Icon name="bookmark" size={"lg"} tone={"default"} />
+            <span className={cn(footerClassStyles.mobileNavIconWrap)}>
+              <Icon name="cloud" size={"lg"} tone={"current"} />
+            </span>
+            <span className={cn(footerClassStyles.mobileNavLabel)}>Home</span>
           </NavLink>
           <NavLink
             to="/search"
             className={({ isActive }) =>
               cn(
-                `${footerClassStyles.mobileNavItemBase} ${isActive ? footerClassStyles.mobileNavItemActive : footerClassStyles.mobileNavItemInactive}`,
+                footerClassStyles.mobileNavItemBase,
+                isActive
+                  ? footerClassStyles.mobileNavItemActive
+                  : footerClassStyles.mobileNavItemInactive,
               )
             }
           >
-            <Icon name={"search"} size={"lg"} tone={"default"} />
+            <span className={cn(footerClassStyles.mobileNavIconWrap)}>
+              <Icon name={"search"} size={"lg"} tone={"current"} />
+            </span>
+            <span className={cn(footerClassStyles.mobileNavLabel)}>Search</span>
+          </NavLink>
+          <NavLink
+            to="/bookmark"
+            className={({ isActive }) =>
+              cn(
+                footerClassStyles.mobileNavItemBase,
+                isActive
+                  ? footerClassStyles.mobileNavItemActive
+                  : footerClassStyles.mobileNavItemInactive,
+              )
+            }
+          >
+            <span className={cn(footerClassStyles.mobileNavIconWrap)}>
+              <Icon name="bookmark" size={"lg"} tone={"current"} />
+            </span>
+            <span className={cn(footerClassStyles.mobileNavLabel)}>Bookmarks</span>
           </NavLink>
         </div>
       </nav>

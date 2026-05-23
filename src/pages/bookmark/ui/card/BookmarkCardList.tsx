@@ -10,12 +10,18 @@ import { CardEditForm } from "./CardEditForm";
 
 export const BookmarkCardList = ({
   bookmarkList,
+  isFull,
+  isManageMode,
   deleteBookmark,
   updateAlias,
+  onAddBookmark,
 }: {
   bookmarkList: BookmarkItem[];
+  isFull: boolean;
+  isManageMode: boolean;
   deleteBookmark: (id: string) => void;
   updateAlias: (id: string, alias: string) => void;
+  onAddBookmark: () => void;
 }) => {
   const [openedMenuId, setOpenedMenuId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -66,14 +72,16 @@ export const BookmarkCardList = ({
               }}
               summary={<BookmarkWeatherSummary nx={_bookmark.nx} ny={_bookmark.ny} />}
               actions={
-                <CardContextMenu
-                  openedMenuId={openedMenuId}
-                  bookmarkItem={_bookmark}
-                  setOpenedMenuId={setOpenedMenuId}
-                  setEditingId={setEditingId}
-                  setAliasInput={setAliasInput}
-                  deleteBookmark={deleteBookmark}
-                />
+                isManageMode ? (
+                  <CardContextMenu
+                    openedMenuId={openedMenuId}
+                    bookmarkItem={_bookmark}
+                    setOpenedMenuId={setOpenedMenuId}
+                    setEditingId={setEditingId}
+                    setAliasInput={setAliasInput}
+                    deleteBookmark={deleteBookmark}
+                  />
+                ) : null
               }
               editForm={
                 <CardEditForm
@@ -86,6 +94,17 @@ export const BookmarkCardList = ({
             ></BookmarkCard>
           );
         })}
+
+        {!isFull && (
+          <button
+            type={"button"}
+            className={cn(bookmarkPageStyles.addCityCard)}
+            onClick={onAddBookmark}
+          >
+            <span className={cn(bookmarkPageStyles.addCityIcon)}>+</span>
+            <span>Add City</span>
+          </button>
+        )}
       </div>
       <div></div>
     </>
