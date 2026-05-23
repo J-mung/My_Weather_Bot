@@ -3,6 +3,7 @@
 기상청 API를 활용한 날씨 예보 애플리케이션입니다.
 
 배포 URL
+
 > https://my-weather-bot.xorb2298.workers.dev/
 
 ## 프로젝트 실행 방법(로컬)
@@ -22,12 +23,16 @@ npm install
 ### 3) 로컬 환경변수 설정
 
 - 루트 경로에 `.dev.vars` 파일을 생성합니다.
+- Vite dev proxy는 `.dev.vars`를 기본으로 읽고, `.env` 값이 있으면 `.env`가 우선합니다.
 
 ```env
 API_BASE_URL="https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0"
 API_KEY="발급받은_서비스키"
 KAKAO_REST_API_BASE_URL="https://dapi.kakao.com"
 KAKAO_REST_API_KEY="카카오_REST_API_키"
+AIRKOREA_API_BASE_URL="https://apis.data.go.kr/B552584/ArpltnInforInqireSvc"
+# Vite dev server만 사용할 경우 VITE_AIRKOREA_BASE_URL도 지원
+# AIRKOREA_API_KEY="에어코리아_전용_서비스키" # 미지정 시 API_KEY 사용
 ```
 
 ### 4) 로컬 실행 (Worker + 정적 자산)
@@ -45,12 +50,12 @@ npm run dev:worker
 ### 1) UI 개선
 
 > Skeleton UI
-<img width="2906" height="1642" alt="image" src="https://github.com/user-attachments/assets/45216a1f-ffd4-40cc-93de-fcc36c83ab1b" />
-<img width="2906" height="1642" alt="image" src="https://github.com/user-attachments/assets/7483e58b-0a6e-41af-921e-200a78181985" />
+> <img width="2906" height="1642" alt="image" src="https://github.com/user-attachments/assets/45216a1f-ffd4-40cc-93de-fcc36c83ab1b" />
+> <img width="2906" height="1642" alt="image" src="https://github.com/user-attachments/assets/7483e58b-0a6e-41af-921e-200a78181985" />
 
 > Error UI
-<img width="2906" height="1642" alt="image" src="https://github.com/user-attachments/assets/7b7360a7-7259-407f-9bd8-2ab9692ab1d7" />
-<img width="2906" height="1642" alt="image" src="https://github.com/user-attachments/assets/23216abe-b3b6-4abf-b242-ce54e223ca36" />
+> <img width="2906" height="1642" alt="image" src="https://github.com/user-attachments/assets/7b7360a7-7259-407f-9bd8-2ab9692ab1d7" />
+> <img width="2906" height="1642" alt="image" src="https://github.com/user-attachments/assets/23216abe-b3b6-4abf-b242-ce54e223ca36" />
 
 - ⚠️ 기상청 API 일일 트래픽 한도 초과 이슈를 확인했고, 이에 대한 개선이 필요해 보입니다.
   - Error UI를 적용하고 테스트하는 과정에서 확인한 이슈
@@ -64,13 +69,13 @@ npm run dev:worker
 ### 1) 주소 검색 방식 개선
 
 > 검색 예시: 서울특별시 종로구
-<img width="1456" height="832" alt="image" src="https://github.com/user-attachments/assets/a78c5f6a-56df-4fbe-b4be-f3cc81c67dd0" />
+> <img width="1456" height="832" alt="image" src="https://github.com/user-attachments/assets/a78c5f6a-56df-4fbe-b4be-f3cc81c67dd0" />
 
 > 검색 예시: **사**울특별시 종로구
-<img width="1456" height="832" alt="image" src="https://github.com/user-attachments/assets/9c4826b6-01d5-437c-9110-ca455f055696" />
+> <img width="1456" height="832" alt="image" src="https://github.com/user-attachments/assets/9c4826b6-01d5-437c-9110-ca455f055696" />
 
 > 검색 예시: 로구 청
-<img width="1453" height="821" alt="image" src="https://github.com/user-attachments/assets/4046d174-7660-4a07-81d1-aaa6a2256d89" />
+> <img width="1453" height="821" alt="image" src="https://github.com/user-attachments/assets/4046d174-7660-4a07-81d1-aaa6a2256d89" />
 
 - #1 Kakao Local API(주소→좌표 변환)를 연동하여 정적 데이터셋 의존성을 제거했습니다.
   - ✅ Kakao Local API(주소→좌표 변환)를 연동하여 입력된 주소로 좌표를 직접 구함
@@ -82,10 +87,11 @@ npm run dev:worker
 - #3 자주 검색되는 지역명에 대해선 캐시 및 TTL 적용하여 좌표 계산 비용 절약
   - ✅ localStorage에 캐시 저장
   - ✅ 지역명→위/경도 TTL: 7일
-  - ✅ 위/경도→수치예보 모델 격자 좌표 TTL: 30일   
+  - ✅ 위/경도→수치예보 모델 격자 좌표 TTL: 30일  
     ※ 위/경도 정보는 지역명에 비해 변동성이 낮으므로 더 오래 유지해도 무방함
 
 - 기존 버전은 지역명-좌표 데이터를 key-value의 쌍으로 정의하고 있었습니다.
+
   ```TypeScript
     export interface DistrictsGeoMapItem {
       nx: number;   // API 조회용
@@ -93,7 +99,8 @@ npm run dev:worker
       lat: number;  // GPS 기반의 현재 지역명 조회용
       lon: number;  // GPS 기반의 현재 지역명 조회용
     }
-    ```
+  ```
+
   - 위/경도, 수치예보 모델 격자 좌표가 데이터셋 크기가 크고 유지 비용이 높음
   - 지역명과 좌표 데이터가 강하게 결합되어 있음
   - 지역명 또는 좌표 데이터의 기준 변경에 매우 취약
@@ -109,7 +116,6 @@ npm run dev:worker
   - 지역명, 위/경도, 수치예보 모델 격자 좌표 등은 변동성이 매우 낮은 데이터
   - 동일한 요청에 대해 동일한 결과를 기대할 수 있어 캐시 전략을 적용하기 적절
   - 그 결과, 불필요한 외부 API 호출을 줄이고 검색 응답 속도를 개선할 수 있었습니다.
-
 
 ## 구현한 기능 설명 (v1.1)
 
@@ -130,7 +136,7 @@ npm run dev:worker
 
 - 현재 위치의 지역명 조회를 위해 Kakao Local API(좌표→행정구역 변환)를 연동했습니다.
 - 데이터 조회 흐름
-<img width="819" height="494" alt="image" src="https://github.com/user-attachments/assets/e91a533c-84c3-4c19-a2d3-4223a0eaaf73" />
+  <img width="819" height="494" alt="image" src="https://github.com/user-attachments/assets/e91a533c-84c3-4c19-a2d3-4223a0eaaf73" />
 
 - 전체 UI를 개편하여 디자인을 개선했습니다.
   (단, 로딩 인디케이터 등 일부 세부 UI 조정은 추후 진행 예정)
@@ -203,6 +209,7 @@ npm run dev:worker
   - 런타임에 환경변수를 주입해 주기 때문에 `API_KEY`가 노출되는 이슈를 수정할 수 있었습니다.
 
 ### 2) Kakao Local API를 통한 현재 위치 지역명 조회
+
 - 배경:
   - 브라우저 geolocation은 위/경도만 제공하고, 기상청 api는 지역명을 제공하지 않습니다.
   - 따라서 현재 위치의 지역명을 얻기 위해서는 별도의 방법이 필요합니다.
@@ -269,6 +276,7 @@ npm run dev:worker
 ## 사용 기술 스택
 
 ### Frontend
+
 - React 19
 - TypeScript
 - Vite
@@ -280,12 +288,14 @@ npm run dev:worker
 - uuid
 
 ### Infra / Deployment
+
 - Cloudflare Workers (정적 자산 배포 + API 프록시)
 
 ### Data / External API
+
 - 기상청 단기예보 API (공공데이터포털)
 - Kakao Local API (주소 → 좌표 변환)
 
 ### Client Storage
-- localStorage
 
+- localStorage

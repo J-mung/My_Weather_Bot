@@ -5,6 +5,7 @@ import { API_ERROR, type ApiError } from "./types";
 const API_BASE_URL = {
   weather: "/api",
   kakao: "/api/kakao",
+  airQuality: "/api/air-quality",
 } as const;
 
 export type ApiClientName = keyof typeof API_BASE_URL;
@@ -62,10 +63,11 @@ const createAxiosInstance = (baseURL: string): AxiosInstance => {
 const apiClients: Record<ApiClientName, AxiosInstance> = {
   weather: createAxiosInstance(API_BASE_URL.weather),
   kakao: createAxiosInstance(API_BASE_URL.kakao),
+  airQuality: createAxiosInstance(API_BASE_URL.airQuality),
 };
 
 /**
- * axios 객체 반환 (weather / kakao 택 1)
+ * axios 객체 반환 (weather / kakao / airQuality 택 1)
  * @param name
  * @returns
  */

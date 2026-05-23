@@ -2,6 +2,8 @@ import { fetchRegionNameFromCoord } from "@/entities/kakao/api/fetchRegionNameFr
 import type { GridCoord } from "@/entities/weather/model/weather.types";
 import type { BookmarkItem } from "@/features/bookmark/model/types";
 import { readBookmarkFromStorage } from "@/features/bookmark/model/useBookmarks";
+import type { AirQualityMetric } from "@/entities/air-quality/model/air-quality.types";
+import { useAirQualitySummary } from "@/features/air-quality/model/useAirQualitySummary";
 import { useWeatherSummary } from "@/features/get-current-weather/model/useWeatherSummary";
 import { isAppError } from "@/shared/api/types";
 import { cn } from "@/shared/lib/cn";
@@ -22,6 +24,39 @@ const formatProbability = (value: number | null | undefined): string => {
   }
 
   return String(value);
+};
+
+const AIR_QUALITY_GRADE_LABEL: Record<AirQualityMetric["grade"], string> = {
+  good: "좋음",
+  normal: "보통",
+  bad: "나쁨",
+  veryBad: "매우 나쁨",
+  unavailable: "확인 중",
+};
+
+const formatAirQualityValue = (metric: AirQualityMetric | undefined): string => {
+  if (typeof metric?.value !== "number") {
+    return "--";
+  }
+
+  return String(metric.value);
+};
+
+const getAirQualityDisplayDistrict = (fullDistrict: string): string => {
+  const tokens = fullDistrict.trim().split(/\s+/).filter(Boolean);
+  return (tokens.at(-1) ?? fullDistrict) || "선택 지역";
+};
+
+const getAirQualityDescription = (
+  metric: AirQualityMetric | undefined,
+  label: "미세먼지" | "초미세먼지",
+  displayDistrict: string,
+): string => {
+  if (!metric || metric.value === null) {
+    return metric?.flag || "대기질 정보를 준비 중이에요.";
+  }
+
+  return `${displayDistrict || "선택 지역"} 기준 ${label} ${AIR_QUALITY_GRADE_LABEL[metric.grade]}`;
 };
 
 export default function MainPage() {
@@ -121,6 +156,7 @@ export default function MainPage() {
 
   const locationLabel = displayDistrict || currentRegionName;
   const aliasLabel = displayAlias || currentRegionName;
+  const airQuality = useAirQualitySummary(locationLabel);
   const districtDisplay = buildDistrictDisplay({
     district: locationLabel || "알 수 없음",
     alias: aliasLabel || "",
@@ -193,52 +229,71 @@ export default function MainPage() {
             />
           </div>
 
-          {!error && (
-            <div className={cn(mainPageStyles.metricGrid)}>
-              <div className={cn(mainPageStyles.metricCard)}>
-                <div className={cn(mainPageStyles.metricHeader)}>
-                  <span>Humidity</span>
-                </div>
-                <strong className={cn(mainPageStyles.metricValue)}>
-                  {data?.now.humidity ?? "--"}
-                  <span className={cn(mainPageStyles.metricUnit)}>%</span>
-                </strong>
-                <p className={cn(mainPageStyles.metricDescription)}>
-                  습도에 따라 체감이 달라질 수 있어요.
-                </p>
+          <div className={cn(mainPageStyles.metricGrid)}>
+            <div className={cn(mainPageStyles.metricCard)}>
+              <div className={cn(mainPageStyles.metricHeader)}>
+                <span>Fine Dust</span>
               </div>
-
-              <div className={cn(mainPageStyles.metricCard)}>
-                <div className={cn(mainPageStyles.metricHeader)}>
-                  <span>Rain</span>
-                </div>
-                <strong className={cn(mainPageStyles.metricValue)}>
-                  {formatProbability(data?.precipitation.probability)}
-                  <span className={cn(mainPageStyles.metricUnit)}>%</span>
-                </strong>
-                <p className={cn(mainPageStyles.metricDescription)}>
-                  {data?.precipitation.rainAmountText || data?.precipitation.snowAmountText
-                    ? [data.precipitation.rainAmountText, data.precipitation.snowAmountText]
-                        .filter(Boolean)
-                        .join(" · ")
-                    : "강수 가능성을 확인하고 우산을 준비하세요."}
-                </p>
-              </div>
-
-              <div className={cn(mainPageStyles.metricCard)}>
-                <div className={cn(mainPageStyles.metricHeader)}>
-                  <span>Wind</span>
-                </div>
-                <strong className={cn(mainPageStyles.metricValue)}>
-                  {data?.now.windSpeedMs ?? "--"}
-                  <span className={cn(mainPageStyles.metricUnit)}>m/s</span>
-                </strong>
-                <p className={cn(mainPageStyles.metricDescription)}>
-                  강풍이면 겉옷과 우산 고정에 주의하세요.
-                </p>
-              </div>
+              <strong className={cn(mainPageStyles.metricValue)}>
+                {formatAirQualityValue(airQuality.data?.pm10)}
+                <span className={cn(mainPageStyles.metricUnit)}>㎍/㎥</span>
+              </strong>
+              <p className={cn(mainPageStyles.metricDescription)}>
+                {getAirQualityDescription(
+                  airQuality.data?.pm10,
+                  "미세먼지",
+                  getAirQualityDisplayDistrict(districtDisplay.fullDistrict),
+                )}
+              </p>
             </div>
-          )}
+
+            <div className={cn(mainPageStyles.metricCard)}>
+              <div className={cn(mainPageStyles.metricHeader)}>
+                <span>Ultra Fine Dust</span>
+              </div>
+              <strong className={cn(mainPageStyles.metricValue)}>
+                {formatAirQualityValue(airQuality.data?.pm25)}
+                <span className={cn(mainPageStyles.metricUnit)}>㎍/㎥</span>
+              </strong>
+              <p className={cn(mainPageStyles.metricDescription)}>
+                {getAirQualityDescription(
+                  airQuality.data?.pm25,
+                  "초미세먼지",
+                  getAirQualityDisplayDistrict(districtDisplay.fullDistrict),
+                )}
+              </p>
+            </div>
+
+            <div className={cn(mainPageStyles.metricCard)}>
+              <div className={cn(mainPageStyles.metricHeader)}>
+                <span>Rain Chance</span>
+              </div>
+              <strong className={cn(mainPageStyles.metricValue)}>
+                {formatProbability(data?.precipitation.probability)}
+                <span className={cn(mainPageStyles.metricUnit)}>%</span>
+              </strong>
+              <p className={cn(mainPageStyles.metricDescription)}>
+                {data?.precipitation.rainAmountText || data?.precipitation.snowAmountText
+                  ? [data.precipitation.rainAmountText, data.precipitation.snowAmountText]
+                      .filter(Boolean)
+                      .join(" · ")
+                  : "강수 가능성을 확인하고 우산을 준비하세요."}
+              </p>
+            </div>
+
+            <div className={cn(mainPageStyles.metricCard)}>
+              <div className={cn(mainPageStyles.metricHeader)}>
+                <span>Wind Speed</span>
+              </div>
+              <strong className={cn(mainPageStyles.metricValue)}>
+                {data?.now.windSpeedMs ?? "--"}
+                <span className={cn(mainPageStyles.metricUnit)}>m/s</span>
+              </strong>
+              <p className={cn(mainPageStyles.metricDescription)}>
+                강풍이면 겉옷과 우산 고정에 주의하세요.
+              </p>
+            </div>
+          </div>
 
           <div className={cn(mainPageStyles.mapCtaCard)}>
             <div className={cn(mainPageStyles.mapTexture)} />

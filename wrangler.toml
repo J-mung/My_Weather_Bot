@@ -6,6 +6,7 @@ keep_vars = false
 [vars]
 API_BASE_URL = "https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0"
 KAKAO_REST_API_BASE_URL = "https://dapi.kakao.com"
+AIRKOREA_API_BASE_URL = "https://apis.data.go.kr/B552584/ArpltnInforInqireSvc"
 
 [assets]
 directory = "./dist"

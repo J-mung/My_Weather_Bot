@@ -53,11 +53,13 @@ Worker 프록시는 upstream 호출 전에 `caches.default`에서 아래 기준�
 
 TTL은 endpoint 기준으로 설정한다.
 
-| endpoint          |   TTL | 이유                             |
-| ----------------- | ----: | -------------------------------- |
-| `getUltraSrtNcst` |  20분 | 실황 반복 조회 완화              |
-| `getUltraSrtFcst` |  30분 | 초단기예보 반복 조회 완화        |
-| `getVilageFcst`   | 2시간 | 단기예보/최고최저 반복 조회 완화 |
+| endpoint          |           TTL | 이유                                                                      |
+| ----------------- | ------------: | ------------------------------------------------------------------------- |
+| `getUltraSrtNcst` |          20분 | 실황 반복 조회 완화                                                       |
+| `getUltraSrtFcst` |          30분 | 초단기예보 반복 조회 완화                                                 |
+| `getVilageFcst`   | 발표시각 기반 | 현재 발표시각 자료는 다음 발표시각까지, 지난 발표시각 자료는 4시간 재사용 |
+
+`getVilageFcst`는 요청의 `base_date/base_time`을 KST 발표시각으로 해석한다. 현재 발표시각 자료는 다음 단기예보 발표시각(3시간 간격)까지 cache하고, `TODAY_TEMP_RANGE`처럼 지난 02시 자료를 재조회하는 경로는 archive TTL 4시간을 적용한다. `base_date/base_time`이 없거나 형식이 깨진 요청은 fallback TTL 2시간을 사용한다.
 
 응답에는 `X-Weather-Cache`를 붙인다.
 
@@ -69,4 +71,5 @@ TTL은 endpoint 기준으로 설정한다.
 
 - `serviceKey`는 cache key와 클라이언트 응답에 포함하지 않는다.
 - 오류 응답, 429, 5xx는 cache하지 않는다.
+- `getVilageFcst` TTL 계산은 KST 기준이므로 UTC `Date`를 그대로 `base_date/base_time`과 비교하지 않는다.
 - `base_date/base_time/nx/ny`를 Query key에서 제거하면 화면 간 재사용과 신선도 기준이 깨진다.

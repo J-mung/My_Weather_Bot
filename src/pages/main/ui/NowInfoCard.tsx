@@ -1,6 +1,7 @@
 import { cn } from "@/shared/lib/cn";
 import Button from "@/shared/ui/button";
 import { Icon, type IconName } from "@/shared/ui/icon";
+import { Tooltip } from "@/shared/ui/tooltip";
 import { NowInfoSkeletonCard } from "./NowInfoSkeletonCard";
 import { nowInfoCardStyles } from "./styles";
 import type { DetailWeatherItem, NowInfoCardProps } from "./types";
@@ -18,7 +19,7 @@ export const NowInfoCard = ({
   primaryDistrict,
   secondaryDistrict,
   fullDistrict,
-  isAlias,
+  isAlias: _isAlias,
   data,
   isLoading,
   isFetching,
@@ -77,31 +78,48 @@ export const NowInfoCard = ({
                 <div className={cn(nowInfoCardStyles.titleGroup)}>
                   <div className={cn(nowInfoCardStyles.mobileTitle, "md:hidden")}>
                     {secondaryDistrict && (
-                      <div className={cn(nowInfoCardStyles.districtSecondary)}>
-                        {secondaryDistrict}
-                      </div>
+                      <Tooltip
+                        content={fullDistrict}
+                        align={"center"}
+                        className={"w-full justify-center"}
+                      >
+                        <span
+                          className={cn(nowInfoCardStyles.districtSecondary)}
+                          title={fullDistrict}
+                        >
+                          {secondaryDistrict}
+                        </span>
+                      </Tooltip>
                     )}
-                    <span
-                      className={cn(
-                        nowInfoCardStyles.districtPrimary,
-                        isAlias && nowInfoCardStyles.districtPrimaryAlias,
-                        isFetching && nowInfoCardStyles.districtFetching,
-                      )}
+                    <Tooltip
+                      content={fullDistrict}
+                      align={"center"}
+                      className={"w-full justify-center"}
                     >
-                      {primaryDistrict}
-                    </span>
+                      <span
+                        className={cn(
+                          nowInfoCardStyles.districtPrimary,
+                          isFetching && nowInfoCardStyles.districtFetching,
+                        )}
+                        title={fullDistrict}
+                      >
+                        {primaryDistrict}
+                      </span>
+                    </Tooltip>
                   </div>
 
                   <div className={cn(nowInfoCardStyles.desktopTitle, "hidden md:block")}>
-                    <span
-                      className={cn(
-                        nowInfoCardStyles.districtDesktop,
-                        isAlias && nowInfoCardStyles.districtDesktopAlias,
-                        isFetching && nowInfoCardStyles.districtFetching,
-                      )}
-                    >
-                      {fullDistrict}
-                    </span>
+                    <Tooltip content={fullDistrict} className={"w-full"}>
+                      <span
+                        className={cn(
+                          nowInfoCardStyles.districtDesktop,
+                          isFetching && nowInfoCardStyles.districtFetching,
+                        )}
+                        title={fullDistrict}
+                      >
+                        {fullDistrict}
+                      </span>
+                    </Tooltip>
                   </div>
                 </div>
 

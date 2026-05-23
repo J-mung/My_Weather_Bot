@@ -5,8 +5,9 @@
  * - 같은 Worker에서 정적 dist 자산도 함께 서빙해 단일 배포 경로로 운영 가능
  */
 
+import { handleAirQualityApiRequest } from "./worker/air-quality";
 import { serveAsset } from "./worker/assets";
-import { KAKAO_API_PREFIX, WEATHER_API_PREFIX } from "./worker/constants";
+import { AIR_QUALITY_API_PREFIX, KAKAO_API_PREFIX, WEATHER_API_PREFIX } from "./worker/constants";
 import { handleKakaoApiRequest } from "./worker/kakao";
 import type { Env, WorkerExecutionContext } from "./worker/types";
 import { handleApiRequest } from "./worker/weather";
@@ -22,6 +23,10 @@ export default {
 
     if (url.pathname.startsWith(KAKAO_API_PREFIX)) {
       return handleKakaoApiRequest(request, env);
+    }
+
+    if (url.pathname.startsWith(AIR_QUALITY_API_PREFIX)) {
+      return handleAirQualityApiRequest(request, env, context);
     }
 
     if (url.pathname.startsWith(WEATHER_API_PREFIX)) {
