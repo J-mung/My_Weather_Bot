@@ -72,7 +72,7 @@ export const searchPageStyles = {
   featuredCondition: ["break-words", "text-base", "leading-7", "text-blue-50", "md:text-lg"],
   featuredRange: ["mt-5", "text-sm", "font-semibold", "text-blue-50", "md:text-base"],
   featuredIcon: ["h-20", "w-20", "shrink-0", "text-white", "md:h-28", "md:w-28"],
-  featuredMetrics: ["mt-6", "grid", "grid-cols-3", "gap-3"],
+  featuredMetrics: ["mt-6", "grid", "grid-cols-2", "gap-3", "md:grid-cols-4"],
   featuredMetric: [
     "min-w-0",
     "rounded-2xl",

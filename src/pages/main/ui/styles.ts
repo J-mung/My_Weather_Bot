@@ -57,7 +57,7 @@ export const mainPageStyles = {
     "duration-300",
     "text-[var(--text-sub)]",
   ],
-  metricGrid: ["grid", "gap-4", "sm:grid-cols-2"],
+  metricGrid: ["grid", "gap-4", "sm:grid-cols-2", "xl:grid-cols-3"],
   metricCard: [
     "min-w-0",
     "rounded-[1.5rem]",

@@ -79,6 +79,14 @@ export interface CurrentWeatherNow {
   condition: WeatherCondition; // 현재 기상 상태
 }
 
+export interface WeatherPrecipitation {
+  probability: number | null; // 강수확률(POP, %)
+  rainAmountMm: number | null; // 1시간 강수량(PCP, mm)
+  rainAmountText: string | null; // 기상청 원문 강수량 표시값
+  snowAmountCm: number | null; // 1시간 신적설(SNO, cm)
+  snowAmountText: string | null; // 기상청 원문 신적설 표시값
+}
+
 export type OutfitComfortLevel =
   | "hot"
   | "warm"
@@ -104,6 +112,7 @@ export interface OutfitRecommendation {
  */
 export interface SummaryDomain {
   now: CurrentWeatherNow;
+  precipitation: WeatherPrecipitation;
   outfitRecommendation: OutfitRecommendation;
   todayMin: number; // 오늘 최저
   todayMax: number; // 오늘 최고
@@ -111,6 +120,9 @@ export interface SummaryDomain {
     time: string;
     temp: number;
     condition: WeatherCondition;
+    precipitationProbability: number | null;
+    rainAmountText: string | null;
+    snowAmountText: string | null;
   }[];
 }
 
@@ -122,6 +134,7 @@ export interface ParsedShortFcstItemType {
   time: string;
   fcstDate: string;
   values: Record<string, number>;
+  rawValues: Record<string, string>;
 }
 
 export interface TemperatureSummary {
@@ -131,6 +144,9 @@ export interface TemperatureSummary {
     time: string;
     temp: number;
     condition: WeatherCondition;
+    precipitationProbability: number | null;
+    rainAmountText: string | null;
+    snowAmountText: string | null;
   }[];
 }
 

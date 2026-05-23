@@ -8,6 +8,7 @@ import type {
   CurrentWeatherNow,
   ParsedShortFcstItemType,
   TemperatureSummary,
+  WeatherPrecipitation,
   WeatherCondition,
 } from "@/entities/weather/model/weather.types";
 import { mapPtyToCondition, mapSkyToCondition } from "@/entities/weather/model/weatherCondition";
@@ -76,6 +77,36 @@ const toNumber = (value: string | undefined, fallback = 0): number => {
 const toNullableNumber = (value: string | undefined): number | null => {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : null;
+};
+
+const isNoPrecipitationText = (value: string | undefined): boolean => {
+  if (!value) {
+    return true;
+  }
+
+  return value.includes("없음") || value === "0" || value === "0.0";
+};
+
+const getFirstNumericValue = (value: string | undefined): number | null => {
+  if (!value || isNoPrecipitationText(value)) {
+    return null;
+  }
+
+  const matched = value.match(/\d+(?:\.\d+)?/);
+  if (!matched) {
+    return null;
+  }
+
+  const parsed = Number(matched[0]);
+  return Number.isFinite(parsed) ? parsed : null;
+};
+
+const normalizePrecipitationText = (value: string | undefined): string | null => {
+  if (!value || isNoPrecipitationText(value)) {
+    return null;
+  }
+
+  return value;
 };
 
 /**
@@ -311,6 +342,44 @@ export const getCurrentWeatherNow = (
   };
 };
 
+export const getPrecipitationSummary = (
+  short: ShortFcstResponseType,
+  observationDT: Date = new Date(),
+): WeatherPrecipitation => {
+  const items = short.response.body.items.item;
+  const candidates = getParsedFcstItems(
+    items.filter(
+      (_item) => _item.category === "POP" || _item.category === "PCP" || _item.category === "SNO",
+    ),
+  )
+    .filter((_item) => _item.date !== null)
+    .sort((a, b) => a.date!.getTime() - b.date!.getTime());
+
+  const nearest =
+    candidates.find((_item) => _item.date!.getTime() >= observationDT.getTime()) ?? candidates[0];
+
+  if (!nearest) {
+    return {
+      probability: null,
+      rainAmountMm: null,
+      rainAmountText: null,
+      snowAmountCm: null,
+      snowAmountText: null,
+    };
+  }
+
+  const rainAmountText = normalizePrecipitationText(nearest.rawValues.PCP);
+  const snowAmountText = normalizePrecipitationText(nearest.rawValues.SNO);
+
+  return {
+    probability: toNullableNumber(nearest.rawValues.POP),
+    rainAmountMm: getFirstNumericValue(nearest.rawValues.PCP),
+    rainAmountText,
+    snowAmountCm: getFirstNumericValue(nearest.rawValues.SNO),
+    snowAmountText,
+  };
+};
+
 export const getBookmarkSummary = (
   now: UltraNowResponseType,
   short: ShortFcstResponseType,
@@ -343,11 +412,13 @@ const getParsedFcstItems = (items: ShortFcstItemType[]): ParsedShortFcstItemType
         time: formatHourLabel(_item.fcstDate, _item.fcstTime),
         fcstDate: _item.fcstDate,
         values: {},
+        rawValues: {},
       });
     }
 
     const target = map.get(key)!;
     target.values[_item.category] = toNumber(_item.fcstValue, 0);
+    target.rawValues[_item.category] = _item.fcstValue;
   });
 
   return Array.from(map.values());
@@ -373,14 +444,20 @@ export const getTemperatureSummary = (
   // 현재(API 요청) 시각 구하기
   const end = new Date(observationDT.getTime() + 24 * 60 * 60 * 1000);
   const fcstItems: ShortFcstItemType[] = items.filter(
-    (_item) => _item.category === "TMP" || _item.category === "SKY" || _item.category === "PTY",
+    (_item) =>
+      _item.category === "TMP" ||
+      _item.category === "SKY" ||
+      _item.category === "PTY" ||
+      _item.category === "POP" ||
+      _item.category === "PCP" ||
+      _item.category === "SNO",
   );
 
   // 현재(API 요청) 시각 기준 24시간 TMP 데이터
   const hourly = getParsedFcstItems(fcstItems)
     .filter((_item) => _item.date !== null && _item.date >= observationDT && _item.date < end)
     .sort((a, b) => a.date!.getTime() - b.date!.getTime())
-    .map(({ time, values }) => {
+    .map(({ time, values, rawValues }) => {
       const temp = values.TMP;
       const sky = values.SKY;
       const pty = values.PTY;
@@ -393,7 +470,14 @@ export const getTemperatureSummary = (
         condition = "unavailable";
       }
 
-      return { time, temp, condition };
+      return {
+        time,
+        temp,
+        condition,
+        precipitationProbability: toNullableNumber(rawValues.POP),
+        rainAmountText: normalizePrecipitationText(rawValues.PCP),
+        snowAmountText: normalizePrecipitationText(rawValues.SNO),
+      };
     });
 
   // 오늘 날짜 기준 TMN/TMX 우선 추출

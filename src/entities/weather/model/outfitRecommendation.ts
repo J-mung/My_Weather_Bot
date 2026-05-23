@@ -2,6 +2,7 @@ import type {
   CurrentWeatherNow,
   OutfitComfortLevel,
   OutfitRecommendation,
+  WeatherPrecipitation,
   WeatherCondition,
 } from "@/entities/weather/model/weather.types";
 
@@ -96,7 +97,11 @@ const getBasis = (
   return { basisTemperature: null, basisSource: "unavailable" };
 };
 
-const getCautions = (now: CurrentWeatherNow, basisTemperature: number): string[] => {
+const getCautions = (
+  now: CurrentWeatherNow,
+  basisTemperature: number,
+  precipitation?: WeatherPrecipitation,
+): string[] => {
   const cautions: string[] = [];
 
   if (RAIN_CONDITIONS.has(now.condition)) {
@@ -109,6 +114,25 @@ const getCautions = (now: CurrentWeatherNow, basisTemperature: number): string[]
 
   if (SNOW_CONDITIONS.has(now.condition)) {
     cautions.push("미끄럼 방지 신발과 장갑, 보온성 높은 외투를 챙겨요.");
+  }
+
+  if (
+    typeof precipitation?.probability === "number" &&
+    precipitation.probability >= 60 &&
+    !RAIN_CONDITIONS.has(now.condition) &&
+    !RAIN_SNOW_CONDITIONS.has(now.condition)
+  ) {
+    cautions.push("비 가능성이 높아요. 접이식 우산이나 방수되는 겉옷을 준비해요.");
+  }
+
+  if (precipitation?.rainAmountText) {
+    cautions.push(
+      `예상 강수량이 ${precipitation.rainAmountText}예요. 젖어도 부담 없는 신발이 좋아요.`,
+    );
+  }
+
+  if (precipitation?.snowAmountText) {
+    cautions.push(`예상 적설이 ${precipitation.snowAmountText}예요. 미끄럼 방지 신발을 챙겨요.`);
   }
 
   if (typeof now.windSpeedMs === "number" && now.windSpeedMs >= 7) {
@@ -131,7 +155,10 @@ const getCautions = (now: CurrentWeatherNow, basisTemperature: number): string[]
   return Array.from(new Set(cautions));
 };
 
-export const getOutfitRecommendation = (now: CurrentWeatherNow): OutfitRecommendation => {
+export const getOutfitRecommendation = (
+  now: CurrentWeatherNow,
+  precipitation?: WeatherPrecipitation,
+): OutfitRecommendation => {
   const basis = getBasis(now);
 
   if (basis.basisTemperature === null) {
@@ -143,7 +170,7 @@ export const getOutfitRecommendation = (now: CurrentWeatherNow): OutfitRecommend
 
   return {
     ...recommendation,
-    cautions: getCautions(now, basis.basisTemperature),
+    cautions: getCautions(now, basis.basisTemperature, precipitation),
     basisTemperature: basis.basisTemperature,
     basisSource: basis.basisSource,
   };

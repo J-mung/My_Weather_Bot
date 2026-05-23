@@ -2,6 +2,7 @@ import { WeatherApiType } from "@/entities/weather/api/weather-api.constants";
 import {
   getCurrentWeatherNow,
   getObservationDateTime,
+  getPrecipitationSummary,
   getTemperatureSummary,
 } from "@/entities/weather/model/temperatureMappers";
 import { getOutfitRecommendation } from "@/entities/weather/model/outfitRecommendation";
@@ -86,14 +87,22 @@ export const useWeatherSummary = (
   // 초단기실황예보 응답에서 현재 시각 조회 - 현재(API 요청) 시각 기준으로 시간별로 구성하기 위함
   const currentDT = getObservationDateTime(ultraQuery.data) ?? new Date();
   const now = getCurrentWeatherNow(ultraQuery.data, ultraForecastQuery.data, currentDT);
+  const precipitation = getPrecipitationSummary(shortQuery.data, currentDT);
   const { todayMin, todayMax, hourly }: TemperatureSummary = getTemperatureSummary(
     shortQuery.data,
     currentDT,
     todayTempRangeQuery.data,
   );
-  const outfitRecommendation = getOutfitRecommendation(now);
+  const outfitRecommendation = getOutfitRecommendation(now, precipitation);
 
-  const data: SummaryDomain = { now, outfitRecommendation, todayMin, todayMax, hourly };
+  const data: SummaryDomain = {
+    now,
+    precipitation,
+    outfitRecommendation,
+    todayMin,
+    todayMax,
+    hourly,
+  };
 
   return {
     data: data,

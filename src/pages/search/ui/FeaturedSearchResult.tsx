@@ -106,6 +106,12 @@ const FeaturedSearchWeather = ({
           </strong>
         </div>
         <div className={cn(searchPageStyles.featuredMetric)}>
+          <span className={cn(searchPageStyles.featuredMetricLabel)}>Rain</span>
+          <strong className={cn(searchPageStyles.featuredMetricValue)}>
+            {data?.precipitation.probability ?? "--"}%
+          </strong>
+        </div>
+        <div className={cn(searchPageStyles.featuredMetric)}>
           <span className={cn(searchPageStyles.featuredMetricLabel)}>Wind</span>
           <strong className={cn(searchPageStyles.featuredMetricValue)}>
             {data?.now.windSpeedMs ?? "--"} m/s

@@ -16,6 +16,14 @@ import { NowInfoCard } from "./NowInfoCard";
 import { OutfitRecommendationCard } from "./OutfitRecommendationCard";
 import { mainPageStyles } from "./styles";
 
+const formatProbability = (value: number | null | undefined): string => {
+  if (typeof value !== "number") {
+    return "--";
+  }
+
+  return String(value);
+};
+
 export default function MainPage() {
   const routelocation = useLocation();
   const { param, displayDistrict, displayAlias } = useMemo((): {
@@ -197,6 +205,23 @@ export default function MainPage() {
                 </strong>
                 <p className={cn(mainPageStyles.metricDescription)}>
                   습도에 따라 체감이 달라질 수 있어요.
+                </p>
+              </div>
+
+              <div className={cn(mainPageStyles.metricCard)}>
+                <div className={cn(mainPageStyles.metricHeader)}>
+                  <span>Rain</span>
+                </div>
+                <strong className={cn(mainPageStyles.metricValue)}>
+                  {formatProbability(data?.precipitation.probability)}
+                  <span className={cn(mainPageStyles.metricUnit)}>%</span>
+                </strong>
+                <p className={cn(mainPageStyles.metricDescription)}>
+                  {data?.precipitation.rainAmountText || data?.precipitation.snowAmountText
+                    ? [data.precipitation.rainAmountText, data.precipitation.snowAmountText]
+                        .filter(Boolean)
+                        .join(" · ")
+                    : "강수 가능성을 확인하고 우산을 준비하세요."}
                 </p>
               </div>
 
