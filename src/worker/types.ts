@@ -12,3 +12,7 @@ export interface Env {
 }
 
 export type KakaoEndpointKey = "coord2regioncode" | "searchAddress";
+
+export interface WorkerExecutionContext {
+  waitUntil: (promise: Promise<unknown>) => void;
+}

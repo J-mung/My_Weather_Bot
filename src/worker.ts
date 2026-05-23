@@ -8,7 +8,7 @@
 import { serveAsset } from "./worker/assets";
 import { KAKAO_API_PREFIX, WEATHER_API_PREFIX } from "./worker/constants";
 import { handleKakaoApiRequest } from "./worker/kakao";
-import type { Env } from "./worker/types";
+import type { Env, WorkerExecutionContext } from "./worker/types";
 import { handleApiRequest } from "./worker/weather";
 
 export default {
@@ -17,7 +17,7 @@ export default {
    * - /api/* 는 API 프록시 핸들러로 전달
    * - 그 외 경로는 정적 자산 응답
    */
-  async fetch(request: Request, env: Env): Promise<Response> {
+  async fetch(request: Request, env: Env, context: WorkerExecutionContext): Promise<Response> {
     const url = new URL(request.url);
 
     if (url.pathname.startsWith(KAKAO_API_PREFIX)) {
@@ -25,7 +25,7 @@ export default {
     }
 
     if (url.pathname.startsWith(WEATHER_API_PREFIX)) {
-      return handleApiRequest(request, env);
+      return handleApiRequest(request, env, context);
     }
 
     return serveAsset(request, env);

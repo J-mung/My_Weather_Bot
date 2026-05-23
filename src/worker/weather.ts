@@ -1,6 +1,21 @@
 import { WEATHER_ALLOWED_ENDPOINTS, WEATHER_API_PREFIX } from "./constants";
 import { withCors } from "./cors";
-import type { Env } from "./types";
+import type { Env, WorkerExecutionContext } from "./types";
+
+type WeatherEndpoint = "getUltraSrtFcst" | "getUltraSrtNcst" | "getVilageFcst";
+
+type CacheStorageWithDefault = CacheStorage & { default?: Cache };
+
+const WEATHER_WORKER_CACHE_TTL_SECONDS: Record<WeatherEndpoint, number> = {
+  getUltraSrtNcst: 20 * 60,
+  getUltraSrtFcst: 30 * 60,
+  getVilageFcst: 2 * 60 * 60,
+};
+
+const getWeatherCache = (): Cache | null => {
+  const workerCaches = globalThis.caches as CacheStorageWithDefault | undefined;
+  return workerCaches?.default ?? null;
+};
 
 /**
  * 클라이언트 요청 쿼리를 upstream으로 전달하고,
@@ -24,12 +39,64 @@ const buildUpstreamUrl = (request: Request, env: Env, endpoint: string): URL => 
   return upstreamUrl;
 };
 
+const buildWeatherCacheKey = (request: Request, endpoint: string): Request => {
+  const incomingUrl = new URL(request.url);
+  const cacheUrl = new URL(`${incomingUrl.origin}${WEATHER_API_PREFIX}${endpoint}`);
+  const sortedParams = Array.from(incomingUrl.searchParams.entries())
+    .filter(([key]) => key !== "serviceKey")
+    .sort(([a], [b]) => a.localeCompare(b));
+
+  sortedParams.forEach(([key, value]) => {
+    cacheUrl.searchParams.append(key, value);
+  });
+
+  return new Request(cacheUrl.toString(), { method: "GET" });
+};
+
+const getWeatherCacheTtl = (endpoint: string): number =>
+  WEATHER_WORKER_CACHE_TTL_SECONDS[endpoint as WeatherEndpoint] ?? 0;
+
+const createWeatherResponseHeaders = (
+  contentType: string | null,
+  cacheControl: string,
+  cacheStatus: "HIT" | "MISS" | "BYPASS",
+): HeadersInit => ({
+  "Content-Type": contentType ?? "application/json; charset=utf-8",
+  "Cache-Control": cacheControl,
+  "X-Weather-Cache": cacheStatus,
+});
+
+const createClientWeatherResponse = async (
+  response: Response,
+  origin: string,
+  cacheStatus: "HIT" | "MISS" | "BYPASS",
+  cacheControl: string,
+): Promise<Response> => {
+  const body = await response.text();
+
+  return new Response(
+    body,
+    withCors(origin, {
+      status: response.status,
+      headers: createWeatherResponseHeaders(
+        response.headers.get("Content-Type"),
+        cacheControl,
+        cacheStatus,
+      ),
+    }),
+  );
+};
+
 /**
  * /api/* 요청 처리
  *    - OPTIONS: preflight 처리
  *    - GET: 허용 endpoint 검증 후 기상청 API 프록시 호출
  */
-export const handleApiRequest = async (request: Request, env: Env): Promise<Response> => {
+export const handleApiRequest = async (
+  request: Request,
+  env: Env,
+  context?: WorkerExecutionContext,
+): Promise<Response> => {
   const origin = request.headers.get("Origin") ?? "";
   const url = new URL(request.url);
   const endpoint = url.pathname.slice(WEATHER_API_PREFIX.length);
@@ -53,21 +120,48 @@ export const handleApiRequest = async (request: Request, env: Env): Promise<Resp
     return new Response(`Missing API env: ${missing}`, { status: 500 });
   }
 
+  const cache = getWeatherCache();
+  const cacheKey = buildWeatherCacheKey(request, endpoint);
+  const cacheTtlSeconds = getWeatherCacheTtl(endpoint);
+  const cacheControl = `public, max-age=${cacheTtlSeconds}`;
+
+  if (cache && cacheTtlSeconds > 0) {
+    const cachedResponse = await cache.match(cacheKey);
+    if (cachedResponse) {
+      return createClientWeatherResponse(cachedResponse, origin, "HIT", cacheControl);
+    }
+  }
+
   const upstreamUrl = buildUpstreamUrl(request, env, endpoint);
   const upstreamRes = await fetch(upstreamUrl.toString(), { method: "GET" });
   const body = await upstreamRes.text();
+  const responseCacheControl = upstreamRes.ok && cacheTtlSeconds > 0 ? cacheControl : "no-store";
+  const cacheStatus = cache && upstreamRes.ok && cacheTtlSeconds > 0 ? "MISS" : "BYPASS";
+  const headers = createWeatherResponseHeaders(
+    upstreamRes.headers.get("Content-Type"),
+    responseCacheControl,
+    cacheStatus,
+  );
+
+  if (cache && upstreamRes.ok && cacheTtlSeconds > 0) {
+    const cacheResponse = new Response(body, {
+      status: upstreamRes.status,
+      headers,
+    });
+    const putPromise = cache.put(cacheKey, cacheResponse);
+
+    if (context) {
+      context.waitUntil(putPromise);
+    } else {
+      await putPromise;
+    }
+  }
 
   return new Response(
     body,
     withCors(origin, {
       status: upstreamRes.status,
-      headers: {
-        // upstream content-type 우선, 없으면 JSON 기본값
-        "Content-Type":
-          upstreamRes.headers.get("Content-Type") ?? "application/json; charset=utf-8",
-        // API 응답은 캐시 미사용(디버깅/신선도 확보)
-        "Cache-Control": "no-store",
-      },
+      headers,
     }),
   );
 };

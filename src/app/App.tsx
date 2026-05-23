@@ -1,4 +1,8 @@
 import { router as defaultRouter } from "@/app/router";
+import {
+  WEATHER_QUERY_PERSIST_MAX_AGE_MS,
+  WEATHER_QUERY_ROOT_KEY,
+} from "@/entities/weather/model/weather-cache-policy";
 import { createAsyncStoragePersister } from "@tanstack/query-async-storage-persister";
 import { QueryClient } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
@@ -10,6 +14,7 @@ const queryClient = new QueryClient({
     queries: {
       retry: 1,
       refetchOnWindowFocus: false,
+      gcTime: WEATHER_QUERY_PERSIST_MAX_AGE_MS,
     },
   },
 });
@@ -36,11 +41,11 @@ function App({ router = defaultRouter }) {
       client={queryClient}
       persistOptions={{
         persister: queryPersister,
-        maxAge: 1000 * 60 * 5,
+        maxAge: WEATHER_QUERY_PERSIST_MAX_AGE_MS,
         dehydrateOptions: {
           // 저장할 쿼리 지정 - key가 weather로 시작하는 쿼리
           shouldDehydrateQuery: (query) => {
-            return query.queryKey[0] === "weather";
+            return query.queryKey[0] === WEATHER_QUERY_ROOT_KEY && query.state.status === "success";
           },
         },
       }}
