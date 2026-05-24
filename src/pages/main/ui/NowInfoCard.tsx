@@ -123,19 +123,24 @@ export const NowInfoCard = ({
                   </div>
                 </div>
 
-                <Button
-                  variant={"ghost"}
-                  size={"icon"}
-                  disabled={isFetching}
+                <Tooltip
+                  content={"새로고침"}
+                  align={"center"}
                   className={cn(nowInfoCardStyles.refreshButton)}
-                  onClick={refresh}
                 >
-                  <Icon
-                    name={"refresh"}
-                    tone={"default"}
-                    className={cn(isFetching && nowInfoCardStyles.refreshIconLoading)}
-                  />
-                </Button>
+                  <Button
+                    variant={"ghost"}
+                    size={"icon"}
+                    disabled={isFetching}
+                    onClick={refresh}
+                  >
+                    <Icon
+                      name={"refresh"}
+                      tone={"default"}
+                      className={cn(isFetching && nowInfoCardStyles.refreshIconLoading)}
+                    />
+                  </Button>
+                </Tooltip>
               </div>
               <div className={cn(nowInfoCardStyles.date)}>{dateInfo}</div>
             </div>

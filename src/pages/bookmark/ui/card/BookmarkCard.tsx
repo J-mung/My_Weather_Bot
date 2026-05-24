@@ -1,5 +1,6 @@
 import { cn } from "@/shared/lib/cn";
 import { Icon } from "@/shared/ui/icon";
+import { Tooltip } from "@/shared/ui/tooltip";
 import type {
   BookmarkCardLocationProps,
   BookmarkCardProps,
@@ -57,7 +58,9 @@ export const BookmarkCard = ({
           <div className={cn(bookmarkCardHeaderClass)}>
             {selectionControl}
             <div className={cn("min-w-0", "flex-1")}>
-              <BookmarkCardTitle className={"truncate"}>{title}</BookmarkCardTitle>
+              <Tooltip content={title} className={"w-full"}>
+                <BookmarkCardTitle className={"truncate"}>{title}</BookmarkCardTitle>
+              </Tooltip>
               <BookmarkCardLocation className={"truncate"}>{locationLabel}</BookmarkCardLocation>
             </div>
             <Icon name={"cloud"} className={"h-8 w-8 text-[var(--weather-icon-cloudy)]"} />
