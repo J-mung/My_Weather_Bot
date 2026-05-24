@@ -66,6 +66,10 @@ const resolveKakaoApiBaseUrl = (env: Record<string, string>) =>
 const resolveKakaoApiKey = (env: Record<string, string>) =>
   env.KAKAO_REST_API_KEY || env.VITE_KAKAO_REST_API_KEY;
 
+// 환경변수 우선순위에 따라 Kakao 지도 SDK key 결정
+const resolveKakaoMapKey = (env: Record<string, string>) =>
+  env.KAKAO_MAP_KEY || env.VITE_KAKAO_MAP_KEY;
+
 // /api/kakao/coord2regioncode 요청을 Kakao upstream 경로로 재작성
 const buildKakaoCoord2RegionRewritePath = (path: string): string => {
   const url = new URL(path, "http://localhost");
@@ -195,9 +199,13 @@ export default defineConfig(({ mode }) => {
   const airKoreaApiKey = resolveAirKoreaApiKey(env);
   const kakaoApiBaseUrl = resolveKakaoApiBaseUrl(env);
   const kakaoApiKey = resolveKakaoApiKey(env);
+  const kakaoMapKey = resolveKakaoMapKey(env);
 
   return {
     plugins: [react(), tailwindcss()],
+    define: {
+      "import.meta.env.VITE_KAKAO_MAP_KEY": JSON.stringify(kakaoMapKey ?? ""),
+    },
     resolve: {
       alias: {
         "@": path.resolve(__dirname, "src"),
