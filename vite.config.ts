@@ -204,6 +204,7 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react(), tailwindcss()],
     define: {
+      "import.meta.env.KAKAO_MAP_KEY": JSON.stringify(kakaoMapKey ?? ""),
       "import.meta.env.VITE_KAKAO_MAP_KEY": JSON.stringify(kakaoMapKey ?? ""),
     },
     resolve: {

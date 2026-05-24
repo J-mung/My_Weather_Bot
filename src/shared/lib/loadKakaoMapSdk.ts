@@ -30,7 +30,8 @@ let kakaoMapSdkPromise: Promise<KakaoMapSdk> | null = null;
 
 const KAKAO_MAP_SDK_SCRIPT_ID = "kakao-map-sdk";
 
-const getKakaoMapKey = (): string => (import.meta.env.VITE_KAKAO_MAP_KEY || "").trim();
+const getKakaoMapKey = (): string =>
+  (import.meta.env.KAKAO_MAP_KEY || import.meta.env.VITE_KAKAO_MAP_KEY || "").trim();
 
 const resolveLoadedKakaoMaps = (resolve: (value: KakaoMapSdk) => void) => {
   const kakaoMaps = window.kakao?.maps;
