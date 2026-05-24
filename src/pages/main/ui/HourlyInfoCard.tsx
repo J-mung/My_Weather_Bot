@@ -1,3 +1,4 @@
+import { weatherConditionMeta } from "@/entities/weather/model/weather-condition-meta";
 import { cn } from "@/shared/lib/cn";
 import Button from "@/shared/ui/button";
 import { Icon } from "@/shared/ui/icon";
@@ -5,7 +6,6 @@ import { useRef } from "react";
 import { HourlyInfoSkeletonCard } from "./HourlyInfoSkeletonCard";
 import { hourlyInfoCardStyles } from "./styles";
 import type { HourlyInfoCardProps } from "./types";
-import { weatherConditionMeta } from "./weather-condition-meta";
 
 export const HourlyInfoCard = ({
   data,
@@ -91,18 +91,21 @@ export const HourlyInfoCard = ({
       >
         {hourly && (
           <div className={cn(hourlyInfoCardStyles.list)}>
-            {hourly.map((_hour) => (
-              <div key={_hour.time} className={cn(hourlyInfoCardStyles.detail)}>
-                <span className={cn(hourlyInfoCardStyles.detailHour)}>{_hour.time}</span>
-                <Icon
-                  name={weatherConditionMeta[_hour.condition].icon}
-                  size={"lg"}
-                  tone={"subtle"}
-                  className={cn(hourlyInfoCardStyles.detailIcon)}
-                />
-                <span className={cn(hourlyInfoCardStyles.detailValue)}>{_hour.temp}°</span>
-              </div>
-            ))}
+            {hourly.map((_hour) => {
+              const conditionMeta = weatherConditionMeta[_hour.condition];
+
+              return (
+                <div key={_hour.time} className={cn(hourlyInfoCardStyles.detail)}>
+                  <span className={cn(hourlyInfoCardStyles.detailHour)}>{_hour.time}</span>
+                  <Icon
+                    name={conditionMeta.icon}
+                    size={"lg"}
+                    className={cn(hourlyInfoCardStyles.detailIcon, conditionMeta.iconClassName)}
+                  />
+                  <span className={cn(hourlyInfoCardStyles.detailValue)}>{_hour.temp}°</span>
+                </div>
+              );
+            })}
           </div>
         )}
       </div>

@@ -1,3 +1,4 @@
+import { weatherConditionMeta } from "@/entities/weather/model/weather-condition-meta";
 import { cn } from "@/shared/lib/cn";
 import Button from "@/shared/ui/button";
 import { Icon, type IconName } from "@/shared/ui/icon";
@@ -5,7 +6,6 @@ import { Tooltip } from "@/shared/ui/tooltip";
 import { NowInfoSkeletonCard } from "./NowInfoSkeletonCard";
 import { nowInfoCardStyles } from "./styles";
 import type { DetailWeatherItem, NowInfoCardProps } from "./types";
-import { weatherConditionMeta } from "./weather-condition-meta";
 
 const formatMetric = (value: number | null, unit: "%" | "°"): string => {
   if (value === null) {
@@ -141,8 +141,7 @@ export const NowInfoCard = ({
             </div>
             <Icon
               name={conditionMeta.icon}
-              tone={"subtle"}
-              className={cn(nowInfoCardStyles.weatherIcon)}
+              className={cn(nowInfoCardStyles.weatherIcon, conditionMeta.iconClassName)}
             />
           </div>
 

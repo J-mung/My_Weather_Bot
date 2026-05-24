@@ -1,4 +1,6 @@
 import { fetchRegionNameFromCoord } from "@/entities/kakao/api/fetchRegionNameFromCoord";
+import { weatherConditionMeta } from "@/entities/weather/model/weather-condition-meta";
+import type { GridCoord } from "@/entities/weather/model/weather.types";
 import { useBookmarkForecastPreview } from "@/features/bookmark/model/useBookmarkForecastPreview";
 import { useBookmarks } from "@/features/bookmark/model/useBookmarks";
 import { isAppError } from "@/shared/api/types";
@@ -12,8 +14,6 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { BookmarkCardList } from "./card/BookmarkCardList";
 import { bookmarkCurrentLocationStyles, bookmarkPageStyles } from "./styles";
-
-import type { GridCoord } from "@/entities/weather/model/weather.types";
 
 const formatTemperature = (value: number): string => `${Math.round(value)}°`;
 const formatForecastTemperature = (value: number | null): string => {
@@ -55,6 +55,9 @@ const CurrentLocationForecastCard = ({
   const { data, isFetching, isLoading, error } = useBookmarkForecastPreview(gridCoord);
   const forecastTemperature = data ? formatForecastTemperature(data.forecastTemperature) : "--°";
   const forecastRange = data ? formatTemperatureRange(data.todayMax, data.todayMin) : "";
+  const conditionMeta = data
+    ? weatherConditionMeta[data.condition]
+    : weatherConditionMeta[error ? "unavailable" : "cloudy"];
 
   return (
     <button
@@ -79,9 +82,8 @@ const CurrentLocationForecastCard = ({
           <h2 className={cn(bookmarkCurrentLocationStyles.title)}>{regionName}</h2>
         </div>
         <Icon
-          name={"wbSunny"}
-          tone={"current"}
-          className={cn(bookmarkCurrentLocationStyles.icon)}
+          name={conditionMeta.icon}
+          className={cn(bookmarkCurrentLocationStyles.icon, conditionMeta.iconClassName)}
         />
       </div>
 

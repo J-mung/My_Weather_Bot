@@ -47,6 +47,16 @@
   --icon-brand: var(--accent-strong);
   --icon-danger: var(--danger);
 
+  /* Weather condition icon */
+  --weather-icon-sunny: var(--color-amber-500);
+  --weather-icon-mostly-cloudy: var(--color-amber-400);
+  --weather-icon-cloudy: var(--color-slate-500);
+  --weather-icon-rain: var(--color-blue-500);
+  --weather-icon-rain-snow: var(--color-blue-400);
+  --weather-icon-snow: var(--color-blue-300);
+  --weather-icon-drizzle: var(--color-blue-400);
+  --weather-icon-unavailable: var(--icon-subtle);
+
   /* Context Menu Item */
   --context-menu-item-default-bg: var(--color-white);
   --context-menu-item-default-bg-hover: var(--color-slate-100);

@@ -60,7 +60,7 @@ export const BookmarkCard = ({
               <BookmarkCardTitle className={"truncate"}>{title}</BookmarkCardTitle>
               <BookmarkCardLocation className={"truncate"}>{locationLabel}</BookmarkCardLocation>
             </div>
-            <Icon name={"cloud"} tone={"subtle"} className={"h-8 w-8"} />
+            <Icon name={"cloud"} className={"h-8 w-8 text-[var(--weather-icon-cloudy)]"} />
           </div>
           {summary}
           {actions && <div className={cn(bookmarkCardBtnListClass)}>{actions}</div>}
