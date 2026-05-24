@@ -132,6 +132,7 @@ export const mainPageStyles = {
     "uppercase",
     "shadow-sm",
     "transition",
+    "cursor-pointer",
     "hover:bg-[var(--surface-soft)]",
   ],
 } as const;
@@ -332,6 +333,7 @@ export const favoritePreviewPanelStyles = {
     "border-[var(--line)]",
     "bg-white",
     "p-5",
+    "cursor-pointer",
     "text-left",
     "shadow-sm",
     "transition",
@@ -370,6 +372,7 @@ export const favoritePreviewPanelStyles = {
     "bg-transparent",
     "px-5",
     "py-4",
+    "cursor-pointer",
     "text-sm",
     "font-extrabold",
     "tracking-[0.08em]",

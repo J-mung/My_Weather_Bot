@@ -61,6 +61,7 @@ const CurrentLocationForecastCard = ({
       type={"button"}
       className={cn(
         bookmarkCurrentLocationStyles.card,
+        "cursor-pointer",
         isFetching && bookmarkCurrentLocationStyles.fetching,
       )}
       onClick={() => {

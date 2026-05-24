@@ -16,6 +16,7 @@ export const iconInputVariants = cva(
     "cursor-text",
     "shadow-gray-500/10",
     "outline-none",
+    "has-[input:read-only]:cursor-pointer",
     // Disable
     "has-[input:disabled]:cursor-not-allowed",
     "has-[input:disabled]:opacity-50",
@@ -72,6 +73,7 @@ export const inputElementVariants = [
   "text-base",
   "text-[var(--text-primary)]",
   "placeholder:text-[var(--text-muted)]",
+  "read-only:cursor-pointer",
   "disabled:cursor-not-allowed",
 ];
 
@@ -83,6 +85,7 @@ export const buttonElementVariants = [
   "shrink-0",
   "justify-center",
   "items-center",
+  "cursor-pointer",
   // Hover
   "hover:border-[var(--btn-secondary-border-hover)]",
   "hover:bg-[var(--btn-secondary-bg-hover)]",

@@ -119,6 +119,7 @@ export const bookmarkPageStyles = {
     "font-extrabold",
     "text-transparent",
     "transition",
+    "cursor-pointer",
   ],
   bookmarkSelectButtonSelected: [
     "border-[var(--accent)]",
@@ -190,6 +191,7 @@ export const bookmarkPageStyles = {
     "border-[var(--line)]",
     "bg-transparent",
     "p-4",
+    "cursor-pointer",
     "text-sm",
     "font-extrabold",
     "text-[var(--text-sub)]",
@@ -220,6 +222,7 @@ export const bookmarkPageStyles = {
     "border-[var(--line)]",
     "bg-white/70",
     "p-5",
+    "cursor-pointer",
     "text-left",
     "transition",
     "hover:bg-white",

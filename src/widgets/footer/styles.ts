@@ -61,6 +61,7 @@ export const footerClassStyles = {
     "flex",
     "min-w-0",
     "flex-1",
+    "cursor-pointer",
     "flex-col",
     "items-center",
     "gap-1",

@@ -1,6 +1,6 @@
 import { cva } from "class-variance-authority";
 
-export const contextMenuTriggerVariants = cva([], {
+export const contextMenuTriggerVariants = cva(["cursor-pointer"], {
   variants: {
     fullWidth: {
       true: ["w-full"],
@@ -53,7 +53,6 @@ export const contextMenuItemVariants = cva(
     "text-sm",
     "font-semibold",
     "transition",
-    "cursor-pointer",
     // Active
     "active:scale-95",
     "cursor-pointer",

@@ -20,7 +20,15 @@ export const headerClassStyles = {
     "sm:px-6",
     "md:justify-between",
   ],
-  brandLink: ["flex", "items-center", "gap-2", "text-lg", "font-extrabold", "tracking-tight"],
+  brandLink: [
+    "flex",
+    "cursor-pointer",
+    "items-center",
+    "gap-2",
+    "text-lg",
+    "font-extrabold",
+    "tracking-tight",
+  ],
   brandIcon: [
     "grid",
     "size-8",
@@ -39,7 +47,15 @@ export const headerClassStyles = {
     "p-1",
     "sm:flex",
   ],
-  navItemBase: ["rounded-lg", "px-3", "py-1.5", "text-sm", "font-semibold", "transition"],
+  navItemBase: [
+    "cursor-pointer",
+    "rounded-lg",
+    "px-3",
+    "py-1.5",
+    "text-sm",
+    "font-semibold",
+    "transition",
+  ],
   navItemActive: ["bg-white", "text-[var(--text-main)]", "shadow-sm"],
   navItemInactive: ["text-[var(--text-sub)]", "hover:text-[var(--text-main)]"],
 } as const;
