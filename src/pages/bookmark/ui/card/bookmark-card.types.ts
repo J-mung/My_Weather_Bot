@@ -10,6 +10,7 @@ export type BookmarkCardProps = HTMLAttributes<HTMLDivElement> & {
   locationLabel: string;
   isEditing: boolean;
   summary: ReactNode;
+  selectionControl?: ReactNode;
   actions?: ReactNode;
   editForm?: ReactNode;
 };

@@ -24,7 +24,12 @@ export const CardEditForm = ({
   }, []);
 
   return (
-    <div className={cn(bookmarkEditStyles.bookmarkEditForm)}>
+    <div
+      className={cn(bookmarkEditStyles.bookmarkEditForm)}
+      onClick={(e) => {
+        e.stopPropagation();
+      }}
+    >
       <Input
         ref={inputRef}
         value={aliasInput}

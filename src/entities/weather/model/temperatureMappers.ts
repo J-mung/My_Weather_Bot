@@ -12,7 +12,6 @@ import type {
   WeatherCondition,
 } from "@/entities/weather/model/weather.types";
 import { mapPtyToCondition, mapSkyToCondition } from "@/entities/weather/model/weatherCondition";
-import type { BookmarkSummaryData } from "@/features/bookmark/model/types";
 /**
  *
  * @param yyyymmdd
@@ -377,21 +376,6 @@ export const getPrecipitationSummary = (
     rainAmountText,
     snowAmountCm: getFirstNumericValue(nearest.rawValues.SNO),
     snowAmountText,
-  };
-};
-
-export const getBookmarkSummary = (
-  now: UltraNowResponseType,
-  short: ShortFcstResponseType,
-  observationDt: Date = new Date(),
-): BookmarkSummaryData => {
-  const { temperature } = getCurrentObservation(now);
-  const { todayMin, todayMax } = getTemperatureSummary(short, observationDt);
-
-  return {
-    temperature,
-    todayMin,
-    todayMax,
   };
 };
 

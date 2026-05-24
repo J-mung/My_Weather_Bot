@@ -1,82 +1,31 @@
-import { useBookmarkSummary } from "@/features/bookmark/model/useBookmarkSummary";
 import { cn } from "@/shared/lib/cn";
 import Button from "@/shared/ui/button";
 import { Icon } from "@/shared/ui/icon";
-import { Skeleton } from "@/shared/ui/skeleton";
 import { favoritePreviewPanelStyles } from "./styles";
 import type { FavoritePreviewCardProps, FavoritePreviewPanelProps } from "./types";
 
 const MAX_PREVIEW_COUNT = 3;
 
-const formatTemperature = (value: number | null): string => {
-  if (value === null) {
-    return "--°";
-  }
-
-  return `${value}°`;
-};
-
-const formatRange = (min: number, max: number): string => `H: ${max}° · L: ${min}°`;
-
 const FavoritePreviewCard = ({ bookmark, onClick }: FavoritePreviewCardProps) => {
-  const { data, isLoading, isFetching, error } = useBookmarkSummary({
-    nx: bookmark.nx,
-    ny: bookmark.ny,
-  });
   const title = bookmark.alias.trim() || bookmark.displayName;
 
   return (
-    <button
-      type={"button"}
-      className={cn(
-        favoritePreviewPanelStyles.card,
-        isFetching && favoritePreviewPanelStyles.fetching,
-      )}
-      onClick={onClick}
-    >
+    <button type={"button"} className={cn(favoritePreviewPanelStyles.card)} onClick={onClick}>
       <div className={cn(favoritePreviewPanelStyles.cardHeader)}>
         <div className={"min-w-0"}>
           <p className={cn(favoritePreviewPanelStyles.cardTitle)}>{title}</p>
           <p className={cn(favoritePreviewPanelStyles.cardLocation)}>{bookmark.displayName}</p>
         </div>
-        <Icon
-          name={"moreHoriz"}
-          tone={"subtle"}
-          className={cn(favoritePreviewPanelStyles.moreIcon)}
-        />
+        <Icon name={"arrowUp"} tone={"subtle"} className={cn(favoritePreviewPanelStyles.moreIcon)} />
       </div>
 
-      {isLoading && (
-        <div className={cn(favoritePreviewPanelStyles.cardWeather)}>
-          <Skeleton className={"h-8 w-16"} />
-          <Skeleton className={"h-5 w-24"} />
+      <div className={cn(favoritePreviewPanelStyles.cardWeather)}>
+        <div className={cn(favoritePreviewPanelStyles.temperatureGroup)}>
+          <Icon name={"bookmark"} tone={"subtle"} className={cn(favoritePreviewPanelStyles.weatherIcon)} />
+          <span className={cn(favoritePreviewPanelStyles.temperature)}>예보</span>
         </div>
-      )}
-
-      {!isLoading && error && (
-        <div className={cn(favoritePreviewPanelStyles.cardWeather)}>
-          <Icon name={"cloudAlert"} tone={"danger"} />
-          <span className={cn(favoritePreviewPanelStyles.errorText)}>{error.meta.title}</span>
-        </div>
-      )}
-
-      {!isLoading && !error && data && (
-        <div className={cn(favoritePreviewPanelStyles.cardWeather)}>
-          <div className={cn(favoritePreviewPanelStyles.temperatureGroup)}>
-            <Icon
-              name={"cloud"}
-              tone={"subtle"}
-              className={cn(favoritePreviewPanelStyles.weatherIcon)}
-            />
-            <span className={cn(favoritePreviewPanelStyles.temperature)}>
-              {formatTemperature(data.temperature)}
-            </span>
-          </div>
-          <span className={cn(favoritePreviewPanelStyles.range)}>
-            {formatRange(data.todayMin, data.todayMax)}
-          </span>
-        </div>
-      )}
+        <span className={cn(favoritePreviewPanelStyles.range)}>날씨 상세로 이동</span>
+      </div>
     </button>
   );
 };

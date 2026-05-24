@@ -1,3 +1,4 @@
+import type { WeatherCondition } from "@/entities/weather/model/weather.types";
 import type { AppError } from "@/shared/api/types";
 
 export interface BookmarkItem {
@@ -16,18 +17,19 @@ export interface AddBookmarkItem {
   alias?: string;
 }
 
-// 북마크 정보 요청 타입
-export type BookmarkSummaryReq = Pick<BookmarkItem, "nx" | "ny">;
+// 북마크 예보 미리보기 요청 타입
+export type BookmarkForecastPreviewReq = Pick<BookmarkItem, "nx" | "ny">;
 
-// 북마크 정보 응답 타입
-export type BookmarkSummaryData = {
-  temperature: number | null;
+// 북마크 예보 미리보기 응답 타입
+export type BookmarkForecastPreviewData = {
+  forecastTemperature: number | null;
   todayMin: number;
   todayMax: number;
+  condition: WeatherCondition;
 };
 
-export interface BookmarkSummary {
-  data: BookmarkSummaryData | null;
+export interface BookmarkForecastPreview {
+  data: BookmarkForecastPreviewData | null;
   isLoading: boolean;
   isFetching: boolean;
   isError: boolean;

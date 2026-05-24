@@ -44,6 +44,7 @@ export const BookmarkCard = ({
   locationLabel,
   isEditing,
   summary,
+  selectionControl,
   actions,
   editForm,
   className,
@@ -54,6 +55,7 @@ export const BookmarkCard = ({
       {!isEditing ? (
         <>
           <div className={cn(bookmarkCardHeaderClass)}>
+            {selectionControl}
             <div className={cn("min-w-0", "flex-1")}>
               <BookmarkCardTitle className={"truncate"}>{title}</BookmarkCardTitle>
               <BookmarkCardLocation className={"truncate"}>{locationLabel}</BookmarkCardLocation>

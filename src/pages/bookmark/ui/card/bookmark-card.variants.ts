@@ -2,6 +2,7 @@ import { cva } from "class-variance-authority";
 
 export const bookmarkCardClass = [
   "min-h-44",
+  "h-full",
   "rounded-[1.35rem]",
   "border",
   "border-[var(--line)]",

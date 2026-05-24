@@ -1,5 +1,5 @@
 import { fetchRegionNameFromCoord } from "@/entities/kakao/api/fetchRegionNameFromCoord";
-import { useWeatherSummary } from "@/features/get-current-weather/model/useWeatherSummary";
+import { useBookmarkForecastPreview } from "@/features/bookmark/model/useBookmarkForecastPreview";
 import { useBookmarks } from "@/features/bookmark/model/useBookmarks";
 import { isAppError } from "@/shared/api/types";
 import { cn } from "@/shared/lib/cn";
@@ -7,6 +7,7 @@ import { convertToGridCoord } from "@/shared/lib/convertToGridCoord";
 import { getUserLocation } from "@/shared/lib/userLocation";
 import Button from "@/shared/ui/button";
 import { Icon } from "@/shared/ui/icon";
+import { Skeleton } from "@/shared/ui/skeleton";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { BookmarkCardList } from "./card/BookmarkCardList";
@@ -14,25 +15,46 @@ import { bookmarkCurrentLocationStyles, bookmarkPageStyles } from "./styles";
 
 import type { GridCoord } from "@/entities/weather/model/weather.types";
 
-const formatTemperature = (value: number | null): string => {
+const formatTemperature = (value: number): string => `${Math.round(value)}°`;
+const formatForecastTemperature = (value: number | null): string => {
   if (value === null) {
     return "--°";
   }
 
-  return `${value}°`;
+  return `${Math.round(value)}°`;
 };
 
-const formatRange = (min: number, max: number): string => `H:${max}° L:${min}°`;
+const formatTemperatureRange = (todayMax: number, todayMin: number): string =>
+  `최고 ${formatTemperature(todayMax)} · 최저 ${formatTemperature(todayMin)}`;
 
-const CurrentLocationWeatherCard = ({
+const CurrentLocationSkeletonCard = () => (
+  <div className={cn(bookmarkCurrentLocationStyles.card)}>
+    <div className={cn(bookmarkCurrentLocationStyles.header)}>
+      <div className={"min-w-0 flex-1"}>
+        <Skeleton className={"h-4 w-36"} />
+        <Skeleton className={"mt-3 h-10 w-full max-w-80"} />
+      </div>
+      <Skeleton rounded={"full"} className={"h-14 w-14 shrink-0"} />
+    </div>
+
+    <div className={cn(bookmarkCurrentLocationStyles.body)}>
+      <Skeleton className={"h-5 w-32"} />
+      <Skeleton className={"mt-3 h-8 w-full max-w-80"} />
+    </div>
+  </div>
+);
+
+const CurrentLocationForecastCard = ({
   regionName,
   gridCoord,
 }: {
   regionName: string;
   gridCoord: GridCoord;
 }) => {
-  const { data, isLoading, isFetching, error } = useWeatherSummary(gridCoord);
   const navigate = useNavigate();
+  const { data, isFetching, isLoading, error } = useBookmarkForecastPreview(gridCoord);
+  const forecastTemperature = data ? formatForecastTemperature(data.forecastTemperature) : "--°";
+  const forecastRange = data ? formatTemperatureRange(data.todayMax, data.todayMin) : "";
 
   return (
     <button
@@ -63,13 +85,40 @@ const CurrentLocationWeatherCard = ({
       </div>
 
       <div className={cn(bookmarkCurrentLocationStyles.body)}>
-        <strong className={cn(bookmarkCurrentLocationStyles.temperature)}>
-          {isLoading ? "--°" : formatTemperature(data?.now.temperature ?? null)}
-        </strong>
-        <div className={cn(bookmarkCurrentLocationStyles.meta)}>
-          <span>{error ? "날씨 정보를 불러오지 못했어요" : "현재 위치 날씨"}</span>
-          <span>{data ? formatRange(data.todayMin, data.todayMax) : "H:--° L:--°"}</span>
-        </div>
+        {isLoading && (
+          <div>
+            <Skeleton className={"h-5 w-32"} />
+            <Skeleton className={"mt-3 h-8 w-full max-w-80"} />
+          </div>
+        )}
+
+        {!isLoading && error && (
+          <div className={cn(bookmarkCurrentLocationStyles.statusWrap)}>
+            <div className={cn(bookmarkCurrentLocationStyles.forecastTitle)}>
+              <Icon
+                name={"error"}
+                size={"sm"}
+                tone={"danger"}
+                className={cn(bookmarkCurrentLocationStyles.forecastTitleIcon)}
+              />
+              <span>예보를 불러오지 못했어요</span>
+            </div>
+            <span className={cn(bookmarkCurrentLocationStyles.forecastDetail)}>
+              {error.meta.description}
+            </span>
+          </div>
+        )}
+
+        {!isLoading && !error && data && (
+          <div className={cn(bookmarkCurrentLocationStyles.forecastTextGroup)}>
+            <span className={cn(bookmarkCurrentLocationStyles.forecastTemperature)}>
+              {forecastTemperature}
+            </span>
+            <span className={cn(bookmarkCurrentLocationStyles.forecastRange)}>
+              {forecastRange}
+            </span>
+          </div>
+        )}
       </div>
     </button>
   );
@@ -177,25 +226,26 @@ export default function BookmarkPage() {
       </div>
 
       {currentLocation ? (
-        <CurrentLocationWeatherCard
+        <CurrentLocationForecastCard
           regionName={currentLocation.regionName}
           gridCoord={currentLocation.gridCoord}
         />
+      ) : !currentLocationError ? (
+        <CurrentLocationSkeletonCard />
       ) : (
         <div className={cn(bookmarkCurrentLocationStyles.card)}>
           <p className={cn(bookmarkCurrentLocationStyles.eyebrow)}>Current Location</p>
           <h2 className={cn(bookmarkCurrentLocationStyles.title)}>
-            {currentLocationError || "현재 위치 확인 중"}
+            {currentLocationError}
           </h2>
           <p className={cn(bookmarkCurrentLocationStyles.placeholderText)}>
-            {currentLocationError
-              ? "권한을 허용하거나 검색에서 지역을 추가해 주세요."
-              : "대표 날씨 카드를 준비하고 있어요."}
+            권한을 허용하거나 검색에서 지역을 추가해 주세요.
           </p>
         </div>
       )}
 
       <BookmarkCardList
+        key={isManageMode ? "manage" : "view"}
         bookmarkList={bookmarkList}
         isFull={isFull}
         isManageMode={isManageMode}

@@ -1,38 +1,19 @@
-import type { GridCoord, WeatherCondition } from "@/entities/weather/model/weather.types";
+import type { GridCoord } from "@/entities/weather/model/weather.types";
 import { useBookmarks } from "@/features/bookmark/model/useBookmarks";
-import { useWeatherSummary } from "@/features/get-current-weather/model/useWeatherSummary";
 import { isAppError } from "@/shared/api/types";
 import { cn } from "@/shared/lib/cn";
 import { toDisplayDistrictName } from "@/shared/lib/location-search.lib";
 import type { DistrictSearchResult } from "@/shared/lib/location.types";
 import { resolveGridCoordByRegion } from "@/shared/lib/resolveGridCoord";
 import Button from "@/shared/ui/button";
-import { Icon, type IconName } from "@/shared/ui/icon";
+import { Icon } from "@/shared/ui/icon";
 import { Skeleton } from "@/shared/ui/skeleton";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { writeRecentSearch } from "../lib/recent-searches";
 import { searchPageStyles } from "./styles";
 
-const WEATHER_ICON_MAP: Record<WeatherCondition, IconName> = {
-  sunny: "wbSunny",
-  mostlyCloudy: "partlyCloudyDay",
-  unavailable: "cloudAlert",
-  cloudy: "cloud",
-  rain: "rainy",
-  rainSnow: "weatherMix",
-  snow: "weatherSnowy",
-  drizzle: "rainyLight",
-  drizzleSnow: "weatherMix",
-  snowFlurry: "snowing",
-};
-
-const formatTemperature = (value: number | null): string => {
-  if (value === null) return "--°";
-  return `${value}°`;
-};
-
-const FeaturedSearchWeather = ({
+const FeaturedSearchLocation = ({
   candidate,
   gridCoord,
 }: {
@@ -41,7 +22,6 @@ const FeaturedSearchWeather = ({
 }) => {
   const navigate = useNavigate();
   const { addBookmark, isBookmarked } = useBookmarks();
-  const { data, isLoading, isFetching } = useWeatherSummary(gridCoord);
   const displayName = toDisplayDistrictName(candidate.item);
   const alreadyBookmarked = isBookmarked(displayName);
 
@@ -68,59 +48,30 @@ const FeaturedSearchWeather = ({
   };
 
   return (
-    <article
-      className={cn(searchPageStyles.featuredCard, isFetching && searchPageStyles.featuredFetching)}
-    >
+    <article className={cn(searchPageStyles.featuredCard)}>
       <button type={"button"} className={cn(searchPageStyles.featuredMain)} onClick={moveToMain}>
         <div className={cn(searchPageStyles.featuredText)}>
           <p className={cn(searchPageStyles.featuredLocation)}>{displayName}</p>
           <div className={cn(searchPageStyles.featuredWeatherRow)}>
-            {isLoading ? (
-              <Skeleton className={"h-16 w-32 bg-white/30"} />
-            ) : (
-              <strong className={cn(searchPageStyles.featuredTemperature)}>
-                {formatTemperature(data?.now.temperature ?? null)}
-              </strong>
-            )}
+            <strong className={cn(searchPageStyles.featuredTemperature)}>예보 보기</strong>
             <span className={cn(searchPageStyles.featuredCondition)}>
-              {data?.outfitRecommendation.summary ?? "날씨 요약을 불러오는 중이에요."}
+              선택하면 메인 화면에서 날씨와 옷차림 추천을 확인할 수 있어요.
             </span>
           </div>
-          <p className={cn(searchPageStyles.featuredRange)}>
-            H: {data?.todayMax ?? "--"}° · L: {data?.todayMin ?? "--"}° · Feels like{" "}
-            {data?.now.feelsLike ?? "--"}°
-          </p>
+          <p className={cn(searchPageStyles.featuredRange)}>{candidate.item.fullName}</p>
         </div>
-        <Icon
-          name={WEATHER_ICON_MAP[data?.now.condition ?? "unavailable"]}
-          tone={"current"}
-          className={cn(searchPageStyles.featuredIcon)}
-        />
+        <Icon name={"search"} tone={"current"} className={cn(searchPageStyles.featuredIcon)} />
       </button>
 
       <div className={cn(searchPageStyles.featuredMetrics)}>
         <div className={cn(searchPageStyles.featuredMetric)}>
-          <span className={cn(searchPageStyles.featuredMetricLabel)}>Humidity</span>
-          <strong className={cn(searchPageStyles.featuredMetricValue)}>
-            {data?.now.humidity ?? "--"}%
-          </strong>
+          <span className={cn(searchPageStyles.featuredMetricLabel)}>Forecast</span>
+          <strong className={cn(searchPageStyles.featuredMetricValue)}>날씨 확인</strong>
         </div>
         <div className={cn(searchPageStyles.featuredMetric)}>
-          <span className={cn(searchPageStyles.featuredMetricLabel)}>Rain</span>
+          <span className={cn(searchPageStyles.featuredMetricLabel)}>Bookmark</span>
           <strong className={cn(searchPageStyles.featuredMetricValue)}>
-            {data?.precipitation.probability ?? "--"}%
-          </strong>
-        </div>
-        <div className={cn(searchPageStyles.featuredMetric)}>
-          <span className={cn(searchPageStyles.featuredMetricLabel)}>Wind</span>
-          <strong className={cn(searchPageStyles.featuredMetricValue)}>
-            {data?.now.windSpeedMs ?? "--"} m/s
-          </strong>
-        </div>
-        <div className={cn(searchPageStyles.featuredMetric)}>
-          <span className={cn(searchPageStyles.featuredMetricLabel)}>Outfit</span>
-          <strong className={cn(searchPageStyles.featuredMetricValue)}>
-            {data?.outfitRecommendation.items[0] ?? "추천 준비 중"}
+            {alreadyBookmarked ? "저장됨" : "저장 가능"}
           </strong>
         </div>
       </div>
@@ -186,5 +137,5 @@ export const FeaturedSearchResult = ({ candidate }: { candidate: DistrictSearchR
     );
   }
 
-  return <FeaturedSearchWeather candidate={candidate} gridCoord={gridCoord} />;
+  return <FeaturedSearchLocation candidate={candidate} gridCoord={gridCoord} />;
 };
