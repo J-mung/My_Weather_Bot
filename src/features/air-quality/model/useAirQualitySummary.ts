@@ -1,7 +1,7 @@
 import { fetchAirQualityBySido } from "@/entities/air-quality/api/fetchAirQualityBySido";
 import {
   ensureAirQualityItems,
-  resolveDistrictStationKeyword,
+  resolveDistrictStationKeywords,
   resolveSidoName,
   selectAirQualityStation,
   toAirQualitySummary,
@@ -22,10 +22,10 @@ export const useAirQualitySummary = (
   isError: boolean;
 } => {
   const sidoName = useMemo(() => resolveSidoName(district), [district]);
-  const stationKeyword = useMemo(() => resolveDistrictStationKeyword(district), [district]);
+  const stationKeywords = useMemo(() => resolveDistrictStationKeywords(district), [district]);
 
   const query = useQuery({
-    queryKey: ["air-quality", sidoName, stationKeyword],
+    queryKey: ["air-quality", sidoName],
     queryFn: async () => {
       if (!sidoName) {
         throw new Error("대기질 조회 지역을 확인하지 못했습니다.");
@@ -45,9 +45,9 @@ export const useAirQualitySummary = (
     }
 
     const items = ensureAirQualityItems(query.data.response.body.items);
-    const station = selectAirQualityStation(items, stationKeyword);
+    const station = selectAirQualityStation(items, stationKeywords);
     return toAirQualitySummary(sidoName, station);
-  }, [query.data, sidoName, stationKeyword]);
+  }, [query.data, sidoName, stationKeywords]);
 
   return {
     data,

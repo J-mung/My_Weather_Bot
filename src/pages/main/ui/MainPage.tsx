@@ -1,8 +1,11 @@
 import { fetchRegionNameFromCoord } from "@/entities/kakao/api/fetchRegionNameFromCoord";
+import type {
+  AirQualityGrade,
+  AirQualityMetric,
+} from "@/entities/air-quality/model/air-quality.types";
 import type { GridCoord } from "@/entities/weather/model/weather.types";
 import type { BookmarkItem } from "@/features/bookmark/model/types";
 import { readBookmarkFromStorage } from "@/features/bookmark/model/useBookmarks";
-import type { AirQualityMetric } from "@/entities/air-quality/model/air-quality.types";
 import { useAirQualitySummary } from "@/features/air-quality/model/useAirQualitySummary";
 import { useWeatherSummary } from "@/features/get-current-weather/model/useWeatherSummary";
 import { isAppError } from "@/shared/api/types";
@@ -34,6 +37,18 @@ const AIR_QUALITY_GRADE_LABEL: Record<AirQualityMetric["grade"], string> = {
   unavailable: "확인 중",
 };
 
+const getAirQualityGrade = (
+  metric: AirQualityMetric | undefined,
+  isLoading: boolean,
+  isError: boolean,
+): AirQualityGrade => {
+  if (isError || isLoading || typeof metric?.value !== "number") {
+    return "unavailable";
+  }
+
+  return metric.grade;
+};
+
 const formatAirQualityValue = (metric: AirQualityMetric | undefined): string => {
   if (typeof metric?.value !== "number") {
     return "--";
@@ -51,12 +66,60 @@ const getAirQualityDescription = (
   metric: AirQualityMetric | undefined,
   label: "미세먼지" | "초미세먼지",
   displayDistrict: string,
+  isLoading: boolean,
+  isError: boolean,
 ): string => {
+  if (isError) {
+    return "대기질 정보를 불러오지 못했어요.";
+  }
+
+  if (isLoading) {
+    return "대기질 정보를 확인하고 있어요.";
+  }
+
   if (!metric || metric.value === null) {
-    return metric?.flag || "대기질 정보를 준비 중이에요.";
+    return metric?.flag || "대기질 정보가 아직 없어요.";
   }
 
   return `${displayDistrict || "선택 지역"} 기준 ${label} ${AIR_QUALITY_GRADE_LABEL[metric.grade]}`;
+};
+
+const AirQualityMetricCard = ({
+  title,
+  metric,
+  label,
+  displayDistrict,
+  isLoading,
+  isError,
+}: {
+  title: string;
+  metric: AirQualityMetric | undefined;
+  label: "미세먼지" | "초미세먼지";
+  displayDistrict: string;
+  isLoading: boolean;
+  isError: boolean;
+}) => {
+  const grade = getAirQualityGrade(metric, isLoading, isError);
+
+  return (
+    <div className={cn(mainPageStyles.metricCard)}>
+      <div className={cn(mainPageStyles.metricHeader)}>
+        <span className={cn(mainPageStyles.metricHeaderLabel)}>{title}</span>
+        <span
+          className={cn(mainPageStyles.metricGradeBadge, mainPageStyles.metricGradeTone[grade])}
+        >
+          {AIR_QUALITY_GRADE_LABEL[grade]}
+        </span>
+      </div>
+      <strong className={cn(mainPageStyles.metricValue)}>
+        {formatAirQualityValue(metric)}
+        <span className={cn(mainPageStyles.metricUnit)}>㎍/㎥</span>
+      </strong>
+      <p className={cn(mainPageStyles.metricDescription)}>
+        {getAirQualityDescription(metric, label, displayDistrict, isLoading, isError)}
+      </p>
+    </div>
+  );
 };
 
 export default function MainPage() {
@@ -230,43 +293,27 @@ export default function MainPage() {
           </div>
 
           <div className={cn(mainPageStyles.metricGrid)}>
-            <div className={cn(mainPageStyles.metricCard)}>
-              <div className={cn(mainPageStyles.metricHeader)}>
-                <span>Fine Dust</span>
-              </div>
-              <strong className={cn(mainPageStyles.metricValue)}>
-                {formatAirQualityValue(airQuality.data?.pm10)}
-                <span className={cn(mainPageStyles.metricUnit)}>㎍/㎥</span>
-              </strong>
-              <p className={cn(mainPageStyles.metricDescription)}>
-                {getAirQualityDescription(
-                  airQuality.data?.pm10,
-                  "미세먼지",
-                  getAirQualityDisplayDistrict(districtDisplay.fullDistrict),
-                )}
-              </p>
-            </div>
+            <AirQualityMetricCard
+              title={"Fine Dust"}
+              metric={airQuality.data?.pm10}
+              label={"미세먼지"}
+              displayDistrict={getAirQualityDisplayDistrict(districtDisplay.fullDistrict)}
+              isLoading={airQuality.isLoading}
+              isError={airQuality.isError}
+            />
+
+            <AirQualityMetricCard
+              title={"Ultra Fine Dust"}
+              metric={airQuality.data?.pm25}
+              label={"초미세먼지"}
+              displayDistrict={getAirQualityDisplayDistrict(districtDisplay.fullDistrict)}
+              isLoading={airQuality.isLoading}
+              isError={airQuality.isError}
+            />
 
             <div className={cn(mainPageStyles.metricCard)}>
               <div className={cn(mainPageStyles.metricHeader)}>
-                <span>Ultra Fine Dust</span>
-              </div>
-              <strong className={cn(mainPageStyles.metricValue)}>
-                {formatAirQualityValue(airQuality.data?.pm25)}
-                <span className={cn(mainPageStyles.metricUnit)}>㎍/㎥</span>
-              </strong>
-              <p className={cn(mainPageStyles.metricDescription)}>
-                {getAirQualityDescription(
-                  airQuality.data?.pm25,
-                  "초미세먼지",
-                  getAirQualityDisplayDistrict(districtDisplay.fullDistrict),
-                )}
-              </p>
-            </div>
-
-            <div className={cn(mainPageStyles.metricCard)}>
-              <div className={cn(mainPageStyles.metricHeader)}>
-                <span>Rain Chance</span>
+                <span className={cn(mainPageStyles.metricHeaderLabel)}>Rain Chance</span>
               </div>
               <strong className={cn(mainPageStyles.metricValue)}>
                 {formatProbability(data?.precipitation.probability)}
@@ -283,7 +330,7 @@ export default function MainPage() {
 
             <div className={cn(mainPageStyles.metricCard)}>
               <div className={cn(mainPageStyles.metricHeader)}>
-                <span>Wind Speed</span>
+                <span className={cn(mainPageStyles.metricHeaderLabel)}>Wind Speed</span>
               </div>
               <strong className={cn(mainPageStyles.metricValue)}>
                 {data?.now.windSpeedMs ?? "--"}

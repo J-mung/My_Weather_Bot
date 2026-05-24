@@ -19,5 +19,13 @@ export const fetchAirQualityBySido = async ({
     },
   });
 
+  const resultCode = response.data.response.header.resultCode;
+
+  if (resultCode !== "00") {
+    throw new Error(
+      response.data.response.header.resultMsg || "대기질 정보를 불러오지 못했습니다.",
+    );
+  }
+
   return response.data;
 };

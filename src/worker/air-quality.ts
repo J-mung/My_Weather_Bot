@@ -82,6 +82,23 @@ const createClientResponse = async (
   );
 };
 
+const isCacheableAirQualityResponse = (
+  status: number,
+  contentType: string | null,
+  body: string,
+): boolean => {
+  if (status !== 200 || !contentType?.includes("application/json")) {
+    return false;
+  }
+
+  try {
+    const parsed = JSON.parse(body) as { response?: { header?: { resultCode?: string } } };
+    return parsed.response?.header?.resultCode === "00";
+  } catch {
+    return false;
+  }
+};
+
 export const handleAirQualityApiRequest = async (
   request: Request,
   env: Env,
@@ -104,7 +121,10 @@ export const handleAirQualityApiRequest = async (
   }
 
   if (!resolveAirKoreaApiKey(env)) {
-    return new Response("Missing API env: AIRKOREA_API_KEY or API_KEY", { status: 500 });
+    return new Response(
+      "Missing API env: AIRKOREA_API_KEY or API_KEY",
+      withCors(origin, { status: 500 }),
+    );
   }
 
   const cache = getAirQualityCache();
@@ -121,15 +141,20 @@ export const handleAirQualityApiRequest = async (
   const upstreamUrl = buildUpstreamUrl(request, env, endpoint);
   const upstreamRes = await fetch(upstreamUrl.toString(), { method: "GET" });
   const body = await upstreamRes.text();
-  const responseCacheControl = upstreamRes.ok ? cacheControl : "no-store";
-  const cacheStatus = cache && upstreamRes.ok ? "MISS" : "BYPASS";
+  const isCacheable = isCacheableAirQualityResponse(
+    upstreamRes.status,
+    upstreamRes.headers.get("Content-Type"),
+    body,
+  );
+  const responseCacheControl = isCacheable ? cacheControl : "no-store";
+  const cacheStatus = cache && isCacheable ? "MISS" : "BYPASS";
   const headers = createAirQualityHeaders(
     upstreamRes.headers.get("Content-Type"),
     cacheStatus,
     responseCacheControl,
   );
 
-  if (cache && upstreamRes.ok) {
+  if (cache && isCacheable) {
     const cacheResponse = new Response(body, {
       status: upstreamRes.status,
       headers,
