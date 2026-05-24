@@ -30,9 +30,6 @@ let kakaoMapSdkPromise: Promise<KakaoMapSdk> | null = null;
 
 const KAKAO_MAP_SDK_SCRIPT_ID = "kakao-map-sdk";
 
-const getKakaoMapKey = (): string =>
-  (import.meta.env.KAKAO_MAP_KEY || import.meta.env.VITE_KAKAO_MAP_KEY || "").trim();
-
 const resolveLoadedKakaoMaps = (resolve: (value: KakaoMapSdk) => void) => {
   const kakaoMaps = window.kakao?.maps;
 
@@ -56,12 +53,6 @@ export const loadKakaoMapSdk = (): Promise<KakaoMapSdk> => {
     return kakaoMapSdkPromise;
   }
 
-  const appKey = getKakaoMapKey();
-
-  if (!appKey) {
-    return Promise.reject(new Error("지도를 표시하기 위한 설정을 확인하지 못했어요."));
-  }
-
   kakaoMapSdkPromise = new Promise<KakaoMapSdk>((resolve, reject) => {
     const script =
       (document.getElementById(KAKAO_MAP_SDK_SCRIPT_ID) as HTMLScriptElement | null) ??
@@ -75,9 +66,7 @@ export const loadKakaoMapSdk = (): Promise<KakaoMapSdk> => {
 
     script.id = KAKAO_MAP_SDK_SCRIPT_ID;
     script.setAttribute("data-kakao-map-sdk", "true");
-    script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${encodeURIComponent(
-      appKey,
-    )}&autoload=false`;
+    script.src = "/api/kakao-map-sdk.js";
     script.async = true;
     script.onerror = () => {
       rejectWithCleanup(new Error("지도를 불러오지 못했어요. 잠시 후 다시 시도해 주세요."));

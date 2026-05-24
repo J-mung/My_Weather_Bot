@@ -8,6 +8,7 @@ export const WEATHER_ALLOWED_ENDPOINTS = new Set([
 export const WEATHER_API_PREFIX = "/api/";
 export const KAKAO_API_PREFIX = "/api/kakao/";
 export const AIR_QUALITY_API_PREFIX = "/api/air-quality/";
+export const KAKAO_MAP_SDK_API_PATH = "/api/kakao-map-sdk.js";
 export const AIR_QUALITY_ALLOWED_ENDPOINTS = new Set(["getCtprvnRltmMesureDnsty"]);
 export const KAKAO_ENDPOINT_KEYS = [
   "coord2regioncode",

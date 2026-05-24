@@ -9,6 +9,7 @@ export interface Env {
   AIRKOREA_API_KEY?: string;
   KAKAO_REST_API_KEY: string;
   KAKAO_REST_API_BASE_URL: string;
+  KAKAO_MAP_KEY?: string;
   ASSETS: {
     fetch: (request: Request) => Promise<Response>;
   };

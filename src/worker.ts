@@ -7,8 +7,14 @@
 
 import { handleAirQualityApiRequest } from "./worker/air-quality";
 import { serveAsset } from "./worker/assets";
-import { AIR_QUALITY_API_PREFIX, KAKAO_API_PREFIX, WEATHER_API_PREFIX } from "./worker/constants";
+import {
+  AIR_QUALITY_API_PREFIX,
+  KAKAO_API_PREFIX,
+  KAKAO_MAP_SDK_API_PATH,
+  WEATHER_API_PREFIX,
+} from "./worker/constants";
 import { handleKakaoApiRequest } from "./worker/kakao";
+import { handleKakaoMapSdkRequest } from "./worker/kakao-map-sdk";
 import type { Env, WorkerExecutionContext } from "./worker/types";
 import { handleApiRequest } from "./worker/weather";
 
@@ -20,6 +26,10 @@ export default {
    */
   async fetch(request: Request, env: Env, context: WorkerExecutionContext): Promise<Response> {
     const url = new URL(request.url);
+
+    if (url.pathname === KAKAO_MAP_SDK_API_PATH) {
+      return handleKakaoMapSdkRequest(request, env);
+    }
 
     if (url.pathname.startsWith(KAKAO_API_PREFIX)) {
       return handleKakaoApiRequest(request, env);
