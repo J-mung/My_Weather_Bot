@@ -66,7 +66,7 @@ export const loadKakaoMapSdk = (): Promise<KakaoMapSdk> => {
 
     script.id = KAKAO_MAP_SDK_SCRIPT_ID;
     script.setAttribute("data-kakao-map-sdk", "true");
-    script.src = "/api/kakao-map-sdk.js";
+    script.src = "/dapi.kakao.com/v2/maps/sdk.js?autoload=false";
     script.async = true;
     script.onerror = () => {
       rejectWithCleanup(new Error("지도를 불러오지 못했어요. 잠시 후 다시 시도해 주세요."));
