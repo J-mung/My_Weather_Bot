@@ -30,20 +30,13 @@ let kakaoMapSdkPromise: Promise<KakaoMapSdk> | null = null;
 
 const KAKAO_MAP_SDK_SCRIPT_ID = "kakao-map-sdk";
 
-const getKakaoMapJsKey = (): string =>
-  (
-    import.meta.env.VITE_KAKAO_MAP_JS_KEY ||
-    import.meta.env.VITE_KAKAO_MAP_JAVASCRIPT_KEY ||
-    ""
-  ).trim();
+const getKakaoMapKey = (): string => (import.meta.env.VITE_KAKAO_MAP_KEY || "").trim();
 
 const resolveLoadedKakaoMaps = (resolve: (value: KakaoMapSdk) => void) => {
   const kakaoMaps = window.kakao?.maps;
 
   if (!kakaoMaps) {
-    throw new Error(
-      "카카오 지도 SDK가 준비되지 않았습니다. JavaScript 키와 플랫폼 도메인 설정을 확인해 주세요.",
-    );
+    throw new Error("지도를 표시하기 위한 설정을 확인하지 못했어요.");
   }
 
   kakaoMaps.load(() => resolve(kakaoMaps));
@@ -62,17 +55,13 @@ export const loadKakaoMapSdk = (): Promise<KakaoMapSdk> => {
     return kakaoMapSdkPromise;
   }
 
-  const appKey = getKakaoMapJsKey();
+  const appKey = getKakaoMapKey();
 
   if (!appKey) {
-    return Promise.reject(
-      new Error(
-        "카카오 지도 JavaScript 키가 없습니다. VITE_KAKAO_MAP_JS_KEY 설정 후 개발 서버를 다시 시작해 주세요.",
-      ),
-    );
+    return Promise.reject(new Error("지도를 표시하기 위한 설정을 확인하지 못했어요."));
   }
 
-  kakaoMapSdkPromise = new Promise((resolve, reject) => {
+  kakaoMapSdkPromise = new Promise<KakaoMapSdk>((resolve, reject) => {
     const script =
       (document.getElementById(KAKAO_MAP_SDK_SCRIPT_ID) as HTMLScriptElement | null) ??
       document.createElement("script");
@@ -90,17 +79,17 @@ export const loadKakaoMapSdk = (): Promise<KakaoMapSdk> => {
     )}&autoload=false`;
     script.async = true;
     script.onerror = () => {
-      rejectWithCleanup(
-        new Error(
-          "카카오 지도 SDK를 불러오지 못했습니다. JavaScript 키와 카카오 플랫폼 도메인 설정을 확인해 주세요.",
-        ),
-      );
+      rejectWithCleanup(new Error("지도를 불러오지 못했어요. 잠시 후 다시 시도해 주세요."));
     };
     script.onload = () => {
       try {
         resolveLoadedKakaoMaps(resolve);
       } catch (error: unknown) {
-        rejectWithCleanup(error instanceof Error ? error : new Error("카카오 지도 SDK 오류"));
+        rejectWithCleanup(
+          error instanceof Error
+            ? error
+            : new Error("지도를 표시하기 위한 설정을 확인하지 못했어요."),
+        );
       }
     };
 
