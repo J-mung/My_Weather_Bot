@@ -7,6 +7,8 @@ import { defineConfig, loadEnv } from "vite";
 const KAKAO_COORD2REGION_PATH = "/v2/local/geo/coord2regioncode.json";
 const KAKAO_ADDRESS_SEARCH_PATH = "/v2/local/search/address.json";
 const KAKAO_KEYWORD_SEARCH_PATH = "/v2/local/search/keyword.json";
+const KAKAO_MAP_SDK_PROXY_PATH = "/dapi.kakao.com/v2/maps/sdk.js";
+const KAKAO_MAP_SDK_UPSTREAM_PATH = "/v2/maps/sdk.js";
 const DEFAULT_AIRKOREA_API_BASE_URL = "https://apis.data.go.kr/B552584/ArpltnInforInqireSvc";
 
 const parseLocalEnvFile = (filePath: string): Record<string, string> => {
@@ -114,6 +116,21 @@ const buildKakaoKeywordSearchRewritePath = (path: string): string => {
   return search ? `${upstreamUrl.pathname}?${search}` : upstreamUrl.pathname;
 };
 
+// Kakao 지도 SDK dev 요청을 upstream SDK 경로로 재작성하며 SDK key/autoload 옵션 주입
+const buildKakaoMapSdkRewritePath = (path: string, apiKey?: string): string => {
+  const url = new URL(path, "http://localhost");
+  const upstreamUrl = new URL(KAKAO_MAP_SDK_UPSTREAM_PATH, "http://localhost");
+
+  if (apiKey) {
+    upstreamUrl.searchParams.set("appkey", apiKey);
+  }
+
+  upstreamUrl.searchParams.set("autoload", url.searchParams.get("autoload") ?? "false");
+
+  const search = upstreamUrl.searchParams.toString();
+  return search ? `${upstreamUrl.pathname}?${search}` : upstreamUrl.pathname;
+};
+
 // /api/air-quality/* 요청을 AirKorea upstream 경로로 재작성하며 serviceKey/returnType 주입
 const buildAirQualityRewritePath = (path: string, apiKey?: string): string => {
   const url = new URL(path, "http://localhost");
@@ -176,6 +193,13 @@ const createKakaoProxy = (baseUrl: string, apiKey?: string) => ({
     : undefined,
 });
 
+// Kakao 지도 SDK 전용 dev 프록시 생성
+const createKakaoMapSdkProxy = (apiKey?: string) => ({
+  target: "https://dapi.kakao.com",
+  changeOrigin: true,
+  rewrite: (path: string) => buildKakaoMapSdkRewritePath(path, apiKey),
+});
+
 // AirKorea API 전용 dev 프록시 생성
 const createAirQualityProxy = (baseUrl: string, apiKey?: string) => ({
   target: baseUrl,
@@ -203,10 +227,6 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [react(), tailwindcss()],
-    define: {
-      "import.meta.env.KAKAO_MAP_KEY": JSON.stringify(kakaoMapKey ?? ""),
-      "import.meta.env.VITE_KAKAO_MAP_KEY": JSON.stringify(kakaoMapKey ?? ""),
-    },
     resolve: {
       alias: {
         "@": path.resolve(__dirname, "src"),
@@ -214,6 +234,7 @@ export default defineConfig(({ mode }) => {
     },
     server: {
       proxy: {
+        [KAKAO_MAP_SDK_PROXY_PATH]: createKakaoMapSdkProxy(kakaoMapKey),
         "/api/kakao": createKakaoProxy(kakaoApiBaseUrl, kakaoApiKey),
         "/api/air-quality": createAirQualityProxy(airKoreaApiBaseUrl, airKoreaApiKey),
         "^/api/(?!kakao|air-quality)": createWeatherProxy(weatherApiBaseUrl, weatherApiKey),
