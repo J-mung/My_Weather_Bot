@@ -18,3 +18,14 @@ export interface KakaoAddressSearchResponse {
     address_name: string;
   }>;
 }
+
+
+export interface KakaoKeywordSearchResponse {
+  documents: Array<{
+    x: string;
+    y: string;
+    place_name: string;
+    address_name: string;
+    road_address_name: string;
+  }>;
+}

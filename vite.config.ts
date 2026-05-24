@@ -6,6 +6,7 @@ import { defineConfig, loadEnv } from "vite";
 
 const KAKAO_COORD2REGION_PATH = "/v2/local/geo/coord2regioncode.json";
 const KAKAO_ADDRESS_SEARCH_PATH = "/v2/local/search/address.json";
+const KAKAO_KEYWORD_SEARCH_PATH = "/v2/local/search/keyword.json";
 const DEFAULT_AIRKOREA_API_BASE_URL = "https://apis.data.go.kr/B552584/ArpltnInforInqireSvc";
 
 const parseLocalEnvFile = (filePath: string): Record<string, string> => {
@@ -95,6 +96,20 @@ const buildKakaoAddressSearchRewritePath = (path: string): string => {
   return search ? `${upstreamUrl.pathname}?${search}` : upstreamUrl.pathname;
 };
 
+// /api/kakao/search/keyword 요청을 Kakao 키워드 검색 경로로 재작성
+const buildKakaoKeywordSearchRewritePath = (path: string): string => {
+  const url = new URL(path, "http://localhost");
+  const upstreamUrl = new URL(KAKAO_KEYWORD_SEARCH_PATH, "http://localhost");
+
+  const query = url.searchParams.get("query");
+  if (query) {
+    upstreamUrl.searchParams.set("query", query);
+  }
+
+  const search = upstreamUrl.searchParams.toString();
+  return search ? `${upstreamUrl.pathname}?${search}` : upstreamUrl.pathname;
+};
+
 // /api/air-quality/* 요청을 AirKorea upstream 경로로 재작성하며 serviceKey/returnType 주입
 const buildAirQualityRewritePath = (path: string, apiKey?: string): string => {
   const url = new URL(path, "http://localhost");
@@ -142,6 +157,10 @@ const createKakaoProxy = (baseUrl: string, apiKey?: string) => ({
 
     if (pathname === "/api/kakao/search/address") {
       return buildKakaoAddressSearchRewritePath(path);
+    }
+
+    if (pathname === "/api/kakao/search/keyword") {
+      return buildKakaoKeywordSearchRewritePath(path);
     }
 
     return path;

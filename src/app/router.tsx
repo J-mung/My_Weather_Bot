@@ -1,5 +1,6 @@
 import BookmarkPage from "@/pages/bookmark";
 import MainPage from "@/pages/main";
+import MapPage from "@/pages/map";
 import SearchPage from "@/pages/search/ui/SearchPage";
 import { createBrowserRouter } from "react-router-dom";
 import { MainLayout } from "./layouts/MainLayout";
@@ -13,6 +14,7 @@ export const router = createBrowserRouter(
         { index: true, element: <MainPage /> },
         { path: "search", element: <SearchPage /> },
         { path: "bookmark", element: <BookmarkPage /> },
+        { path: "map", element: <MapPage /> },
       ],
     },
   ],

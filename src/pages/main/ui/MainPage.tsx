@@ -3,7 +3,7 @@ import type {
   AirQualityGrade,
   AirQualityMetric,
 } from "@/entities/air-quality/model/air-quality.types";
-import type { GridCoord } from "@/entities/weather/model/weather.types";
+import type { GridCoord, LatLon } from "@/entities/weather/model/weather.types";
 import type { BookmarkItem } from "@/features/bookmark/model/types";
 import { readBookmarkFromStorage } from "@/features/bookmark/model/useBookmarks";
 import { useAirQualitySummary } from "@/features/air-quality/model/useAirQualitySummary";
@@ -12,6 +12,7 @@ import { isAppError } from "@/shared/api/types";
 import { cn } from "@/shared/lib/cn";
 import { getUserLocation } from "@/shared/lib/userLocation";
 import { IconInput } from "@/shared/ui/input";
+import { KakaoRegionMap } from "@/shared/ui/map";
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { buildDistrictDisplay } from "../lib/district-display.lib";
@@ -162,6 +163,7 @@ export default function MainPage() {
     readBookmarkFromStorage(),
   );
   const [currentRegionName, setCurrentRegionName] = useState("");
+  const [currentLatLon, setCurrentLatLon] = useState<LatLon | null>(null);
   const [currentRegionError, setCurrentRegionError] = useState("");
 
   useEffect(() => {
@@ -191,11 +193,13 @@ export default function MainPage() {
         const regionName = await fetchRegionNameFromCoord(userLocation);
         if (!ignore) {
           setCurrentRegionName(regionName);
+          setCurrentLatLon(userLocation);
           setCurrentRegionError("");
         }
       } catch (fetchError: unknown) {
         if (ignore) return;
         setCurrentRegionName("");
+        setCurrentLatLon(null);
 
         if (isAppError(fetchError)) {
           alert(fetchError.meta.description);
@@ -227,6 +231,8 @@ export default function MainPage() {
   const searchParams = new URLSearchParams({
     location: displayDistrict,
   });
+  const mapLocationLabel = locationLabel || displayDistrict;
+  const mapCoordinates = displayDistrict ? null : currentLatLon;
 
   return (
     <div className={cn(mainPageStyles.page)}>
@@ -342,18 +348,13 @@ export default function MainPage() {
             </div>
           </div>
 
-          <div className={cn(mainPageStyles.mapCtaCard)}>
-            <div className={cn(mainPageStyles.mapTexture)} />
-            <button
-              type={"button"}
-              className={cn(mainPageStyles.mapCtaButton)}
-              onClick={() => {
-                navigate(`/search?${searchParams.toString()}`);
-              }}
-            >
-              View Precipitation Map
-            </button>
-          </div>
+          <KakaoRegionMap
+            location={mapLocationLabel}
+            coordinates={mapCoordinates}
+            title={"Weather Map"}
+            mapClassName={cn(mainPageStyles.mapCanvas)}
+            showHeader={false}
+          />
         </div>
 
         <FavoritePreviewPanel

@@ -53,3 +53,9 @@ export const writeRecentSearch = (
   localStorage.setItem(RECENT_SEARCH_STORAGE_KEY, JSON.stringify(nextList));
   return nextList;
 };
+
+export const deleteRecentSearch = (fullName: string): RecentSearchItem[] => {
+  const nextList = readRecentSearches().filter((recent) => recent.fullName !== fullName);
+  localStorage.setItem(RECENT_SEARCH_STORAGE_KEY, JSON.stringify(nextList));
+  return nextList;
+};

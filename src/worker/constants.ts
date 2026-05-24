@@ -12,6 +12,7 @@ export const AIR_QUALITY_ALLOWED_ENDPOINTS = new Set(["getCtprvnRltmMesureDnsty"
 export const KAKAO_ENDPOINT_KEYS = [
   "coord2regioncode",
   "searchAddress",
+  "searchKeyword",
 ] as const satisfies readonly KakaoEndpointKey[];
 
 /**
@@ -20,4 +21,5 @@ export const KAKAO_ENDPOINT_KEYS = [
 export const KAKAO_ENDPOINT_KEY_BY_PATH = {
   "/api/kakao/coord2regioncode": "coord2regioncode",
   "/api/kakao/search/address": "searchAddress",
+  "/api/kakao/search/keyword": "searchKeyword",
 } as const satisfies Record<string, KakaoEndpointKey>;

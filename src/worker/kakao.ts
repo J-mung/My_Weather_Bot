@@ -76,6 +76,26 @@ export const buildKakaoAddressSearchUrl = (request: Request, env: Env): URL => {
 };
 
 /**
+ * 키워드로 위/경도 조회
+ * @param request
+ * @param env
+ * @returns
+ */
+export const buildKakaoKeywordSearchUrl = (request: Request, env: Env): URL => {
+  const incomingUrl = new URL(request.url);
+  const baseUrl = env.KAKAO_REST_API_BASE_URL || "https://dapi.kakao.com";
+  const upstreamUrl = new URL("/v2/local/search/keyword.json", baseUrl);
+
+  const query = incomingUrl.searchParams.get("query");
+  if (!query) {
+    throw new Error("Missing query parameter.");
+  }
+
+  upstreamUrl.searchParams.set("query", query);
+  return upstreamUrl;
+};
+
+/**
  * URL 생성기 선택
  * @param endpointKey
  * @param request
@@ -88,6 +108,8 @@ const buildKakaoUpstreamUrl = (endpointKey: KakaoEndpointKey, request: Request, 
       return buildKakaoCoord2RegionUrl(request, env);
     case "searchAddress":
       return buildKakaoAddressSearchUrl(request, env);
+    case "searchKeyword":
+      return buildKakaoKeywordSearchUrl(request, env);
   }
 };
 

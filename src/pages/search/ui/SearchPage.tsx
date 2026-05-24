@@ -1,12 +1,17 @@
 import { useLocationSearch } from "@/features/location-search/useLocationSearch";
 import { cn } from "@/shared/lib/cn";
+import { Icon } from "@/shared/ui/icon";
 import { IconInput } from "@/shared/ui/input";
-import { useEffect, useRef } from "react";
+import { KakaoRegionMap } from "@/shared/ui/map";
+import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { readRecentSearches, type RecentSearchItem } from "../lib/recent-searches";
+import {
+  deleteRecentSearch,
+  readRecentSearches,
+  type RecentSearchItem,
+} from "../lib/recent-searches";
 import { CandidateList } from "./CandidateList";
 import { searchPageStyles } from "./styles";
-import { useState } from "react";
 
 export default function SearchPage() {
   const {
@@ -49,6 +54,22 @@ export default function SearchPage() {
     };
   }, []);
 
+  const navigateToRecentSearch = (recent: RecentSearchItem) => {
+    const searchParams = new URLSearchParams({
+      location: recent.displayName,
+      nx: String(recent.nx),
+      ny: String(recent.ny),
+    });
+
+    navigate(`/?${searchParams.toString()}`);
+  };
+
+  const removeRecentSearch = (fullName: string) => {
+    setRecentSearches(deleteRecentSearch(fullName));
+  };
+
+  const mapLocationLabel = candidates[0]?.item.displayName ?? "";
+
   return (
     <div className={cn(searchPageStyles.page)}>
       <div className={cn(searchPageStyles.searchWrap)}>
@@ -69,6 +90,14 @@ export default function SearchPage() {
         />
       </div>
       {errorMessage && <div className={cn(searchPageStyles.section)}>{errorMessage}</div>}
+      {mapLocationLabel && (
+        <KakaoRegionMap
+          location={mapLocationLabel}
+          title={"Weather Map"}
+          mapClassName={cn(searchPageStyles.mapCanvas)}
+          showHeader={false}
+        />
+      )}
       {candidates.length > 0 && (
         <section className={cn(searchPageStyles.sectionGroup)}>
           <h2 className={cn(searchPageStyles.sectionTitle)}>Search Results</h2>
@@ -80,33 +109,34 @@ export default function SearchPage() {
           <h2 className={cn(searchPageStyles.sectionTitle)}>Recent Searches</h2>
           <div className={cn(searchPageStyles.recentList)}>
             {recentSearches.map((recent) => (
-              <button
+              <div
                 key={recent.fullName}
-                type={"button"}
                 className={cn(searchPageStyles.recentItem)}
-                onClick={() => {
-                  const searchParams = new URLSearchParams({
-                    location: recent.displayName,
-                    nx: String(recent.nx),
-                    ny: String(recent.ny),
-                  });
-                  navigate(`/?${searchParams.toString()}`);
-                }}
               >
-                <span className={cn(searchPageStyles.recentText)}>
-                  <strong>{recent.displayName}</strong>
-                  <span>{recent.fullName}</span>
-                </span>
-                <span className={cn(searchPageStyles.recentArrow)}>→</span>
-              </button>
+                <button
+                  type={"button"}
+                  className={cn(searchPageStyles.recentNavigateButton)}
+                  onClick={() => navigateToRecentSearch(recent)}
+                >
+                  <span className={cn(searchPageStyles.recentText)}>
+                    <strong>{recent.displayName}</strong>
+                    <span>{recent.fullName}</span>
+                  </span>
+                  <span className={cn(searchPageStyles.recentArrow)}>→</span>
+                </button>
+                <button
+                  type={"button"}
+                  className={cn(searchPageStyles.recentDeleteButton)}
+                  aria-label={`${recent.displayName} 최근 검색 삭제`}
+                  onClick={() => removeRecentSearch(recent.fullName)}
+                >
+                  <Icon name={"close"} size={"sm"} tone={"default"} />
+                </button>
+              </div>
             ))}
           </div>
         </section>
       )}
-      <button type={"button"} className={cn(searchPageStyles.mapCtaCard)}>
-        <span className={cn(searchPageStyles.mapTexture)} />
-        <span className={cn(searchPageStyles.mapButton)}>View on Map</span>
-      </button>
     </div>
   );
 }

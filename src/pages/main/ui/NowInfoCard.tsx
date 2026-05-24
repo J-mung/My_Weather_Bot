@@ -127,6 +127,7 @@ export const NowInfoCard = ({
                   content={"새로고침"}
                   align={"center"}
                   className={cn(nowInfoCardStyles.refreshButton)}
+                  tooltipClassName={"whitespace-nowrap"}
                 >
                   <Button
                     variant={"ghost"}
