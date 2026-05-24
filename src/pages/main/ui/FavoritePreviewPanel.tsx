@@ -18,14 +18,6 @@ const FavoritePreviewCard = ({ bookmark, onClick }: FavoritePreviewCardProps) =>
         </div>
         <Icon name={"arrowUp"} tone={"subtle"} className={cn(favoritePreviewPanelStyles.moreIcon)} />
       </div>
-
-      <div className={cn(favoritePreviewPanelStyles.cardWeather)}>
-        <div className={cn(favoritePreviewPanelStyles.temperatureGroup)}>
-          <Icon name={"bookmark"} tone={"subtle"} className={cn(favoritePreviewPanelStyles.weatherIcon)} />
-          <span className={cn(favoritePreviewPanelStyles.temperature)}>예보</span>
-        </div>
-        <span className={cn(favoritePreviewPanelStyles.range)}>날씨 상세로 이동</span>
-      </div>
     </button>
   );
 };

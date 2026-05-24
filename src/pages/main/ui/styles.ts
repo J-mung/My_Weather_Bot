@@ -346,12 +346,6 @@ export const favoritePreviewPanelStyles = {
   cardTitle: ["truncate", "text-xl", "font-extrabold", "text-[var(--text-main)]"],
   cardLocation: ["mt-1", "truncate", "text-sm", "text-[var(--text-muted)]"],
   moreIcon: ["mt-1"],
-  cardWeather: ["mt-7", "flex", "items-end", "justify-between", "gap-3"],
-  temperatureGroup: ["flex", "min-w-0", "items-center", "gap-4"],
-  weatherIcon: ["size-8"],
-  temperature: ["text-4xl", "font-extrabold", "tracking-[-0.04em]", "text-[var(--text-main)]"],
-  range: ["shrink-0", "text-sm", "font-semibold", "text-[var(--text-sub)]"],
-  errorText: ["text-sm", "font-semibold", "text-[var(--danger)]"],
   emptyCard: [
     "rounded-[1.5rem]",
     "border",
@@ -387,16 +381,7 @@ export const favoritePreviewPanelStyles = {
 } as const;
 
 export const outfitRecommendationCardStyles = {
-  root: [
-    "min-w-0",
-    "rounded-[1.5rem]",
-    "border",
-    "border-[var(--line)]",
-    "bg-white",
-    "p-5",
-    "shadow-sm",
-    "md:p-6",
-  ],
+  root: ["min-w-0"],
   fetching: ["animate-pulse", "transition-opacity", "duration-300"],
   header: [
     "flex",

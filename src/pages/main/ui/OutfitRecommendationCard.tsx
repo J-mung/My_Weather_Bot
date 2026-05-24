@@ -54,7 +54,7 @@ export const OutfitRecommendationCard = ({
   }
 
   return (
-    <article
+    <div
       className={cn(
         outfitRecommendationCardStyles.root,
         isFetching && outfitRecommendationCardStyles.fetching,
@@ -92,6 +92,6 @@ export const OutfitRecommendationCard = ({
           </ul>
         </div>
       )}
-    </article>
+    </div>
   );
 };
