@@ -22,13 +22,14 @@ Phase 7의 목표는 같은 발표시각(`base_date`, `base_time`)과 같은 격
 ## Disabled placeholder Query 정책
 
 `nx`, `ny`가 이미 있는 북마크/검색/선택 지역 경로는 첫 렌더에서 바로 params를 만들고 정상 Query key로 시작한다.
-현재 위치처럼 브라우저 geolocation이 필요한 경로만 일시적으로 아래 pending key를 사용한다.
 
 ```ts
-["weather", type, "pending", "current-location"];
+["weather", type, base_date, base_time, nx, ny];
 ```
 
-pending key는 `enabled: false` 상태이며 persistence 대상에서 제외한다.
+현재 위치처럼 브라우저 geolocation이 필요한 경로는 좌표/발표시각 params가 준비되기 전까지 query를 만들지 않는다.
+`useWeatherQuery`는 `useQueries`에 빈 query 배열을 전달해 Devtools에 disabled placeholder query가 남지 않게 한다.
+params 준비 중에는 화면 로딩 상태만 유지하고, params가 준비된 뒤 정규 key query를 생성한다.
 
 ## Client cache TTL
 

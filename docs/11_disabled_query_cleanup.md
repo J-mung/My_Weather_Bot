@@ -75,3 +75,25 @@ queryKey: params
 - 현재 상태는 "캐시가 안 된다"가 아니라 "disabled placeholder Query가 남는다"에 가깝다.
 - 다음 리팩터링 때는 `params` 준비 시점과 Query 생성 시점을 분리해서
   disabled Query를 제거하는 방향으로 정리한다.
+
+## 2026-05-24 처리 결과
+
+- `useWeatherQuery`가 `params === null`일 때 `useQuery`를 만들지 않도록 `useQueries` 기반으로 변경했다.
+- `nx`, `ny`가 이미 있는 북마크/검색/선택 지역 경로는 기존처럼 첫 렌더부터 정규화된 key를 사용한다.
+
+```ts
+["weather", type, base_date, base_time, nx, ny]
+```
+
+- 현재 위치처럼 geolocation이 필요한 경로는 좌표/발표시각 params가 준비되기 전까지 query 배열을 비워 둔다.
+- 따라서 기존 `["weather", type, "pending", "current-location"]` 형태의 disabled placeholder query는 생성하지 않는다.
+- params 준비 중에는 UI 로딩 상태를 유지하도록 `isLoading`/`isFetching` fallback을 유지했다.
+- `refresh()`는 기존처럼 params 재계산 후 상태를 갱신하고, query가 아직 없을 때의 `refetch` fallback도 `refresh()`를 호출하도록 정리했다.
+
+검증:
+
+- `npm run lint` 통과
+- `npm run test` 통과
+- `npm run build` 통과
+  - Vite chunk size warning은 잔존
+- `git diff --check` 통과

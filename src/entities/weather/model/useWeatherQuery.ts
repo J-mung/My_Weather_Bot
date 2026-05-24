@@ -1,16 +1,15 @@
 import type { WeatherApiType, WeatherResponseMap } from "@/entities/weather/api/weather-api.types";
 import { WEATHER_QUERY_POLICY } from "@/entities/weather/model/weather-cache-policy";
 import {
-  createPendingWeatherQueryKey,
   createWeatherQueryKey,
+  type WeatherQueryKey,
 } from "@/entities/weather/model/weather-query-key";
 import { weatherStrategyRegistry } from "@/entities/weather/model/weatherStrategyRegistry";
-import { APP_ERROR } from "@/shared/api/app-errors";
 import { AppError } from "@/shared/api/types";
 import { convertToGridCoord } from "@/shared/lib/convertToGridCoord";
 import { getUserLocation } from "@/shared/lib/userLocation";
-import { useQuery } from "@tanstack/react-query";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useQueries, type UseQueryOptions, type UseQueryResult } from "@tanstack/react-query";
+import { useCallback, useEffect, useState } from "react";
 import type { RequestWeatherParams } from "./weather-model.types";
 import type { GridCoord } from "./weather.types";
 
@@ -24,6 +23,7 @@ export const useWeatherQuery = <T extends WeatherApiType>(
 ) => {
   const { nx, ny } = param;
   const strategy = weatherStrategyRegistry[type];
+  const isQueryEnabled = options?.enabled ?? true;
 
   if (!strategy) {
     throw new Error("지원하지 않는 기능입니다.");
@@ -77,29 +77,42 @@ export const useWeatherQuery = <T extends WeatherApiType>(
     return newParams;
   }, [resolveParams]);
 
-  const queryKey = useMemo(
-    () =>
-      params ? createWeatherQueryKey(type, params) : createPendingWeatherQueryKey(type, nx, ny),
-    [type, params, nx, ny],
-  );
+  const queries: UseQueryOptions<
+    WeatherResponseMap[T],
+    AppError,
+    WeatherResponseMap[T],
+    WeatherQueryKey
+  >[] = params
+    ? [
+        {
+          queryKey: createWeatherQueryKey(type, params),
+          queryFn: () => strategy.fetch(params),
+          staleTime: WEATHER_QUERY_POLICY[type].staleTimeMs,
+          gcTime: WEATHER_QUERY_POLICY[type].gcTimeMs,
+          enabled: isQueryEnabled,
+        },
+      ]
+    : [];
 
-  const query = useQuery<WeatherResponseMap[T], AppError>({
-    queryKey,
-    queryFn: async () => {
-      if (!params) {
-        throw new AppError(APP_ERROR.WEATHER_PARAMETER);
-      }
+  const [query] = useQueries({
+    queries,
+  }) as [UseQueryResult<WeatherResponseMap[T], AppError>?];
 
-      return strategy.fetch(params);
-    },
-    staleTime: WEATHER_QUERY_POLICY[type].staleTimeMs,
-    gcTime: WEATHER_QUERY_POLICY[type].gcTimeMs,
-    enabled: (options?.enabled ?? true) && !!params,
-  });
+  const isResolvingParams = isQueryEnabled && !params;
 
   return {
     params,
     refresh,
-    ...query,
+    data: query?.data,
+    error: query?.error ?? null,
+    isLoading: isResolvingParams || (query?.isLoading ?? false),
+    isFetching: isResolvingParams || (query?.isFetching ?? false),
+    isError: query?.isError ?? false,
+    refetch:
+      query?.refetch ??
+      (async () => {
+        await refresh();
+        return undefined;
+      }),
   };
 };
