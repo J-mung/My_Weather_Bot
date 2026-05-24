@@ -5,7 +5,6 @@ import { useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { readRecentSearches, type RecentSearchItem } from "../lib/recent-searches";
 import { CandidateList } from "./CandidateList";
-import { FeaturedSearchResult } from "./FeaturedSearchResult";
 import { searchPageStyles } from "./styles";
 import { useState } from "react";
 
@@ -50,11 +49,6 @@ export default function SearchPage() {
     };
   }, []);
 
-  const featuredCandidate =
-    candidates.find((candidate) => candidate.item.fullName !== candidate.item.displayName) ??
-    candidates[0] ??
-    null;
-
   return (
     <div className={cn(searchPageStyles.page)}>
       <div className={cn(searchPageStyles.searchWrap)}>
@@ -75,12 +69,6 @@ export default function SearchPage() {
         />
       </div>
       {errorMessage && <div className={cn(searchPageStyles.section)}>{errorMessage}</div>}
-      {featuredCandidate && (
-        <section className={cn(searchPageStyles.sectionGroup)}>
-          <h2 className={cn(searchPageStyles.sectionTitle)}>Featured Result</h2>
-          <FeaturedSearchResult candidate={featuredCandidate} />
-        </section>
-      )}
       {candidates.length > 0 && (
         <section className={cn(searchPageStyles.sectionGroup)}>
           <h2 className={cn(searchPageStyles.sectionTitle)}>Search Results</h2>
