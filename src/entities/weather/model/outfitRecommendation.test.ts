@@ -155,9 +155,48 @@ describe("getOutfitRecommendation", () => {
     );
 
     expect(recommendation.level).toBe("warm");
-    expectCautionContaining(recommendation.cautions, "비 가능성");
+    expectCautionContaining(recommendation.cautions, "강수확률이 60%");
     expectCautionContaining(recommendation.cautions, "예상 강수량");
     expectCautionContaining(recommendation.cautions, "예상 적설");
+  });
+
+  it("does not add umbrella forecast caution below the precipitation probability threshold", () => {
+    const recommendation = getOutfitRecommendation(
+      createNow({ condition: "sunny" }),
+      createPrecipitation({ probability: 59 }),
+    );
+
+    expect(recommendation.cautions.some((caution) => caution.includes("강수확률"))).toBe(false);
+  });
+
+  it("strengthens rain amount caution when forecast rain is noticeable", () => {
+    const recommendation = getOutfitRecommendation(
+      createNow({ condition: "sunny" }),
+      createPrecipitation({ rainAmountMm: 6.2, rainAmountText: "6.2mm" }),
+    );
+
+    expectCautionContaining(recommendation.cautions, "방수 신발");
+    expectCautionContaining(recommendation.cautions, "여분 양말");
+  });
+
+  it("keeps trace rain amount caution lightweight when the text says below threshold", () => {
+    const recommendation = getOutfitRecommendation(
+      createNow({ condition: "sunny" }),
+      createPrecipitation({ rainAmountMm: 1, rainAmountText: "1mm 미만" }),
+    );
+
+    expectCautionContaining(recommendation.cautions, "젖어도 부담 없는 신발");
+    expect(recommendation.cautions.some((caution) => caution.includes("여분 양말"))).toBe(false);
+  });
+
+  it("strengthens snow amount caution when forecast snow can accumulate", () => {
+    const recommendation = getOutfitRecommendation(
+      createNow({ condition: "sunny" }),
+      createPrecipitation({ snowAmountCm: 2, snowAmountText: "2cm" }),
+    );
+
+    expectCautionContaining(recommendation.cautions, "보온");
+    expectCautionContaining(recommendation.cautions, "미끄럼 방지 신발");
   });
 
   it("deduplicates repeated caution messages", () => {
