@@ -13,6 +13,8 @@ import {
 import { CandidateList } from "./CandidateList";
 import { searchPageStyles } from "./styles";
 
+const MAP_ANIMATION_DURATION_MS = 300;
+
 export default function SearchPage() {
   const {
     input,
@@ -69,6 +71,43 @@ export default function SearchPage() {
   };
 
   const mapLocationLabel = candidates[0]?.item.displayName ?? "";
+  const [renderedMapLocationLabel, setRenderedMapLocationLabel] = useState(mapLocationLabel);
+  const [isMapVisible, setIsMapVisible] = useState(false);
+
+  useEffect(() => {
+    let animationFrameId: number | null = null;
+    let motionTimeoutId: number | null = null;
+    let unmountTimeoutId: number | null = null;
+
+    if (mapLocationLabel) {
+      motionTimeoutId = window.setTimeout(() => {
+        setRenderedMapLocationLabel(mapLocationLabel);
+        animationFrameId = window.requestAnimationFrame(() => {
+          setIsMapVisible(true);
+        });
+      }, 0);
+    } else {
+      motionTimeoutId = window.setTimeout(() => {
+        setIsMapVisible(false);
+      }, 0);
+
+      unmountTimeoutId = window.setTimeout(() => {
+        setRenderedMapLocationLabel("");
+      }, MAP_ANIMATION_DURATION_MS);
+    }
+
+    return () => {
+      if (animationFrameId !== null) {
+        window.cancelAnimationFrame(animationFrameId);
+      }
+      if (motionTimeoutId !== null) {
+        window.clearTimeout(motionTimeoutId);
+      }
+      if (unmountTimeoutId !== null) {
+        window.clearTimeout(unmountTimeoutId);
+      }
+    };
+  }, [mapLocationLabel]);
 
   return (
     <div className={cn(searchPageStyles.page)}>
@@ -89,30 +128,40 @@ export default function SearchPage() {
           disabled={false}
         />
       </div>
-      {errorMessage && <div className={cn(searchPageStyles.section)}>{errorMessage}</div>}
-      {mapLocationLabel && (
-        <KakaoRegionMap
-          location={mapLocationLabel}
-          title={"Weather Map"}
-          mapClassName={cn(searchPageStyles.mapCanvas)}
-          showHeader={false}
-        />
+      {errorMessage && (
+        <div className={cn(searchPageStyles.stackItem, searchPageStyles.section)}>
+          {errorMessage}
+        </div>
+      )}
+      {renderedMapLocationLabel && (
+        <div
+          className={cn(
+            searchPageStyles.mapMotionSlot,
+            isMapVisible
+              ? searchPageStyles.mapMotionSlotOpen
+              : searchPageStyles.mapMotionSlotClosed,
+          )}
+        >
+          <KakaoRegionMap
+            location={renderedMapLocationLabel}
+            title={"Weather Map"}
+            mapClassName={cn(searchPageStyles.mapCanvas)}
+            showHeader={false}
+          />
+        </div>
       )}
       {candidates.length > 0 && (
-        <section className={cn(searchPageStyles.sectionGroup)}>
+        <section className={cn(searchPageStyles.stackItem, searchPageStyles.sectionGroup)}>
           <h2 className={cn(searchPageStyles.sectionTitle)}>Search Results</h2>
           <CandidateList candidates={candidates} input={input} selectDistrict={selectDistrict} />
         </section>
       )}
       {recentSearches.length > 0 && (
-        <section className={cn(searchPageStyles.sectionGroup)}>
+        <section className={cn(searchPageStyles.stackItem, searchPageStyles.sectionGroup)}>
           <h2 className={cn(searchPageStyles.sectionTitle)}>Recent Searches</h2>
           <div className={cn(searchPageStyles.recentList)}>
             {recentSearches.map((recent) => (
-              <div
-                key={recent.fullName}
-                className={cn(searchPageStyles.recentItem)}
-              >
+              <div key={recent.fullName} className={cn(searchPageStyles.recentItem)}>
                 <button
                   type={"button"}
                   className={cn(searchPageStyles.recentNavigateButton)}

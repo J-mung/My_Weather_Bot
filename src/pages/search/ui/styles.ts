@@ -1,5 +1,6 @@
 export const searchPageStyles = {
-  page: ["space-y-6", "md:space-y-8"],
+  page: ["flex", "flex-col"],
+  stackItem: ["mt-6", "md:mt-8"],
   searchWrap: [
     "rounded-2xl",
     "border",
@@ -94,5 +95,16 @@ export const searchPageStyles = {
     "focus-visible:outline-offset-2",
     "focus-visible:outline-[var(--accent)]",
   ],
+  mapMotionSlot: [
+    "overflow-hidden",
+    "transition-all",
+    "duration-300",
+    "ease-out",
+    "will-change-[max-height,opacity,transform,margin]",
+    "motion-reduce:transform-none",
+    "motion-reduce:transition-none",
+  ],
+  mapMotionSlotOpen: ["mt-6", "max-h-[22rem]", "translate-y-0", "opacity-100", "md:mt-8"],
+  mapMotionSlotClosed: ["mt-0", "max-h-0", "-translate-y-3", "opacity-0", "pointer-events-none"],
   mapCanvas: ["h-[21.875rem]"],
 } as const;

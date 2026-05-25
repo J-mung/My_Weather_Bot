@@ -2,7 +2,11 @@ import { fetchLatLonByRegion } from "@/entities/kakao/api/fetchLatLonByRegion";
 import type { LatLon } from "@/entities/weather/model/weather.types";
 import { isAppError } from "@/shared/api/types";
 import { cn } from "@/shared/lib/cn";
-import { loadKakaoMapSdk } from "@/shared/lib/loadKakaoMapSdk";
+import {
+  loadKakaoMapSdk,
+  type KakaoMap,
+  type KakaoMarker,
+} from "@/shared/lib/loadKakaoMapSdk";
 import { useEffect, useRef, useState } from "react";
 
 export type KakaoRegionMapStatus = "idle" | "loading" | "success" | "error";
@@ -20,6 +24,10 @@ type KakaoRegionMapProps = {
 
 const DEFAULT_EMPTY_MESSAGE = "지도를 표시할 지역을 검색하거나 선택해 주세요.";
 const DEFAULT_ERROR_MESSAGE = "지도를 불러오는 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.";
+const INITIAL_MAP_LEVEL = 5;
+const MIN_MAP_LEVEL = 1;
+const MAX_MAP_LEVEL = 14;
+const ZOOM_ANIMATION_DURATION_MS = 300;
 
 export const KakaoRegionMap = ({
   location,
@@ -32,9 +40,11 @@ export const KakaoRegionMap = ({
   showHeader = true,
 }: KakaoRegionMapProps) => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
-  const markerRef = useRef<{ setMap: (map: object | null) => void } | null>(null);
+  const mapRef = useRef<KakaoMap | null>(null);
+  const markerRef = useRef<KakaoMarker | null>(null);
   const [status, setStatus] = useState<KakaoRegionMapStatus>("idle");
   const [message, setMessage] = useState(emptyMessage);
+  const [mapLevel, setMapLevel] = useState(INITIAL_MAP_LEVEL);
   const trimmedLocation = location.trim();
   const lat = coordinates?.lat;
   const lon = coordinates?.lon;
@@ -43,6 +53,7 @@ export const KakaoRegionMap = ({
 
   useEffect(() => {
     if (!hasMapTarget) {
+      mapRef.current = null;
       markerRef.current?.setMap(null);
       markerRef.current = null;
       mapContainerRef.current?.replaceChildren();
@@ -74,11 +85,13 @@ export const KakaoRegionMap = ({
         const center = new kakaoMaps.LatLng(target.lat, target.lon);
         const map = new kakaoMaps.Map(container, {
           center,
-          level: 5,
+          level: INITIAL_MAP_LEVEL,
         });
         const marker = new kakaoMaps.Marker({ position: center });
         marker.setMap(map);
+        mapRef.current = map;
         markerRef.current = marker;
+        setMapLevel(map.getLevel());
         setStatus("success");
         setMessage("");
       } catch (error: unknown) {
@@ -86,6 +99,7 @@ export const KakaoRegionMap = ({
           return;
         }
 
+        mapRef.current = null;
         markerRef.current?.setMap(null);
         markerRef.current = null;
         mapContainerRef.current?.replaceChildren();
@@ -104,14 +118,32 @@ export const KakaoRegionMap = ({
 
     return () => {
       ignore = true;
+      mapRef.current = null;
       markerRef.current?.setMap(null);
       markerRef.current = null;
     };
   }, [hasCoordinates, hasMapTarget, lat, lon, trimmedLocation]);
 
+  const updateMapLevel = (delta: number) => {
+    const map = mapRef.current;
+
+    if (!map) {
+      return;
+    }
+
+    const nextLevel = Math.min(MAX_MAP_LEVEL, Math.max(MIN_MAP_LEVEL, map.getLevel() + delta));
+    map.setLevel(nextLevel, {
+      animate: {
+        duration: ZOOM_ANIMATION_DURATION_MS,
+      },
+    });
+    setMapLevel(nextLevel);
+  };
+
   const effectiveStatus = hasMapTarget ? status : "idle";
   const effectiveMessage = hasMapTarget ? message : emptyMessage;
   const shouldShowStatus = effectiveStatus !== "success";
+  const shouldShowZoomControls = effectiveStatus === "success";
   const displayTitle = trimmedLocation || title;
   const displayDescription = description ?? "선택한 지역의 위치를 카카오 지도에서 확인합니다.";
 
@@ -146,6 +178,37 @@ export const KakaoRegionMap = ({
       )}
       <div className={cn("relative bg-[var(--surface-soft)]", mapClassName)}>
         <div ref={mapContainerRef} className={cn("h-full w-full")} />
+        {shouldShowZoomControls && (
+          <div
+            className={cn(
+              "absolute right-3 top-3 z-10 flex overflow-hidden rounded-full border border-[var(--line)] bg-white/95 shadow-sm backdrop-blur",
+            )}
+            aria-label={"지도 확대/축소"}
+          >
+            <button
+              type={"button"}
+              className={cn(
+                "grid h-10 w-10 place-items-center text-xl font-extrabold text-[var(--text-main)] transition hover:bg-[var(--surface-soft)] focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--accent)] disabled:cursor-not-allowed disabled:text-[var(--text-muted)]",
+              )}
+              aria-label={"지도 확대"}
+              disabled={mapLevel <= MIN_MAP_LEVEL}
+              onClick={() => updateMapLevel(-1)}
+            >
+              +
+            </button>
+            <button
+              type={"button"}
+              className={cn(
+                "grid h-10 w-10 place-items-center border-l border-[var(--line)] text-xl font-extrabold text-[var(--text-main)] transition hover:bg-[var(--surface-soft)] focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--accent)] disabled:cursor-not-allowed disabled:text-[var(--text-muted)]",
+              )}
+              aria-label={"지도 축소"}
+              disabled={mapLevel >= MAX_MAP_LEVEL}
+              onClick={() => updateMapLevel(1)}
+            >
+              −
+            </button>
+          </div>
+        )}
         {shouldShowStatus && (
           <div
             className={cn(

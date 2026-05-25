@@ -1,7 +1,15 @@
 type KakaoLatLng = object;
-type KakaoMap = object;
+export type KakaoMap = {
+  getLevel: () => number;
+  setLevel: (
+    level: number,
+    options?: {
+      animate?: boolean | { duration: number };
+    },
+  ) => void;
+};
 
-type KakaoMarker = {
+export type KakaoMarker = {
   setMap: (map: KakaoMap | null) => void;
 };
 
