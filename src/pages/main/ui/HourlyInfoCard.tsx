@@ -7,6 +7,28 @@ import { HourlyInfoSkeletonCard } from "./HourlyInfoSkeletonCard";
 import { hourlyInfoCardStyles } from "./styles";
 import type { HourlyInfoCardProps } from "./types";
 
+type HourlyForecast = NonNullable<HourlyInfoCardProps["data"]>["hourly"][number];
+
+const getHourlyPrecipitationText = ({ precipitationProbability }: HourlyForecast): string => {
+  return typeof precipitationProbability === "number" ? `${precipitationProbability}%` : "--%";
+};
+
+const getHourlyPrecipitationTone = ({ precipitationProbability }: HourlyForecast) => {
+  if (typeof precipitationProbability !== "number" || precipitationProbability <= 0) {
+    return hourlyInfoCardStyles.detailPrecipitationMuted;
+  }
+
+  if (precipitationProbability >= 70) {
+    return hourlyInfoCardStyles.detailPrecipitationHigh;
+  }
+
+  if (precipitationProbability >= 40) {
+    return hourlyInfoCardStyles.detailPrecipitationMedium;
+  }
+
+  return hourlyInfoCardStyles.detailPrecipitationLow;
+};
+
 export const HourlyInfoCard = ({
   data,
   isLoading,
@@ -93,6 +115,8 @@ export const HourlyInfoCard = ({
           <div className={cn(hourlyInfoCardStyles.list)}>
             {hourly.map((_hour) => {
               const conditionMeta = weatherConditionMeta[_hour.condition];
+              const precipitationText = getHourlyPrecipitationText(_hour);
+              const precipitationTone = getHourlyPrecipitationTone(_hour);
 
               return (
                 <div key={_hour.time} className={cn(hourlyInfoCardStyles.detail)}>
@@ -103,6 +127,17 @@ export const HourlyInfoCard = ({
                     className={cn(hourlyInfoCardStyles.detailIcon, conditionMeta.iconClassName)}
                   />
                   <span className={cn(hourlyInfoCardStyles.detailValue)}>{_hour.temp}°</span>
+                  <span
+                    className={cn(
+                      hourlyInfoCardStyles.detailPrecipitation,
+                      precipitationTone,
+                    )}
+                    title={`강수확률: ${precipitationText}`}
+                    aria-label={`강수확률 ${precipitationText}`}
+                  >
+                    <Icon name={"waterDrop"} size={"sm"} />
+                    <span>{precipitationText}</span>
+                  </span>
                 </div>
               );
             })}
