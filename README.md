@@ -31,7 +31,8 @@ API_KEY="발급받은_서비스키"
 KAKAO_REST_API_BASE_URL="https://dapi.kakao.com"
 KAKAO_REST_API_KEY="카카오_REST_API_키"
 AIRKOREA_API_BASE_URL="https://apis.data.go.kr/B552584/ArpltnInforInqireSvc"
-# Vite dev server만 사용할 경우 VITE_AIRKOREA_BASE_URL도 지원
+VITE_AIRKOREA_API_BASE_URL="https://apis.data.go.kr/B552584/ArpltnInforInqireSvc"
+# Vite dev server만 사용할 경우 기존 VITE_AIRKOREA_BASE_URL도 호환 지원
 # AIRKOREA_API_KEY="에어코리아_전용_서비스키" # 미지정 시 API_KEY 사용
 ```
 

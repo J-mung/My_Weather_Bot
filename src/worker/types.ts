@@ -4,7 +4,7 @@
 export interface Env {
   API_BASE_URL: string;
   API_KEY: string;
-  AIRKOREA_API_BASE_URL?: string;
+  AIRKOREA_API_BASE_URL: string;
   AIRKOREA_BASE_URL?: string;
   AIRKOREA_API_KEY?: string;
   KAKAO_REST_API_KEY: string;

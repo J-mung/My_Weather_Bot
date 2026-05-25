@@ -1,22 +1,11 @@
+import { AIR_QUALITY_CACHE_TTL_SECONDS } from "./air-quality.constants";
+import { getDefaultWorkerCache } from "./cache";
 import { AIR_QUALITY_ALLOWED_ENDPOINTS, AIR_QUALITY_API_PREFIX } from "./constants";
 import { withCors } from "./cors";
 import type { Env, WorkerExecutionContext } from "./types";
 
-type CacheStorageWithDefault = CacheStorage & { default?: Cache };
-
-const DEFAULT_AIRKOREA_API_BASE_URL = "https://apis.data.go.kr/B552584/ArpltnInforInqireSvc";
-const AIR_QUALITY_CACHE_TTL_SECONDS = 20 * 60;
-
-const getAirQualityCache = (): Cache | null => {
-  const workerCaches = globalThis.caches as CacheStorageWithDefault | undefined;
-  return workerCaches?.default ?? null;
-};
-
 const resolveAirKoreaApiBaseUrl = (env: Env): string =>
-  (env.AIRKOREA_API_BASE_URL || env.AIRKOREA_BASE_URL || DEFAULT_AIRKOREA_API_BASE_URL).replace(
-    /\/+$/,
-    "",
-  );
+  (env.AIRKOREA_API_BASE_URL || env.AIRKOREA_BASE_URL || "").replace(/\/+$/, "");
 
 const resolveAirKoreaApiKey = (env: Env): string => env.AIRKOREA_API_KEY || env.API_KEY;
 
@@ -120,14 +109,14 @@ export const handleAirQualityApiRequest = async (
     return new Response("Invalid endpoint", withCors(origin, { status: 400 }));
   }
 
-  if (!resolveAirKoreaApiKey(env)) {
+  if (!resolveAirKoreaApiBaseUrl(env) || !resolveAirKoreaApiKey(env)) {
     return new Response(
       "Air quality service configuration unavailable",
       withCors(origin, { status: 500 }),
     );
   }
 
-  const cache = getAirQualityCache();
+  const cache = getDefaultWorkerCache();
   const cacheKey = buildAirQualityCacheKey(request, endpoint);
   const cacheControl = `public, max-age=${AIR_QUALITY_CACHE_TTL_SECONDS}`;
 

@@ -9,7 +9,6 @@ const KAKAO_ADDRESS_SEARCH_PATH = "/v2/local/search/address.json";
 const KAKAO_KEYWORD_SEARCH_PATH = "/v2/local/search/keyword.json";
 const KAKAO_MAP_SDK_PROXY_PATH = "/dapi.kakao.com/v2/maps/sdk.js";
 const KAKAO_MAP_SDK_UPSTREAM_PATH = "/v2/maps/sdk.js";
-const DEFAULT_AIRKOREA_API_BASE_URL = "https://apis.data.go.kr/B552584/ArpltnInforInqireSvc";
 
 const parseLocalEnvFile = (filePath: string): Record<string, string> => {
   if (!fs.existsSync(filePath)) {
@@ -53,8 +52,7 @@ const resolveAirKoreaApiBaseUrl = (env: Record<string, string>) =>
   env.AIRKOREA_API_BASE_URL ||
   env.AIRKOREA_BASE_URL ||
   env.VITE_AIRKOREA_API_BASE_URL ||
-  env.VITE_AIRKOREA_BASE_URL ||
-  DEFAULT_AIRKOREA_API_BASE_URL;
+  env.VITE_AIRKOREA_BASE_URL;
 
 // 환경변수 우선순위에 따라 AirKorea API key 결정
 const resolveAirKoreaApiKey = (env: Record<string, string>) =>
@@ -236,7 +234,9 @@ export default defineConfig(({ mode }) => {
       proxy: {
         [KAKAO_MAP_SDK_PROXY_PATH]: createKakaoMapSdkProxy(kakaoMapKey),
         "/api/kakao": createKakaoProxy(kakaoApiBaseUrl, kakaoApiKey),
-        "/api/air-quality": createAirQualityProxy(airKoreaApiBaseUrl, airKoreaApiKey),
+        ...(airKoreaApiBaseUrl
+          ? { "/api/air-quality": createAirQualityProxy(airKoreaApiBaseUrl, airKoreaApiKey) }
+          : {}),
         "^/api/(?!kakao|air-quality)": createWeatherProxy(weatherApiBaseUrl, weatherApiKey),
       },
     },

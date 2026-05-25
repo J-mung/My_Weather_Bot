@@ -57,6 +57,20 @@ describe("handleAirQualityApiRequest", () => {
     expect(response.headers.get("Access-Control-Allow-Origin")).toBe("https://app.example.test");
   });
 
+  it("requires the AirKorea base URL from worker environment variables", async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+
+    const response = await handleAirQualityApiRequest(
+      createAirQualityRequest(),
+      createEnv({ AIRKOREA_API_BASE_URL: "" }),
+    );
+
+    await expect(response.text()).resolves.toBe("Air quality service configuration unavailable");
+    expect(response.status).toBe(500);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
   it("uses the server-side API key and excludes client serviceKey from the cache key", async () => {
     const cache = createMemoryCache();
     vi.stubGlobal("caches", { default: cache });

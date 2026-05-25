@@ -1,0 +1,1 @@
+export const AIR_QUALITY_CACHE_TTL_SECONDS = 20 * 60;
