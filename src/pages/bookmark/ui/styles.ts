@@ -397,6 +397,9 @@ export const bookmarkEditStyles = {
 
 export const bookmarkSummaryStyles = {
   summaryWrap: ["mt-8", "flex", "min-w-0", "flex-col", "gap-2"],
+  summaryPrimary: ["flex", "min-w-0", "items-center", "gap-2.5"],
+  summaryConditionIcon: ["h-8", "w-8", "shrink-0"],
+  summaryPrimaryText: ["flex", "min-w-0", "items-end", "gap-2"],
   summaryStatusWrap: [
     "mt-8",
     "flex",
@@ -433,6 +436,15 @@ export const bookmarkSummaryStyles = {
     "font-light",
     "leading-none",
     "tracking-[-0.06em]",
+    "text-[var(--text-main)]",
+  ],
+  summaryConditionLabel: [
+    "min-w-0",
+    "truncate",
+    "pb-0.5",
+    "text-sm",
+    "font-bold",
+    "leading-5",
     "text-[var(--text-main)]",
   ],
   summaryRange: [

@@ -220,7 +220,7 @@ export const BookmarkCardList = ({
             onClick={onAddBookmark}
           >
             <span className={cn(bookmarkPageStyles.addCityIcon)}>+</span>
-            <span>Add City</span>
+            <span>Add Location</span>
           </button>
         )}
       </div>

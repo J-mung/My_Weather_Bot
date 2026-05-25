@@ -4,6 +4,7 @@ import { cn } from "@/shared/lib/cn";
 import { Icon } from "@/shared/ui/icon";
 import { Skeleton } from "@/shared/ui/skeleton";
 import { useEffect, useRef, useState } from "react";
+import { getBookmarkConditionDisplay } from "../lib/bookmark-forecast-display.lib";
 import { bookmarkSummaryStyles } from "./styles";
 
 const formatTemperature = (value: number): string => `${Math.round(value)}°`;
@@ -90,16 +91,35 @@ export const BookmarkForecastPreview = ({ nx, ny }: GridCoord) => {
 
   return (
     <div ref={targetRef} className={cn(bookmarkSummaryStyles.summaryWrap)}>
-      {data && (
-        <>
-          <span className={cn(bookmarkSummaryStyles.summaryTemperature)}>
-            {formatForecastTemperature(data.forecastTemperature)}
-          </span>
-          <span className={cn(bookmarkSummaryStyles.summaryRange)}>
-            {formatTemperatureRange(data.todayMax, data.todayMin)}
-          </span>
-        </>
-      )}
+      {data &&
+        (() => {
+          const conditionDisplay = getBookmarkConditionDisplay(data.condition);
+
+          return (
+            <>
+              <div className={cn(bookmarkSummaryStyles.summaryPrimary)}>
+                <Icon
+                  name={conditionDisplay.icon}
+                  className={cn(
+                    bookmarkSummaryStyles.summaryConditionIcon,
+                    conditionDisplay.iconClassName,
+                  )}
+                />
+                <div className={cn(bookmarkSummaryStyles.summaryPrimaryText)}>
+                  <span className={cn(bookmarkSummaryStyles.summaryTemperature)}>
+                    {formatForecastTemperature(data.forecastTemperature)}
+                  </span>
+                  <span className={cn(bookmarkSummaryStyles.summaryConditionLabel)}>
+                    {conditionDisplay.label}
+                  </span>
+                </div>
+              </div>
+              <span className={cn(bookmarkSummaryStyles.summaryRange)}>
+                {formatTemperatureRange(data.todayMax, data.todayMin)}
+              </span>
+            </>
+          );
+        })()}
     </div>
   );
 };

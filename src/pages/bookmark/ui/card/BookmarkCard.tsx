@@ -1,5 +1,4 @@
 import { cn } from "@/shared/lib/cn";
-import { Icon } from "@/shared/ui/icon";
 import { Tooltip } from "@/shared/ui/tooltip";
 import type {
   BookmarkCardLocationProps,
@@ -63,7 +62,6 @@ export const BookmarkCard = ({
               </Tooltip>
               <BookmarkCardLocation className={"truncate"}>{locationLabel}</BookmarkCardLocation>
             </div>
-            <Icon name={"cloud"} className={"h-8 w-8 text-[var(--weather-icon-cloudy)]"} />
           </div>
           {summary}
           {actions && <div className={cn(bookmarkCardBtnListClass)}>{actions}</div>}
