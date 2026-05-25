@@ -179,10 +179,7 @@ export const handleApiRequest = async (
   }
 
   if (!env.API_BASE_URL || !env.API_KEY) {
-    const missing = [!env.API_BASE_URL ? "API_BASE_URL" : null, !env.API_KEY ? "API_KEY" : null]
-      .filter(Boolean)
-      .join(", ");
-    return new Response(`Missing API env: ${missing}`, { status: 500 });
+    return new Response("Weather service configuration unavailable", withCors(origin, { status: 500 }));
   }
 
   const cache = getWeatherCache();

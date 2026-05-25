@@ -139,13 +139,7 @@ export const handleKakaoApiRequest = async (request: Request, env: Env): Promise
   }
 
   if (!env.KAKAO_REST_API_BASE_URL || !env.KAKAO_REST_API_KEY) {
-    const missing = [
-      !env.KAKAO_REST_API_BASE_URL ? "KAKAO_REST_API_BASE_URL" : null,
-      !env.KAKAO_REST_API_KEY ? "KAKAO_REST_API_KEY" : null,
-    ]
-      .filter(Boolean)
-      .join(", ");
-    return new Response(`Missing API env: ${missing}`, withCors(origin, { status: 500 }));
+    return new Response("Location service configuration unavailable", withCors(origin, { status: 500 }));
   }
 
   let upstreamUrl: URL;

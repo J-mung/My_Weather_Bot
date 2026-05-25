@@ -122,7 +122,7 @@ export const handleAirQualityApiRequest = async (
 
   if (!resolveAirKoreaApiKey(env)) {
     return new Response(
-      "Missing API env: AIRKOREA_API_KEY or API_KEY",
+      "Air quality service configuration unavailable",
       withCors(origin, { status: 500 }),
     );
   }
