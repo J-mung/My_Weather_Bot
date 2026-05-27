@@ -95,16 +95,19 @@ v1.4에서는 Codex AI 에이전트를 활용해 로드맵 정리, UI 개선 방
 - 현재 지역 지도와 북마크 프리뷰를 메인 화면에서 확인할 수 있습니다.
   - 지도는 Kakao Maps SDK 기반으로 표시하며, 확대/축소 컨트롤을 제공합니다.
   - 북마크가 있는 경우 주요 북마크 날씨를 빠르게 확인할 수 있습니다.
+   
+> 메인 데스크톱 대시보드   
+> <img width="1440" height="1889" alt="readme-v1 4-main-desktop" src="https://github.com/user-attachments/assets/d10f0268-1fd3-473d-9201-13f4a3f28458" />
+   
+> 메인 모바일   
+> <img width="780" height="5458" alt="readme-v1 4-main-mobile" src="https://github.com/user-attachments/assets/03748795-5c8b-48c7-9f8e-6d927f40785c" />
+   
+> 시간대별 예보 강수 확률   
+> <img width="752" height="280" alt="readme-v1 4-hourly-rain-chance" src="https://github.com/user-attachments/assets/cf6cbf66-7bc4-4c22-bde9-1d361bc30e6d" />
+   
+> 지도 확대/축소 컨트롤   
+> <img width="752" height="376" alt="readme-v1 4-map-zoom-controls" src="https://github.com/user-attachments/assets/1e803072-51c0-4060-b138-a37dd92163ef" />
 
-**캡쳐 위치**
-
-![메인 데스크톱 대시보드](./docs/readme/v1.4/readme-v1.4-main-desktop.png)
-
-![메인 모바일](./docs/readme/v1.4/readme-v1.4-main-mobile.png)
-
-![시간대별 예보 강수 확률](./docs/readme/v1.4/readme-v1.4-hourly-rain-chance.png)
-
-![지도 확대/축소 컨트롤](./docs/readme/v1.4/readme-v1.4-map-zoom-controls.png)
 
 ### 2) 검색 화면
 
@@ -113,12 +116,13 @@ v1.4에서는 Codex AI 에이전트를 활용해 로드맵 정리, UI 개선 방
   - 지도 표시/숨김 시 `fade`와 세로 위치 이동 애니메이션을 적용했습니다.
 - 최근 검색 영역의 움직임을 자연스럽게 개선했습니다.
   - 지도가 나타날 때 최근 검색 영역이 아래로 밀리고, 지도가 사라질 때 위로 올라오도록 전환했습니다.
+   
+> 검색 결과와 지도 표시   
+> <img width="1440" height="2838" alt="readme-v1 4-search-map" src="https://github.com/user-attachments/assets/49927317-942f-49e2-8930-2c302af7e42f" />
+   
+> 검색 화면 모바일   
+> <img width="780" height="5610" alt="readme-v1 4-search-mobile" src="https://github.com/user-attachments/assets/ea486139-55c8-4af8-80c5-3c4dd7a9ebfc" />
 
-**캡쳐 위치**
-
-![검색 결과와 지도 표시](./docs/readme/v1.4/readme-v1.4-search-map.png)
-
-![검색 화면 모바일](./docs/readme/v1.4/readme-v1.4-search-mobile.png)
 
 ### 3) 북마크 화면
 
@@ -129,12 +133,12 @@ v1.4에서는 Codex AI 에이전트를 활용해 로드맵 정리, UI 개선 방
   - 단순 정적 아이콘 대신 단기예보의 날씨 상태를 기반으로 아이콘과 한글 상태명을 표시합니다.
   - 최고/최저 기온과 현재 상태를 함께 보여줘 북마크 목록에서 날씨 차이를 빠르게 비교할 수 있습니다.
 - 북마크 화면에서도 지도/날씨 경험이 메인 화면과 같은 흐름을 사용하도록 정리했습니다.
-
-**캡쳐 위치**
-
-![북마크 목록 데스크톱](./docs/readme/v1.4/readme-v1.4-bookmark-list.png)
-
-![북마크 목록 모바일](./docs/readme/v1.4/readme-v1.4-bookmark-mobile.png)
+   
+> 북마크 목록 데스크톱   
+> <img width="1440" height="1100" alt="readme-v1 4-bookmark-list" src="https://github.com/user-attachments/assets/561f4db8-e6bc-4ae5-8fca-7caa8d01b073" />
+   
+> 북마크 목록 모바일   
+> <img width="780" height="2454" alt="readme-v1 4-bookmark-mobile" src="https://github.com/user-attachments/assets/5908a371-57c1-4814-a4e0-1686f2b61793" />
 
 ### 4) 공통 지도/API
 
@@ -146,12 +150,13 @@ v1.4에서는 Codex AI 에이전트를 활용해 로드맵 정리, UI 개선 방
 - 기상청 단기예보 파싱 범위를 확장했습니다.
   - `POP` 값을 활용해 강수 확률을 화면에 표시합니다.
   - `PCP`, `SNO` 값은 추천/주의 문구 확장 기반으로 보존하되, 화면의 수치 표시는 아직 적용하지 않았습니다.
+   
+> 지도 확대/축소 조작 상태   
+> <img width="752" height="376" alt="readme-v1 4-map-zoom-controls" src="https://github.com/user-attachments/assets/e3e611c3-36fa-4405-869a-8b295d660891" />
+   
+> 대기질 지표 카드   
+> <img width="752" height="230" alt="readme-v1 4-air-quality-cards" src="https://github.com/user-attachments/assets/af63bbbb-11dc-48fb-9bcf-42b5f1f6211e" />
 
-**캡쳐 위치**
-
-![지도 확대/축소 조작 상태](./docs/readme/v1.4/readme-v1.4-map-zoom-controls.png)
-
-![대기질 지표 카드](./docs/readme/v1.4/readme-v1.4-air-quality-cards.png)
 
 ## 구현한 기능 설명 (v1.3)
 
