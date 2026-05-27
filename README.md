@@ -1,6 +1,6 @@
 # My_Weather_Bot
 
-기상청 API를 활용한 날씨 예보 애플리케이션입니다.
+기상청 단기예보, Kakao Local/Maps, AirKorea API를 활용한 위치 기반 날씨 대시보드 애플리케이션입니다.
 
 배포 URL
 
@@ -12,7 +12,7 @@
 
 - Node.js 22+
 - npm 10+
-- Cloudflare Wrangler (`npx wrangler ...` 방식 사용)
+- Cloudflare Wrangler (`npm run dev:worker`, `npm run deploy`에서 `npx wrangler ...` 방식 사용)
 
 ### 2) node module 설치
 
@@ -30,21 +30,128 @@ API_BASE_URL="https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0"
 API_KEY="발급받은_서비스키"
 KAKAO_REST_API_BASE_URL="https://dapi.kakao.com"
 KAKAO_REST_API_KEY="카카오_REST_API_키"
+KAKAO_MAP_KEY="카카오_JavaScript_키"
 AIRKOREA_API_BASE_URL="https://apis.data.go.kr/B552584/ArpltnInforInqireSvc"
-VITE_AIRKOREA_API_BASE_URL="https://apis.data.go.kr/B552584/ArpltnInforInqireSvc"
-# Vite dev server만 사용할 경우 기존 VITE_AIRKOREA_BASE_URL도 호환 지원
 # AIRKOREA_API_KEY="에어코리아_전용_서비스키" # 미지정 시 API_KEY 사용
 ```
 
-### 4) 로컬 실행 (Worker + 정적 자산)
+> Vite 전용 prefix도 호환됩니다.
+> `VITE_API_BASE_URL`, `VITE_API_KEY`, `VITE_KAKAO_REST_API_BASE_URL`, `VITE_KAKAO_REST_API_KEY`, `VITE_KAKAO_MAP_KEY`, `VITE_AIRKOREA_API_BASE_URL`, `VITE_AIRKOREA_API_KEY`
+
+### 4) 로컬 실행
+
+#### 빠른 프론트엔드 개발
+
+```bash
+npm run dev
+```
+
+- 기본 접속 주소: `http://localhost:5173`
+- Vite dev proxy가 `/api/*`, `/api/kakao/*`, `/api/air-quality/*`, `/dapi.kakao.com/v2/maps/sdk.js` 요청을 로컬에서 프록시합니다.
+
+#### Worker + 정적 자산 통합 확인
 
 ```bash
 npm run dev:worker
 ```
 
+- `npm run build` 이후 `npx wrangler dev`가 실행됩니다.
+- 실제 Cloudflare Worker 배포 환경과 더 가까운 방식으로 확인할 때 사용합니다.
+
 ### 5) 실행 이후 확인
 
 - `/api/getVilageFcst?...` 응답이 `JSON`인지 확인
+- `/dapi.kakao.com/v2/maps/sdk.js?autoload=false` 응답이 내려오는지 확인
+
+### 6) 품질 확인
+
+```bash
+npm test
+npm run lint
+npm run build
+```
+
+## 구현한 기능 설명 (v1.4)
+
+v1.4에서는 Codex AI 에이전트를 활용해 로드맵 정리, UI 개선 방향 도출, 구현·검증 루프를 함께 진행했습니다.
+이를 바탕으로 메인/검색/북마크 화면을 고도화하고, 강수·대기질·지도 정보를 기존 API 호출 흐름 안에서 확장했습니다.
+
+### 1) 메인 화면
+
+- 레이아웃을 개편 했습니다.
+  - 데스크톱에서는 현재 날씨, 추천 카드, 시간대별 예보, 지표 카드, 지도/북마크 프리뷰를 한 화면에서 확인할 수 있습니다.
+  - 모바일에서는 카드 단위로 자연스럽게 쌓이도록 반응형 레이아웃을 유지합니다.
+- 현재 날씨 카드의 시각 정보를 강화했습니다.
+  - 날씨 상태 아이콘, 현재 기온, 최고/최저 기온, 체감 온도, 습도, 풍속을 함께 표시합니다.
+  - 새로고침 버튼으로 현재 선택 지역의 날씨를 다시 조회할 수 있습니다.
+- 외출 준비 추천 카드를 추가했습니다.
+  - 체감 온도, 습도, 풍속, 날씨 상태, 강수 확률을 기반으로 추천 문구와 준비물을 표시합니다.
+- 시간대별 예보 카드에 강수 확률을 표시했습니다.
+  - 물방울 아이콘과 퍼센트 텍스트를 함께 표시하고, 강수 확률 구간에 따라 색상 톤을 구분합니다.
+  - 강수량(`PCP`)과 적설량(`SNO`) 수치 표시는 추후 확장 대상으로 남겨뒀습니다.
+- 날씨 지표 카드를 확장했습니다.
+  - 강수 확률, 풍속, 미세먼지/초미세먼지 정보를 카드 형태로 제공합니다.
+  - 대기질 정보는 AirKorea API를 Worker 프록시로 조회합니다.
+- 현재 지역 지도와 북마크 프리뷰를 메인 화면에서 확인할 수 있습니다.
+  - 지도는 Kakao Maps SDK 기반으로 표시하며, 확대/축소 컨트롤을 제공합니다.
+  - 북마크가 있는 경우 주요 북마크 날씨를 빠르게 확인할 수 있습니다.
+
+**캡쳐 위치**
+
+![메인 데스크톱 대시보드](./docs/readme/v1.4/readme-v1.4-main-desktop.png)
+
+![메인 모바일](./docs/readme/v1.4/readme-v1.4-main-mobile.png)
+
+![시간대별 예보 강수 확률](./docs/readme/v1.4/readme-v1.4-hourly-rain-chance.png)
+
+![지도 확대/축소 컨트롤](./docs/readme/v1.4/readme-v1.4-map-zoom-controls.png)
+
+### 2) 검색 화면
+
+- 검색 결과와 지도 확인 흐름을 개선했습니다.
+  - 검색 결과의 대표 후보 위치를 지도에서 바로 확인할 수 있습니다.
+  - 지도 표시/숨김 시 `fade`와 세로 위치 이동 애니메이션을 적용했습니다.
+- 최근 검색 영역의 움직임을 자연스럽게 개선했습니다.
+  - 지도가 나타날 때 최근 검색 영역이 아래로 밀리고, 지도가 사라질 때 위로 올라오도록 전환했습니다.
+
+**캡쳐 위치**
+
+![검색 결과와 지도 표시](./docs/readme/v1.4/readme-v1.4-search-map.png)
+
+![검색 화면 모바일](./docs/readme/v1.4/readme-v1.4-search-mobile.png)
+
+### 3) 북마크 화면
+
+- 북마크 UI를 정리했습니다.
+  - 저장한 지역을 카드 단위로 확인하고, 클릭 시 해당 지역 날씨를 메인 화면에서 조회할 수 있습니다.
+  - 별칭 편집, 삭제, 빈 상태 안내를 제공합니다.
+- 북마크 날씨 프리뷰를 고도화했습니다.
+  - 단순 정적 아이콘 대신 단기예보의 날씨 상태를 기반으로 아이콘과 한글 상태명을 표시합니다.
+  - 최고/최저 기온과 현재 상태를 함께 보여줘 북마크 목록에서 날씨 차이를 빠르게 비교할 수 있습니다.
+- 북마크 화면에서도 지도/날씨 경험이 메인 화면과 같은 흐름을 사용하도록 정리했습니다.
+
+**캡쳐 위치**
+
+![북마크 목록 데스크톱](./docs/readme/v1.4/readme-v1.4-bookmark-list.png)
+
+![북마크 목록 모바일](./docs/readme/v1.4/readme-v1.4-bookmark-mobile.png)
+
+### 4) 공통 지도/API
+
+- `KakaoRegionMap` 공통 컴포넌트로 지도 UI를 재사용합니다.
+  - 메인 화면과 검색 화면에서 동일한 지도 표시 흐름을 사용합니다.
+  - 지도 클릭 또는 `+`/`−` 버튼으로 확대/축소할 수 있습니다.
+- Kakao Maps SDK를 Worker 프록시로 제공합니다.
+  - 브라우저에서 필요한 지도 SDK를 `/dapi.kakao.com/v2/maps/sdk.js` 경로로 받아 사용합니다.
+- 기상청 단기예보 파싱 범위를 확장했습니다.
+  - `POP` 값을 활용해 강수 확률을 화면에 표시합니다.
+  - `PCP`, `SNO` 값은 추천/주의 문구 확장 기반으로 보존하되, 화면의 수치 표시는 아직 적용하지 않았습니다.
+
+**캡쳐 위치**
+
+![지도 확대/축소 조작 상태](./docs/readme/v1.4/readme-v1.4-map-zoom-controls.png)
+
+![대기질 지표 카드](./docs/readme/v1.4/readme-v1.4-air-quality-cards.png)
 
 ## 구현한 기능 설명 (v1.3)
 
@@ -251,28 +358,31 @@ npm run dev:worker
   - 동일 조건 재조회 시 불필요한 네트워크 요청이 줄어 들었습니다.
   - `refresh` 함수를 통해 필요한 시점에서만 새로운 데이터를 조회하도록 했습니다.
 
-### 5) 지역 검색 기능
+### 5) Kakao Local API + Fuse.js 기반 지역 검색
 
 - 배경:
-  - korea_district.json을 기반으로 검색하며, API 조회를 위해서는 검색되는 지역의 좌표가 필요합니다.
-  - 좌표는 기상청에서 지도를 나눠서 표현하는 것으로 가로세로 5km의 격자 무늬를 말합니다.
-  - 따라서 지역명에 대한 좌표명을 조회할 수 있도록 제공해주신 json을 재구성해서 사용합니다.
+  - 기존 정적 좌표 데이터셋은 지역명, 위/경도, 기상청 격자 좌표가 강하게 결합되어 유지보수 비용이 높았습니다.
+  - 검색어 입력 중 오타, 부분 입력, 행정구역 단계 차이를 더 유연하게 처리할 필요가 있었습니다.
 - 진행:
-  - `DistrictsGeoMapItem` 타입 정의 및 `korea_district_geo.json` 구성
-    ```TypeScript
-    export interface DistrictsGeoMapItem {
-      nx: number;   // API 조회용
-      ny: number;   // API 조회용
-      lat: number;  // GPS 기반의 현재 지역명 조회용
-      lon: number;  // GPS 기반의 현재 지역명 조회용
-    }
-    ```
-  - `korea_district_geo.json` 기반으로 검색 인덱스를 생성하고, 공백/구분자를 제거하여 매칭 진행
-  - 검색 결과는 매칭율(접두사/전체/행정단계) 기준으로 정렬 후 제한 개수(20)만 출력
-  - 검색 결과 선택 시 `nx, ny`를 확정하고 메인 화면으로 이동해 위치 날씨를 조회
+  - Kakao Local API(주소 → 좌표 변환)를 통해 검색어의 위/경도를 조회합니다.
+  - 조회한 위/경도는 기상청 격자 좌표로 변환해 날씨 API 요청에 사용합니다.
+  - Fuse.js 기반 검색 엔진으로 부분 검색, 오타 허용, 일치 텍스트 하이라이트를 처리합니다.
+  - 지역명/좌표/격자 변환 결과는 localStorage TTL 캐시로 재사용합니다.
 - 결과:
-  - 지역명을 검색하여 날씨를 조회할 수 있습니다.
-  - 관련 로직은 `useLocationSearch.ts`와 `locationSearch.ts`를 확인해 주시면 되겠습니다.
+  - 정적 좌표 데이터셋 의존도를 낮추고, 검색 UX와 반복 조회 성능을 개선했습니다.
+  - 관련 로직은 `src/features/location-search/useLocationSearch.ts`, `src/shared/lib/location-search.engine.ts`, `src/shared/lib/location-search.lib.ts`를 확인해 주시면 되겠습니다.
+
+### 6) Worker 기반 외부 API 프록시 확장
+
+- 배경:
+  - 날씨 외에도 Kakao Local API, Kakao Maps SDK, AirKorea API를 함께 사용하게 되면서 브라우저 CORS와 API 키 노출을 일관되게 막을 필요가 있었습니다.
+- 진행:
+  - 기상청 API는 `/api/*` 경로로 프록시합니다.
+  - Kakao Local API는 `/api/kakao/*` 경로로 프록시합니다.
+  - Kakao Maps SDK는 `/dapi.kakao.com/v2/maps/sdk.js` 경로로 프록시합니다.
+  - AirKorea API는 `/api/air-quality/*` 경로로 프록시합니다.
+- 결과:
+  - 브라우저에는 API 키를 직접 노출하지 않고, 로컬/Vite/Worker 환경에서도 같은 경로 구조로 외부 API를 사용할 수 있습니다.
 
 ## 사용 기술 스택
 
@@ -295,7 +405,9 @@ npm run dev:worker
 ### Data / External API
 
 - 기상청 단기예보 API (공공데이터포털)
-- Kakao Local API (주소 → 좌표 변환)
+- Kakao Local API (주소 → 좌표 변환, 좌표 → 행정구역 변환)
+- Kakao Maps SDK
+- AirKorea API (미세먼지/초미세먼지)
 
 ### Client Storage
 
