@@ -7,6 +7,11 @@ export interface Env {
   AIRKOREA_API_BASE_URL: string;
   AIRKOREA_BASE_URL?: string;
   AIRKOREA_API_KEY?: string;
+  RADAR_API_BASE_URL?: string;
+  RADAR_API_UPSTREAM_BASE_URL?: string;
+  RADAR_API_PROXY_PATH?: string;
+  RADAR_API_KEY?: string;
+  APIHUB_API_KEY?: string;
   KAKAO_REST_API_KEY: string;
   KAKAO_REST_API_BASE_URL: string;
   KAKAO_MAP_KEY?: string;

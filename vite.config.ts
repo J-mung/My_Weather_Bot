@@ -9,6 +9,8 @@ const KAKAO_ADDRESS_SEARCH_PATH = "/v2/local/search/address.json";
 const KAKAO_KEYWORD_SEARCH_PATH = "/v2/local/search/keyword.json";
 const KAKAO_MAP_SDK_PROXY_PATH = "/dapi.kakao.com/v2/maps/sdk.js";
 const KAKAO_MAP_SDK_UPSTREAM_PATH = "/v2/maps/sdk.js";
+const DEFAULT_RADAR_API_PROXY_PATH = "/api/radar";
+const DEFAULT_RADAR_API_UPSTREAM_BASE_URL = "https://apihub.kma.go.kr/api/typ03/cgi/rdr";
 
 const parseLocalEnvFile = (filePath: string): Record<string, string> => {
   if (!fs.existsSync(filePath)) {
@@ -69,6 +71,26 @@ const resolveKakaoApiKey = (env: Record<string, string>) =>
 // 환경변수 우선순위에 따라 Kakao 지도 SDK key 결정
 const resolveKakaoMapKey = (env: Record<string, string>) =>
   env.KAKAO_MAP_KEY || env.VITE_KAKAO_MAP_KEY;
+
+// 환경변수 우선순위에 따라 레이더 API local proxy path 결정
+const resolveRadarApiProxyPath = (env: Record<string, string>) =>
+  env.RADAR_API_PROXY_PATH || env.VITE_RADAR_API_PROXY_PATH || DEFAULT_RADAR_API_PROXY_PATH;
+
+// 환경변수 우선순위에 따라 기상청 APIHub 레이더 upstream base URL 결정
+const resolveRadarApiBaseUrl = (env: Record<string, string>) =>
+  env.RADAR_API_BASE_URL ||
+  env.RADAR_API_UPSTREAM_BASE_URL ||
+  env.VITE_RADAR_API_BASE_URL ||
+  env.VITE_RADAR_API_UPSTREAM_BASE_URL ||
+  DEFAULT_RADAR_API_UPSTREAM_BASE_URL;
+
+// 환경변수 우선순위에 따라 기상청 APIHub 레이더 API key 결정
+const resolveRadarApiKey = (env: Record<string, string>) =>
+  env.RADAR_API_KEY ||
+  env.VITE_RADAR_API_KEY ||
+  env.APIHUB_API_KEY ||
+  env.API_KEY ||
+  env.VITE_API_KEY;
 
 // /api/kakao/coord2regioncode 요청을 Kakao upstream 경로로 재작성
 const buildKakaoCoord2RegionRewritePath = (path: string): string => {
@@ -163,6 +185,40 @@ const buildWeatherRewritePath = (path: string, apiKey?: string): string => {
   return query ? `${endpoint}?${query}` : endpoint;
 };
 
+// /api/radar/composite-image 요청을 기상청 APIHub 레이더 이미지 경로로 재작성
+const buildRadarRewritePath = (path: string, apiKey?: string): string => {
+  const url = new URL(path, "http://localhost");
+  const upstreamUrl = new URL("/nph-rdr_cmp1_img", "http://localhost");
+  const tm = url.searchParams.get("tm");
+
+  if (tm) {
+    upstreamUrl.searchParams.set("tm", tm);
+  }
+
+  upstreamUrl.searchParams.set("cmp", "HSR");
+  upstreamUrl.searchParams.set("qcd", "HSLP");
+  upstreamUrl.searchParams.set("obs", "ECHD");
+  upstreamUrl.searchParams.set("color", "C4");
+  upstreamUrl.searchParams.set("aws", "0");
+  upstreamUrl.searchParams.set("acc", "");
+  upstreamUrl.searchParams.set("map", "HR");
+  upstreamUrl.searchParams.set("grid", "2");
+  upstreamUrl.searchParams.set("legend", "1");
+  upstreamUrl.searchParams.set("size", "600");
+  upstreamUrl.searchParams.set("itv", "5");
+  upstreamUrl.searchParams.set("zoom_level", "0");
+  upstreamUrl.searchParams.set("zoom_x", "0000000");
+  upstreamUrl.searchParams.set("zoom_y", "0000000");
+  upstreamUrl.searchParams.set("gov", "");
+
+  if (apiKey) {
+    upstreamUrl.searchParams.set("authKey", apiKey);
+  }
+
+  const search = upstreamUrl.searchParams.toString();
+  return search ? `${upstreamUrl.pathname}?${search}` : upstreamUrl.pathname;
+};
+
 // Kakao API 전용 dev 프록시 생성
 const createKakaoProxy = (baseUrl: string, apiKey?: string) => ({
   target: baseUrl,
@@ -212,6 +268,20 @@ const createWeatherProxy = (baseUrl: string, apiKey?: string) => ({
   rewrite: (path: string) => buildWeatherRewritePath(path, apiKey),
 });
 
+// 레이더 APIHub dev 프록시 생성
+const createRadarProxy = (baseUrl: string, apiKey?: string) => ({
+  target: baseUrl,
+  changeOrigin: true,
+  rewrite: (path: string) => buildRadarRewritePath(path, apiKey),
+});
+
+const escapeRegex = (value: string): string => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+const buildWeatherProxyPattern = (radarApiProxyPath: string): string => {
+  const radarApiSegment = radarApiProxyPath.replace(/^\/api\/?/, "").split("/")[0] || "radar";
+  return `^/api/(?!kakao|air-quality|${escapeRegex(radarApiSegment)})`;
+};
+
 export default defineConfig(({ mode }) => {
   const env = loadLocalProxyEnv(mode);
 
@@ -222,6 +292,9 @@ export default defineConfig(({ mode }) => {
   const kakaoApiBaseUrl = resolveKakaoApiBaseUrl(env);
   const kakaoApiKey = resolveKakaoApiKey(env);
   const kakaoMapKey = resolveKakaoMapKey(env);
+  const radarApiProxyPath = resolveRadarApiProxyPath(env);
+  const radarApiBaseUrl = resolveRadarApiBaseUrl(env);
+  const radarApiKey = resolveRadarApiKey(env);
 
   return {
     plugins: [react(), tailwindcss()],
@@ -234,10 +307,14 @@ export default defineConfig(({ mode }) => {
       proxy: {
         [KAKAO_MAP_SDK_PROXY_PATH]: createKakaoMapSdkProxy(kakaoMapKey),
         "/api/kakao": createKakaoProxy(kakaoApiBaseUrl, kakaoApiKey),
+        [radarApiProxyPath]: createRadarProxy(radarApiBaseUrl, radarApiKey),
         ...(airKoreaApiBaseUrl
           ? { "/api/air-quality": createAirQualityProxy(airKoreaApiBaseUrl, airKoreaApiKey) }
           : {}),
-        "^/api/(?!kakao|air-quality)": createWeatherProxy(weatherApiBaseUrl, weatherApiKey),
+        [buildWeatherProxyPattern(radarApiProxyPath)]: createWeatherProxy(
+          weatherApiBaseUrl,
+          weatherApiKey,
+        ),
       },
     },
   };

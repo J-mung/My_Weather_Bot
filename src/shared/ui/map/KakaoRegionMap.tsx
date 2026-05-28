@@ -1,4 +1,5 @@
 import { fetchLatLonByRegion } from "@/entities/kakao/api/fetchLatLonByRegion";
+import { useRadarCompositeImage } from "@/entities/weather/model/useRadarCompositeImage";
 import type { LatLon } from "@/entities/weather/model/weather.types";
 import { isAppError } from "@/shared/api/types";
 import { cn } from "@/shared/lib/cn";
@@ -8,8 +9,10 @@ import {
   type KakaoMarker,
 } from "@/shared/lib/loadKakaoMapSdk";
 import { useEffect, useRef, useState } from "react";
+import { RadarCompositeImagePanel, RadarCompositeInfoPanel } from "./RadarCompositePanel";
 
 export type KakaoRegionMapStatus = "idle" | "loading" | "success" | "error";
+type WeatherMapView = "location" | "radar";
 
 type KakaoRegionMapProps = {
   location: string;
@@ -20,6 +23,7 @@ type KakaoRegionMapProps = {
   mapClassName?: string;
   emptyMessage?: string;
   showHeader?: boolean;
+  enableRadarView?: boolean;
 };
 
 const DEFAULT_EMPTY_MESSAGE = "지도를 표시할 지역을 검색하거나 선택해 주세요.";
@@ -38,6 +42,7 @@ export const KakaoRegionMap = ({
   mapClassName,
   emptyMessage = DEFAULT_EMPTY_MESSAGE,
   showHeader = true,
+  enableRadarView = false,
 }: KakaoRegionMapProps) => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<KakaoMap | null>(null);
@@ -45,6 +50,7 @@ export const KakaoRegionMap = ({
   const [status, setStatus] = useState<KakaoRegionMapStatus>("idle");
   const [message, setMessage] = useState(emptyMessage);
   const [mapLevel, setMapLevel] = useState(INITIAL_MAP_LEVEL);
+  const [activeView, setActiveView] = useState<WeatherMapView>("location");
   const trimmedLocation = location.trim();
   const lat = coordinates?.lat;
   const lon = coordinates?.lon;
@@ -142,8 +148,10 @@ export const KakaoRegionMap = ({
 
   const effectiveStatus = hasMapTarget ? status : "idle";
   const effectiveMessage = hasMapTarget ? message : emptyMessage;
-  const shouldShowStatus = effectiveStatus !== "success";
-  const shouldShowZoomControls = effectiveStatus === "success";
+  const isRadarViewActive = enableRadarView && activeView === "radar";
+  const radarImage = useRadarCompositeImage(isRadarViewActive);
+  const shouldShowStatus = !isRadarViewActive && effectiveStatus !== "success";
+  const shouldShowZoomControls = !isRadarViewActive && effectiveStatus === "success";
   const displayTitle = trimmedLocation || title;
   const displayDescription = description ?? "선택한 지역의 위치를 카카오 지도에서 확인합니다.";
 
@@ -177,7 +185,62 @@ export const KakaoRegionMap = ({
         </div>
       )}
       <div className={cn("relative bg-[var(--surface-soft)]", mapClassName)}>
-        <div ref={mapContainerRef} className={cn("h-full w-full")} />
+        <div
+          ref={mapContainerRef}
+          className={cn(
+            "h-full w-full transition-opacity duration-200",
+            isRadarViewActive && "pointer-events-none opacity-0",
+          )}
+        />
+        {enableRadarView && (
+          <div
+            className={cn(
+              "absolute left-3 top-3 z-20 flex overflow-hidden rounded-full border border-[var(--line)] bg-white/95 p-1 shadow-sm backdrop-blur",
+            )}
+            role={"tablist"}
+            aria-label={"지도 보기 전환"}
+          >
+            <button
+              type={"button"}
+              role={"tab"}
+              aria-selected={activeView === "location"}
+              className={cn(
+                "rounded-full px-3 py-2 text-xs font-extrabold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]",
+                activeView === "location"
+                  ? "bg-[var(--text-main)] text-white"
+                  : "text-[var(--text-sub)] hover:bg-[var(--surface-soft)]",
+              )}
+              onClick={() => setActiveView("location")}
+            >
+              위치 지도
+            </button>
+            <button
+              type={"button"}
+              role={"tab"}
+              aria-selected={activeView === "radar"}
+              className={cn(
+                "rounded-full px-3 py-2 text-xs font-extrabold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]",
+                activeView === "radar"
+                  ? "bg-[var(--accent-strong)] text-white"
+                  : "text-[var(--text-sub)] hover:bg-[var(--surface-soft)]",
+              )}
+              onClick={() => setActiveView("radar")}
+            >
+              강수 레이더
+            </button>
+          </div>
+        )}
+        {isRadarViewActive && (
+          <div className={cn("absolute inset-0 z-10")} role={"tabpanel"}>
+            <RadarCompositeImagePanel
+              data={radarImage.data}
+              isLoading={radarImage.isLoading}
+              isError={radarImage.isError}
+              error={radarImage.error}
+              refresh={radarImage.refresh}
+            />
+          </div>
+        )}
         {shouldShowZoomControls && (
           <div
             className={cn(
@@ -230,6 +293,7 @@ export const KakaoRegionMap = ({
           </div>
         )}
       </div>
+      {isRadarViewActive && <RadarCompositeInfoPanel data={radarImage.data} />}
     </section>
   );
 };

@@ -12,6 +12,7 @@ export default function MapPage() {
       title={"Weather Map"}
       mapClassName={mapPageStyles.mapCanvas.join(" ")}
       className={mapPageStyles.page.join(" ")}
+      enableRadarView
     />
   );
 }

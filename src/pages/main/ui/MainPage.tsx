@@ -259,6 +259,7 @@ export default function MainPage() {
             title={"Weather Map"}
             mapClassName={cn(mainPageStyles.mapCanvas)}
             showHeader={false}
+            enableRadarView
           />
         </div>
 

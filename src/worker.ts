@@ -15,6 +15,7 @@ import {
 } from "./worker/constants";
 import { handleKakaoApiRequest } from "./worker/kakao";
 import { handleKakaoMapSdkRequest } from "./worker/kakao-map-sdk";
+import { handleRadarApiRequest, isRadarApiRequest } from "./worker/radar";
 import type { Env, WorkerExecutionContext } from "./worker/types";
 import { handleApiRequest } from "./worker/weather";
 
@@ -37,6 +38,10 @@ export default {
 
     if (url.pathname.startsWith(AIR_QUALITY_API_PREFIX)) {
       return handleAirQualityApiRequest(request, env, context);
+    }
+
+    if (isRadarApiRequest(url.pathname, env)) {
+      return handleRadarApiRequest(request, env, context);
     }
 
     if (url.pathname.startsWith(WEATHER_API_PREFIX)) {
