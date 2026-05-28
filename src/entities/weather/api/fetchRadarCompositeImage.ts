@@ -2,7 +2,6 @@ import { getLatestRadarTmKst } from "@/entities/weather/model/radarTime";
 import { APP_ERROR, appErrorMetaMap, type AppErrorType } from "@/shared/api/app-errors";
 
 type RadarCompositeImageErrorType =
-  | typeof APP_ERROR.RADAR_CONFIG
   | typeof APP_ERROR.RADAR_HTTP
   | typeof APP_ERROR.RADAR_FORMAT
   | typeof APP_ERROR.RADAR_UNEXPECTED;
@@ -37,21 +36,10 @@ export const getRadarCompositeImageErrorCode = (error: unknown): RadarErrorCode 
     : appErrorMetaMap[APP_ERROR.RADAR_UNEXPECTED].code;
 };
 
-export const getRadarCompositeImageErrorMessage = (type: AppErrorType): string => {
-  return appErrorMetaMap[type].description;
-};
+export const getRadarCompositeImageErrorMessage = (type: AppErrorType): string =>
+  appErrorMetaMap[type].description;
 
-const getRadarApiProxyPath = (): string | null => {
-  const configuredPath = (import.meta.env.VITE_RADAR_API_PROXY_PATH as string | undefined)?.trim();
-
-  if (!configuredPath) {
-    return null;
-  }
-
-  const withLeadingSlash = configuredPath.startsWith("/") ? configuredPath : `/${configuredPath}`;
-
-  return withLeadingSlash.replace(/\/+$/, "");
-};
+const RADAR_API_PROXY_PATH = "/api/radar";
 
 export interface RadarCompositeImageData {
   imageUrl: string;
@@ -63,17 +51,13 @@ export interface RadarCompositeImageData {
 export const fetchRadarCompositeImage = async (
   options: { signal?: AbortSignal; tm?: string } = {},
 ): Promise<RadarCompositeImageData> => {
-  const radarApiProxyPath = getRadarApiProxyPath();
-
-  if (!radarApiProxyPath) {
-    throw createRadarCompositeImageError(APP_ERROR.RADAR_CONFIG);
-  }
-
   const requestedTm = options.tm ?? getLatestRadarTmKst();
   const searchParams = new URLSearchParams({ tm: requestedTm });
-  const response = await fetch(`${radarApiProxyPath}/composite-image?${searchParams.toString()}`, {
+  const response = await fetch(`${RADAR_API_PROXY_PATH}/composite-image?${searchParams.toString()}`, {
     method: "GET",
     signal: options.signal,
+  }).catch((error: unknown) => {
+    throw createRadarCompositeImageError(APP_ERROR.RADAR_UNEXPECTED, error);
   });
 
   if (!response.ok) {
