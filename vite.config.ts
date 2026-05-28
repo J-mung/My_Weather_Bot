@@ -9,8 +9,6 @@ const KAKAO_ADDRESS_SEARCH_PATH = "/v2/local/search/address.json";
 const KAKAO_KEYWORD_SEARCH_PATH = "/v2/local/search/keyword.json";
 const KAKAO_MAP_SDK_PROXY_PATH = "/dapi.kakao.com/v2/maps/sdk.js";
 const KAKAO_MAP_SDK_UPSTREAM_PATH = "/v2/maps/sdk.js";
-const DEFAULT_RADAR_API_PROXY_PATH = "/api/radar";
-const DEFAULT_RADAR_API_UPSTREAM_BASE_URL = "https://apihub.kma.go.kr/api/typ03/cgi/rdr";
 
 const parseLocalEnvFile = (filePath: string): Record<string, string> => {
   if (!fs.existsSync(filePath)) {
@@ -74,15 +72,11 @@ const resolveKakaoMapKey = (env: Record<string, string>) =>
 
 // 환경변수 우선순위에 따라 레이더 API local proxy path 결정
 const resolveRadarApiProxyPath = (env: Record<string, string>) =>
-  env.RADAR_API_PROXY_PATH || env.VITE_RADAR_API_PROXY_PATH || DEFAULT_RADAR_API_PROXY_PATH;
+  env.RADAR_API_PROXY_PATH || env.VITE_RADAR_API_PROXY_PATH;
 
 // 환경변수 우선순위에 따라 기상청 APIHub 레이더 upstream base URL 결정
 const resolveRadarApiBaseUrl = (env: Record<string, string>) =>
-  env.RADAR_API_BASE_URL ||
-  env.RADAR_API_UPSTREAM_BASE_URL ||
-  env.VITE_RADAR_API_BASE_URL ||
-  env.VITE_RADAR_API_UPSTREAM_BASE_URL ||
-  DEFAULT_RADAR_API_UPSTREAM_BASE_URL;
+  env.RADAR_API_UPSTREAM_BASE_URL || env.VITE_RADAR_API_UPSTREAM_BASE_URL;
 
 // 환경변수 우선순위에 따라 기상청 APIHub 레이더 API key 결정
 const resolveRadarApiKey = (env: Record<string, string>) =>
@@ -277,9 +271,14 @@ const createRadarProxy = (baseUrl: string, apiKey?: string) => ({
 
 const escapeRegex = (value: string): string => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-const buildWeatherProxyPattern = (radarApiProxyPath: string): string => {
-  const radarApiSegment = radarApiProxyPath.replace(/^\/api\/?/, "").split("/")[0] || "radar";
-  return `^/api/(?!kakao|air-quality|${escapeRegex(radarApiSegment)})`;
+const buildWeatherProxyPattern = (radarApiProxyPath?: string): string => {
+  const radarApiSegment = radarApiProxyPath?.replace(/^\/api\/?/, "").split("/")[0];
+  const excludedSegments = ["kakao", "air-quality", radarApiSegment]
+    .filter((segment): segment is string => Boolean(segment))
+    .map(escapeRegex)
+    .join("|");
+
+  return `^/api/(?!${excludedSegments})`;
 };
 
 export default defineConfig(({ mode }) => {
@@ -307,7 +306,9 @@ export default defineConfig(({ mode }) => {
       proxy: {
         [KAKAO_MAP_SDK_PROXY_PATH]: createKakaoMapSdkProxy(kakaoMapKey),
         "/api/kakao": createKakaoProxy(kakaoApiBaseUrl, kakaoApiKey),
-        [radarApiProxyPath]: createRadarProxy(radarApiBaseUrl, radarApiKey),
+        ...(radarApiProxyPath && radarApiBaseUrl
+          ? { [radarApiProxyPath]: createRadarProxy(radarApiBaseUrl, radarApiKey) }
+          : {}),
         ...(airKoreaApiBaseUrl
           ? { "/api/air-quality": createAirQualityProxy(airKoreaApiBaseUrl, airKoreaApiKey) }
           : {}),

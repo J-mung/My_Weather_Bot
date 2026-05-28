@@ -1,5 +1,6 @@
 import { useLocationSearch } from "@/features/location-search/useLocationSearch";
 import { cn } from "@/shared/lib/cn";
+import { ErrorCode } from "@/shared/ui/error-code";
 import { Icon } from "@/shared/ui/icon";
 import { IconInput } from "@/shared/ui/input";
 import { KakaoRegionMap } from "@/shared/ui/map";
@@ -20,6 +21,7 @@ export default function SearchPage() {
     input,
     candidates,
     errorMessage,
+    errorCode,
     setInput,
     selectDistrict, // 내부 상태 동기화를 위해 호출
   } = useLocationSearch();
@@ -131,6 +133,7 @@ export default function SearchPage() {
       {errorMessage && (
         <div className={cn(searchPageStyles.stackItem, searchPageStyles.section)}>
           {errorMessage}
+          <ErrorCode code={errorCode} />
         </div>
       )}
       {renderedMapLocationLabel && (

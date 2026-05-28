@@ -1,11 +1,54 @@
 import { getLatestRadarTmKst } from "@/entities/weather/model/radarTime";
+import { APP_ERROR, appErrorMetaMap, type AppErrorType } from "@/shared/api/app-errors";
 
-const DEFAULT_RADAR_API_PROXY_PATH = "/api/radar";
+type RadarCompositeImageErrorType =
+  | typeof APP_ERROR.RADAR_CONFIG
+  | typeof APP_ERROR.RADAR_HTTP
+  | typeof APP_ERROR.RADAR_FORMAT
+  | typeof APP_ERROR.RADAR_UNEXPECTED;
 
-const getRadarApiProxyPath = (): string => {
-  const configuredPath = import.meta.env.VITE_RADAR_API_PROXY_PATH as string | undefined;
-  const proxyPath = configuredPath?.trim() || DEFAULT_RADAR_API_PROXY_PATH;
-  const withLeadingSlash = proxyPath.startsWith("/") ? proxyPath : `/${proxyPath}`;
+export type RadarErrorCode = (typeof appErrorMetaMap)[RadarCompositeImageErrorType]["code"];
+
+export class RadarCompositeImageError extends Error {
+  code: RadarErrorCode;
+  type: RadarCompositeImageErrorType;
+
+  constructor(type: RadarCompositeImageErrorType, cause?: unknown) {
+    const meta = appErrorMetaMap[type];
+
+    super(meta.description);
+    this.name = "RadarCompositeImageError";
+    this.type = type;
+    this.code = meta.code;
+    this.cause = cause;
+  }
+}
+
+export const createRadarCompositeImageError = (
+  type: RadarCompositeImageErrorType,
+  cause?: unknown,
+) => {
+  return new RadarCompositeImageError(type, cause);
+};
+
+export const getRadarCompositeImageErrorCode = (error: unknown): RadarErrorCode => {
+  return error instanceof RadarCompositeImageError
+    ? error.code
+    : appErrorMetaMap[APP_ERROR.RADAR_UNEXPECTED].code;
+};
+
+export const getRadarCompositeImageErrorMessage = (type: AppErrorType): string => {
+  return appErrorMetaMap[type].description;
+};
+
+const getRadarApiProxyPath = (): string | null => {
+  const configuredPath = (import.meta.env.VITE_RADAR_API_PROXY_PATH as string | undefined)?.trim();
+
+  if (!configuredPath) {
+    return null;
+  }
+
+  const withLeadingSlash = configuredPath.startsWith("/") ? configuredPath : `/${configuredPath}`;
 
   return withLeadingSlash.replace(/\/+$/, "");
 };
@@ -20,24 +63,27 @@ export interface RadarCompositeImageData {
 export const fetchRadarCompositeImage = async (
   options: { signal?: AbortSignal; tm?: string } = {},
 ): Promise<RadarCompositeImageData> => {
+  const radarApiProxyPath = getRadarApiProxyPath();
+
+  if (!radarApiProxyPath) {
+    throw createRadarCompositeImageError(APP_ERROR.RADAR_CONFIG);
+  }
+
   const requestedTm = options.tm ?? getLatestRadarTmKst();
   const searchParams = new URLSearchParams({ tm: requestedTm });
-  const response = await fetch(
-    `${getRadarApiProxyPath()}/composite-image?${searchParams.toString()}`,
-    {
-      method: "GET",
-      signal: options.signal,
-    },
-  );
+  const response = await fetch(`${radarApiProxyPath}/composite-image?${searchParams.toString()}`, {
+    method: "GET",
+    signal: options.signal,
+  });
 
   if (!response.ok) {
-    throw new Error("레이더 영상을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.");
+    throw createRadarCompositeImageError(APP_ERROR.RADAR_HTTP);
   }
 
   const contentType = response.headers.get("Content-Type") ?? "";
 
   if (!contentType.toLowerCase().startsWith("image/")) {
-    throw new Error("레이더 영상 응답 형식이 올바르지 않아요.");
+    throw createRadarCompositeImageError(APP_ERROR.RADAR_FORMAT);
   }
 
   const blob = await response.blob();

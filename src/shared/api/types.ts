@@ -35,6 +35,7 @@ export const isApiError = (error: unknown): error is ApiError => {
 };
 
 export type AppErrorMeta = {
+  code: string;
   title: string;
   description: string;
   actionLabel?: string;

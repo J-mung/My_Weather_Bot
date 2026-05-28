@@ -3,6 +3,7 @@ import {
   formatRadarObservedAtKst,
   formatRadarTmKst,
   getRadarCandidateTimes,
+  handleRadarApiRequest,
   isRadarApiRequest,
 } from "./radar";
 import type { Env } from "./types";
@@ -38,10 +39,25 @@ describe("radar time helpers", () => {
     expect(formatRadarObservedAtKst("202605291420")).toBe("2026-05-29 14:20");
   });
 
-  it("routes radar requests through configured proxy path", () => {
+  it("routes radar requests through configured proxy path only", () => {
     const env = createEnv({ RADAR_API_PROXY_PATH: "/weather/radar" });
 
     expect(isRadarApiRequest("/weather/radar/composite-image", env)).toBe(true);
     expect(isRadarApiRequest("/api/radar/composite-image", env)).toBe(false);
+  });
+
+  it("does not expose configuration names or values when radar configuration is missing", async () => {
+    const env = createEnv({ RADAR_API_PROXY_PATH: "/api/radar", RADAR_API_UPSTREAM_BASE_URL: "" });
+    const response = await handleRadarApiRequest(
+      new Request("https://example.test/api/radar/composite-image"),
+      env,
+    );
+    const body = await response.text();
+
+    expect(response.status).toBe(503);
+    expect(body).toBe("Radar service unavailable");
+    expect(body).not.toContain("RADAR");
+    expect(body).not.toContain("API");
+    expect(body).not.toContain("https://");
   });
 });

@@ -1,4 +1,5 @@
 import type { GridCoord } from "@/entities/weather/model/weather.types";
+import { APP_ERROR, appErrorMetaMap } from "@/shared/api/app-errors";
 import { isAppError } from "@/shared/api/types";
 import { SPACE_REGEX } from "@/shared/lib/location-search.constants";
 import { createDistrictSearchEngine } from "@/shared/lib/location-search.engine";
@@ -16,6 +17,7 @@ export const useLocationSearch = (): {
   selectedDistrict: DistrictSearchItem | null;
   selectedGridCoord: GridCoord | null;
   errorMessage: string | null;
+  errorCode: string | null;
   setInput: React.Dispatch<React.SetStateAction<string>>;
   selectDistrict: (district: DistrictSearchItem) => Promise<GridCoord | null>;
   clearSelection: () => void;
@@ -25,6 +27,7 @@ export const useLocationSearch = (): {
   const [selectedDistrict, setSelectedDistrict] = useState<DistrictSearchItem | null>(null);
   const [selectedGridCoord, setSelectedGridCoord] = useState<GridCoord | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [errorCode, setErrorCode] = useState<string | null>(null);
 
   // JSON 1번만 읽고 메모이제이션
   const searchEngine = useMemo(() => createDistrictSearchEngine(), []);
@@ -40,6 +43,7 @@ export const useLocationSearch = (): {
       if (!trimInput) {
         setCandidates([]);
         setErrorMessage(null);
+        setErrorCode(null);
         return null;
       }
 
@@ -47,12 +51,14 @@ export const useLocationSearch = (): {
       if (parsedInput.length <= 1) {
         setCandidates([]);
         setErrorMessage("검색어를 더 구체적으로 입력해 주세요.");
+        setErrorCode(null);
         return;
       }
 
       const results = searchDistricts(trimInput, searchEngine, 20);
       setCandidates(results);
       setErrorMessage(results.length === 0 ? "검색 결과가 없습니다." : null);
+      setErrorCode(null);
     }, 200);
 
     return () => window.clearTimeout(timer);
@@ -71,6 +77,7 @@ export const useLocationSearch = (): {
 
       setSelectedGridCoord(gridCoord);
       setErrorMessage(null);
+      setErrorCode(null);
       setInput(toDisplayDistrictName(district));
 
       return gridCoord;
@@ -78,11 +85,13 @@ export const useLocationSearch = (): {
       if (isAppError(error)) {
         setSelectedGridCoord(null);
         setErrorMessage(error.meta.description);
+        setErrorCode(error.meta.code);
         return null;
       }
 
       setSelectedGridCoord(null);
-      setErrorMessage("해당 장소의 좌표를 확인하지 못했습니다.");
+      setErrorMessage(appErrorMetaMap[APP_ERROR.LATLON_LOOKUP_UNEXPECTED].description);
+      setErrorCode(appErrorMetaMap[APP_ERROR.LATLON_LOOKUP_UNEXPECTED].code);
       return null;
     }
   };
@@ -94,6 +103,7 @@ export const useLocationSearch = (): {
     setSelectedDistrict(null);
     setSelectedGridCoord(null);
     setErrorMessage(null);
+    setErrorCode(null);
   };
 
   return {
@@ -102,6 +112,7 @@ export const useLocationSearch = (): {
     selectedDistrict,
     selectedGridCoord,
     errorMessage,
+    errorCode,
     setInput,
     selectDistrict,
     clearSelection,

@@ -1,6 +1,5 @@
 import { getDefaultWorkerCache } from "./cache";
 import {
-  DEFAULT_RADAR_API_PROXY_PATH,
   RADAR_CACHE_TTL_SECONDS,
   RADAR_COMPOSITE_IMAGE_ENDPOINT,
   RADAR_FALLBACK_CANDIDATE_COUNT,
@@ -10,7 +9,6 @@ import {
 import { withCors } from "./cors";
 import type { Env, WorkerExecutionContext } from "./types";
 
-const DEFAULT_RADAR_API_BASE_URL = "https://apihub.kma.go.kr/api/typ03/cgi/rdr";
 const RADAR_COMPOSITE_IMAGE_PATH = "nph-rdr_cmp1_img";
 const MINUTE_MS = 60 * 1000;
 const KST_OFFSET_MS = 9 * 60 * MINUTE_MS;
@@ -24,20 +22,19 @@ const normalizeProxyPath = (path: string): string => {
 };
 
 const resolveRadarApiBaseUrl = (env: Env): string =>
-  (env.RADAR_API_BASE_URL || env.RADAR_API_UPSTREAM_BASE_URL || DEFAULT_RADAR_API_BASE_URL).replace(
-    /\/+$/,
-    "",
-  );
+  (env.RADAR_API_UPSTREAM_BASE_URL || "").trim().replace(/\/+$/, "");
 
-const resolveRadarApiProxyPath = (env: Env): string =>
-  normalizeProxyPath(env.RADAR_API_PROXY_PATH || DEFAULT_RADAR_API_PROXY_PATH);
+const resolveRadarApiProxyPath = (env: Env): string | null => {
+  const proxyPath = (env.RADAR_API_PROXY_PATH || "").trim();
+  return proxyPath ? normalizeProxyPath(proxyPath) : null;
+};
 
 const resolveRadarApiKey = (env: Env): string =>
   (env.RADAR_API_KEY || env.APIHUB_API_KEY || env.API_KEY || "").trim();
 
 export const isRadarApiRequest = (pathname: string, env: Env): boolean => {
   const proxyPath = resolveRadarApiProxyPath(env);
-  return pathname === proxyPath || pathname.startsWith(`${proxyPath}/`);
+  return Boolean(proxyPath && (pathname === proxyPath || pathname.startsWith(`${proxyPath}/`)));
 };
 
 const pad2 = (value: number): string => String(value).padStart(2, "0");
@@ -196,6 +193,11 @@ export const handleRadarApiRequest = async (
   const origin = request.headers.get("Origin") ?? "";
   const url = new URL(request.url);
   const proxyPath = resolveRadarApiProxyPath(env);
+
+  if (!proxyPath) {
+    return new Response("Radar service unavailable", withCors(origin, { status: 503 }));
+  }
+
   const endpoint = url.pathname.slice(proxyPath.length).replace(/^\/+/, "");
 
   if (request.method === "OPTIONS") {
@@ -211,7 +213,7 @@ export const handleRadarApiRequest = async (
   }
 
   if (!resolveRadarApiBaseUrl(env) || !resolveRadarApiKey(env)) {
-    return new Response("Radar service configuration unavailable", withCors(origin, { status: 500 }));
+    return new Response("Radar service unavailable", withCors(origin, { status: 503 }));
   }
 
   const requestedTm = url.searchParams.get("tm");

@@ -1,7 +1,9 @@
 import {
+  createRadarCompositeImageError,
   fetchRadarCompositeImage,
   type RadarCompositeImageData,
 } from "@/entities/weather/api/fetchRadarCompositeImage";
+import { APP_ERROR } from "@/shared/api/app-errors";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 type RadarImageState = {
@@ -62,7 +64,10 @@ export const useRadarCompositeImage = (enabled: boolean) => {
           data: prev.data,
           isLoading: false,
           isError: true,
-          error: error instanceof Error ? error : new Error("레이더 영상을 불러오지 못했어요."),
+          error:
+            error instanceof Error
+              ? error
+              : createRadarCompositeImageError(APP_ERROR.RADAR_UNEXPECTED),
         }));
       });
 

@@ -7,7 +7,6 @@ keep_vars = false
 API_BASE_URL = "https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0"
 KAKAO_REST_API_BASE_URL = "https://dapi.kakao.com"
 AIRKOREA_API_BASE_URL = "https://apis.data.go.kr/B552584/ArpltnInforInqireSvc"
-RADAR_API_BASE_URL = "https://apihub.kma.go.kr/api/typ03/cgi/rdr"
 RADAR_API_UPSTREAM_BASE_URL = "https://apihub.kma.go.kr/api/typ03/cgi/rdr"
 RADAR_API_PROXY_PATH = "/api/radar"
 

@@ -24,135 +24,234 @@ export const APP_ERROR = {
   LATLON_LOOKUP_RETRY_LATER: "LATLON_LOOKUP_RETRY_LATER",
   LATLON_LOOKUP_UNEXPECTED: "LATLON_LOOKUP_UNEXPECTED",
   WEATHER_FETCH: "WEATHER_FETCH",
+  AIR_QUALITY: "AIR_QUALITY",
+  MAP_LOAD: "MAP_LOAD",
+  RADAR_CONFIG: "RADAR_CONFIG",
+  RADAR_HTTP: "RADAR_HTTP",
+  RADAR_FORMAT: "RADAR_FORMAT",
+  RADAR_UNEXPECTED: "RADAR_UNEXPECTED",
   BOOKMARK_ACTION: "BOOKMARK_ACTION",
 } as const;
 
+export type AppErrorType = (typeof APP_ERROR)[keyof typeof APP_ERROR];
+
+export const APP_ERROR_CODE = {
+  [APP_ERROR.LOCATION_PERMISSION]: "MWB-LOCATION-001",
+  [APP_ERROR.WEATHER_PARAMETER]: "MWB-WEATHER-001",
+  [APP_ERROR.ULTRA_FORECAST]: "MWB-WEATHER-101",
+  [APP_ERROR.ULTRA_FORECAST_NOT_FOUND]: "MWB-WEATHER-102",
+  [APP_ERROR.ULTRA_FORECAST_RETRY_LATER]: "MWB-WEATHER-103",
+  [APP_ERROR.ULTRA_FORECAST_UNEXPECTED]: "MWB-WEATHER-104",
+  [APP_ERROR.ULTRA_NOW]: "MWB-WEATHER-201",
+  [APP_ERROR.ULTRA_NOW_NOT_FOUND]: "MWB-WEATHER-202",
+  [APP_ERROR.ULTRA_NOW_RETRY_LATER]: "MWB-WEATHER-203",
+  [APP_ERROR.ULTRA_NOW_UNEXPECTED]: "MWB-WEATHER-204",
+  [APP_ERROR.SHORT_FORECAST]: "MWB-WEATHER-301",
+  [APP_ERROR.SHORT_FORECAST_NOT_FOUND]: "MWB-WEATHER-302",
+  [APP_ERROR.SHORT_FORECAST_RETRY_LATER]: "MWB-WEATHER-303",
+  [APP_ERROR.SHORT_FORECAST_UNEXPECTED]: "MWB-WEATHER-304",
+  [APP_ERROR.LOCATION_LOOKUP]: "MWB-LOCATION-101",
+  [APP_ERROR.LOCATION_LOOKUP_NOT_FOUND]: "MWB-LOCATION-102",
+  [APP_ERROR.LOCATION_LOOKUP_RETRY_LATER]: "MWB-LOCATION-103",
+  [APP_ERROR.LOCATION_LOOKUP_UNEXPECTED]: "MWB-LOCATION-104",
+  [APP_ERROR.LATLON_LOOKUP]: "MWB-LOCATION-201",
+  [APP_ERROR.LATLON_LOOKUP_NOT_FOUND]: "MWB-LOCATION-202",
+  [APP_ERROR.LATLON_LOOKUP_RETRY_LATER]: "MWB-LOCATION-203",
+  [APP_ERROR.LATLON_LOOKUP_UNEXPECTED]: "MWB-LOCATION-204",
+  [APP_ERROR.WEATHER_FETCH]: "MWB-WEATHER-901",
+  [APP_ERROR.AIR_QUALITY]: "MWB-AIRQUALITY-001",
+  [APP_ERROR.MAP_LOAD]: "MWB-MAP-001",
+  [APP_ERROR.RADAR_CONFIG]: "MWB-RADAR-001",
+  [APP_ERROR.RADAR_HTTP]: "MWB-RADAR-002",
+  [APP_ERROR.RADAR_FORMAT]: "MWB-RADAR-003",
+  [APP_ERROR.RADAR_UNEXPECTED]: "MWB-RADAR-999",
+  [APP_ERROR.BOOKMARK_ACTION]: "MWB-BOOKMARK-001",
+} satisfies Record<AppErrorType, string>;
+
 export const appErrorMetaMap = {
   [APP_ERROR.LOCATION_PERMISSION]: {
+    code: APP_ERROR_CODE[APP_ERROR.LOCATION_PERMISSION],
     title: "위치 정보 권한이 필요해요",
     description: "현재 위치 기반 서비스를 이용하려면 브라우저에서 위치 정보 권한을 허용해 주세요.",
     actionLabel: "현재 위치 다시 확인",
   },
   [APP_ERROR.WEATHER_PARAMETER]: {
+    code: APP_ERROR_CODE[APP_ERROR.WEATHER_PARAMETER],
     title: "위치 정보가 없어요.",
     description:
       "위치 정보가 없어서 날씨 정보를 불러오는 중 문제가 발생했습니다. 관리자에게 문의하세요.",
     actionLabel: "관리자 문의",
   },
   [APP_ERROR.ULTRA_FORECAST]: {
+    code: APP_ERROR_CODE[APP_ERROR.ULTRA_FORECAST],
     title: "날씨 정보를 찾지 못했어요.",
     description: "날씨 정보를 불러오는 중 문제가 발생했습니다.\n잠시 후 다시 시도해 주세요.",
     actionLabel: "다시 시도",
   },
   [APP_ERROR.ULTRA_FORECAST_NOT_FOUND]: {
+    code: APP_ERROR_CODE[APP_ERROR.ULTRA_FORECAST_NOT_FOUND],
     title: "날씨 정보를 찾지 못했어요.",
     description: `날씨 정보를 불러오는 중 문제가 발생했습니다.\n잠시 후 다시 시도해 주세요.`,
     actionLabel: "다시 시도",
   },
   [APP_ERROR.ULTRA_FORECAST_RETRY_LATER]: {
+    code: APP_ERROR_CODE[APP_ERROR.ULTRA_FORECAST_RETRY_LATER],
     title: "날씨 정보를 찾지 못했어요.",
     description: "날씨 정보 조회 요청이 많거나 서버가 불안정합니다.\n잠시 후 다시 시도해 주세요.",
     actionLabel: "다시 시도",
   },
   [APP_ERROR.ULTRA_FORECAST_UNEXPECTED]: {
+    code: APP_ERROR_CODE[APP_ERROR.ULTRA_FORECAST_UNEXPECTED],
     title: "날씨 정보를 찾지 못했어요.",
     description: "알 수 없는 에러로 날씨 정보를 불러오지 못했습니다.\n잠시 후 다시 시도해 주세요.",
     actionLabel: "다시 시도",
   },
   [APP_ERROR.ULTRA_NOW]: {
+    code: APP_ERROR_CODE[APP_ERROR.ULTRA_NOW],
     title: "날씨 정보를 찾지 못했어요.",
     description: "날씨 정보를 불러오는 중 문제가 발생했습니다.\n잠시 후 다시 시도해 주세요.",
     actionLabel: "다시 시도",
   },
   [APP_ERROR.ULTRA_NOW_NOT_FOUND]: {
+    code: APP_ERROR_CODE[APP_ERROR.ULTRA_NOW_NOT_FOUND],
     title: "날씨 정보를 찾지 못했어요.",
     description: `날씨 정보를 불러오는 중 문제가 발생했습니다.\n잠시 후 다시 시도해 주세요.`,
     actionLabel: "다시 시도",
   },
   [APP_ERROR.ULTRA_NOW_RETRY_LATER]: {
+    code: APP_ERROR_CODE[APP_ERROR.ULTRA_NOW_RETRY_LATER],
     title: "날씨 정보를 찾지 못했어요.",
     description: "날씨 정보 조회 요청이 많거나 서버가 불안정합니다.\n잠시 후 다시 시도해 주세요.",
     actionLabel: "다시 시도",
   },
   [APP_ERROR.ULTRA_NOW_UNEXPECTED]: {
+    code: APP_ERROR_CODE[APP_ERROR.ULTRA_NOW_UNEXPECTED],
     title: "날씨 정보를 찾지 못했어요.",
     description: "알 수 없는 에러로 날씨 정보를 불러오지 못했습니다.\n잠시 후 다시 시도해 주세요.",
     actionLabel: "다시 시도",
   },
   [APP_ERROR.SHORT_FORECAST]: {
+    code: APP_ERROR_CODE[APP_ERROR.SHORT_FORECAST],
     title: "날씨 정보를 찾지 못했어요.",
     description: "날씨 정보를 불러오는 중 문제가 발생했습니다.\n잠시 후 다시 시도해 주세요.",
     actionLabel: "다시 시도",
   },
   [APP_ERROR.SHORT_FORECAST_NOT_FOUND]: {
+    code: APP_ERROR_CODE[APP_ERROR.SHORT_FORECAST_NOT_FOUND],
     title: "날씨 정보를 찾지 못했어요.",
     description: `날씨 정보를 불러오는 중 문제가 발생했습니다.\n잠시 후 다시 시도해 주세요.`,
     actionLabel: "다시 시도",
   },
   [APP_ERROR.SHORT_FORECAST_RETRY_LATER]: {
+    code: APP_ERROR_CODE[APP_ERROR.SHORT_FORECAST_RETRY_LATER],
     title: "날씨 정보를 찾지 못했어요.",
     description: "날씨 정보 조회 요청이 많거나 서버가 불안정합니다.\n잠시 후 다시 시도해 주세요.",
     actionLabel: "다시 시도",
   },
   [APP_ERROR.SHORT_FORECAST_UNEXPECTED]: {
+    code: APP_ERROR_CODE[APP_ERROR.SHORT_FORECAST_UNEXPECTED],
     title: "날씨 정보를 찾지 못했어요.",
     description: "알 수 없는 에러로 날씨 정보를 불러오지 못했습니다.\n잠시 후 다시 시도해 주세요.",
     actionLabel: "다시 시도",
   },
   [APP_ERROR.LOCATION_LOOKUP]: {
+    code: APP_ERROR_CODE[APP_ERROR.LOCATION_LOOKUP],
     title: "위치를 찾지 못했어요",
     description: "지역 정보를 불러오는 중 문제가 발생했습니다.\n잠시 후 다시 시도해 주세요.",
     actionLabel: "다시 시도",
   },
   [APP_ERROR.LOCATION_LOOKUP_NOT_FOUND]: {
+    code: APP_ERROR_CODE[APP_ERROR.LOCATION_LOOKUP_NOT_FOUND],
     title: "위치를 찾지 못했어요",
     description: "현재 위치에 해당하는 지역 정보를 찾지 못했습니다.\n잠시 후 다시 시도해 주세요.",
     actionLabel: "다시 시도",
   },
   [APP_ERROR.LOCATION_LOOKUP_RETRY_LATER]: {
+    code: APP_ERROR_CODE[APP_ERROR.LOCATION_LOOKUP_RETRY_LATER],
     title: "위치 조회가 지연되고 있어요",
     description:
       "지역 정보를 불러오는 요청이 많거나 서버가 불안정합니다.\n잠시 후 다시 시도해 주세요.",
     actionLabel: "다시 시도",
   },
   [APP_ERROR.LOCATION_LOOKUP_UNEXPECTED]: {
+    code: APP_ERROR_CODE[APP_ERROR.LOCATION_LOOKUP_UNEXPECTED],
     title: "위치를 찾지 못했어요.",
     description: "알 수 없는 에러로 지역 정보를 불러오지 못했습니다.\n잠시 후 다시 시도해 주세요.",
     actionLabel: "다시 시도",
   },
   [APP_ERROR.LATLON_LOOKUP]: {
+    code: APP_ERROR_CODE[APP_ERROR.LATLON_LOOKUP],
     title: "위치를 찾지 못했어요",
     description:
       "날씨 정보를 조회하기 위한 지역 정보를 불러오는 중 문제가 발생했습니다.\n잠시 후 다시 시도해 주세요.",
     actionLabel: "다시 시도",
   },
   [APP_ERROR.LATLON_LOOKUP_NOT_FOUND]: {
+    code: APP_ERROR_CODE[APP_ERROR.LATLON_LOOKUP_NOT_FOUND],
     title: "위치를 찾지 못했어요.",
     description:
       "날씨 정보를 조회하기 위한 현재 위치에 해당하는 지역 정보를 찾지 못했습니다.\n잠시 후 다시 시도해 주세요.",
     actionLabel: "다시 시도",
   },
   [APP_ERROR.LATLON_LOOKUP_RETRY_LATER]: {
+    code: APP_ERROR_CODE[APP_ERROR.LATLON_LOOKUP_RETRY_LATER],
     title: "위치를 찾지 못했어요.",
     description:
       "지역 정보를 불러오는 요청이 많거나 서버가 불안정합니다.\n잠시 후 다시 시도해 주세요.",
     actionLabel: "다시 시도",
   },
   [APP_ERROR.LATLON_LOOKUP_UNEXPECTED]: {
+    code: APP_ERROR_CODE[APP_ERROR.LATLON_LOOKUP_UNEXPECTED],
     title: "위치를 찾지 못했어요.",
     description: "알 수 없는 에러로 지역 정보를 불러오지 못했습니다.\n잠시 후 다시 시도해 주세요.",
     actionLabel: "다시 시도",
   },
   [APP_ERROR.WEATHER_FETCH]: {
+    code: APP_ERROR_CODE[APP_ERROR.WEATHER_FETCH],
     title: "날씨 정보를 불러오지 못했어요",
     description: "날씨 정보를 가져오는 중 문제가 발생했습니다.\n잠시 후 다시 시도해 주세요.",
     actionLabel: "다시 시도",
   },
+  [APP_ERROR.AIR_QUALITY]: {
+    code: APP_ERROR_CODE[APP_ERROR.AIR_QUALITY],
+    title: "대기질 정보를 불러오지 못했어요",
+    description: "대기질 정보를 요청하는 중 문제가 발생했습니다. 잠시 후 다시 확인해 주세요.",
+    actionLabel: "다시 시도",
+  },
+  [APP_ERROR.MAP_LOAD]: {
+    code: APP_ERROR_CODE[APP_ERROR.MAP_LOAD],
+    title: "지도를 표시하지 못했어요",
+    description: "지도를 요청하는 중 문제가 발생했습니다. 잠시 후 다시 확인해 주세요.",
+    actionLabel: "다시 시도",
+  },
+  [APP_ERROR.RADAR_CONFIG]: {
+    code: APP_ERROR_CODE[APP_ERROR.RADAR_CONFIG],
+    title: "레이더 영상을 표시하지 못했어요",
+    description: "레이더 정보를 요청하는 중 문제가 발생했어요. 잠시 후 다시 확인해 주세요.",
+    actionLabel: "다시 시도",
+  },
+  [APP_ERROR.RADAR_HTTP]: {
+    code: APP_ERROR_CODE[APP_ERROR.RADAR_HTTP],
+    title: "레이더 영상을 표시하지 못했어요",
+    description: "레이더 정보를 요청하는 중 문제가 발생했어요. 잠시 후 다시 확인해 주세요.",
+    actionLabel: "다시 시도",
+  },
+  [APP_ERROR.RADAR_FORMAT]: {
+    code: APP_ERROR_CODE[APP_ERROR.RADAR_FORMAT],
+    title: "레이더 영상을 표시하지 못했어요",
+    description: "레이더 정보를 요청하는 중 문제가 발생했어요. 잠시 후 다시 확인해 주세요.",
+    actionLabel: "다시 시도",
+  },
+  [APP_ERROR.RADAR_UNEXPECTED]: {
+    code: APP_ERROR_CODE[APP_ERROR.RADAR_UNEXPECTED],
+    title: "레이더 영상을 표시하지 못했어요",
+    description: "레이더 정보를 요청하는 중 문제가 발생했어요. 잠시 후 다시 확인해 주세요.",
+    actionLabel: "다시 시도",
+  },
   [APP_ERROR.BOOKMARK_ACTION]: {
+    code: APP_ERROR_CODE[APP_ERROR.BOOKMARK_ACTION],
     title: "북마크 저장에 실패했어요",
     description: "북마크를 저장하는 중 문제가 발생했습니다.\n잠시 후 다시 시도해 주세요.",
     actionLabel: "다시 시도",
   },
-} satisfies Record<string, AppErrorMeta>;
-
-export type AppErrorType = (typeof APP_ERROR)[keyof typeof APP_ERROR];
+} satisfies Record<AppErrorType, AppErrorMeta>;

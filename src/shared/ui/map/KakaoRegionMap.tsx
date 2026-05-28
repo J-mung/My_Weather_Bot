@@ -1,8 +1,10 @@
 import { fetchLatLonByRegion } from "@/entities/kakao/api/fetchLatLonByRegion";
 import { useRadarCompositeImage } from "@/entities/weather/model/useRadarCompositeImage";
 import type { LatLon } from "@/entities/weather/model/weather.types";
+import { APP_ERROR, appErrorMetaMap } from "@/shared/api/app-errors";
 import { isAppError } from "@/shared/api/types";
 import { cn } from "@/shared/lib/cn";
+import { ErrorCode } from "@/shared/ui/error-code";
 import {
   loadKakaoMapSdk,
   type KakaoMap,
@@ -49,6 +51,7 @@ export const KakaoRegionMap = ({
   const markerRef = useRef<KakaoMarker | null>(null);
   const [status, setStatus] = useState<KakaoRegionMapStatus>("idle");
   const [message, setMessage] = useState(emptyMessage);
+  const [errorCode, setErrorCode] = useState<string | null>(null);
   const [mapLevel, setMapLevel] = useState(INITIAL_MAP_LEVEL);
   const [activeView, setActiveView] = useState<WeatherMapView>("location");
   const trimmedLocation = location.trim();
@@ -77,6 +80,7 @@ export const KakaoRegionMap = ({
 
       setStatus("loading");
       setMessage("지도를 불러오고 있어요.");
+      setErrorCode(null);
 
       try {
         const targetPromise: Promise<LatLon> = hasCoordinates
@@ -100,6 +104,7 @@ export const KakaoRegionMap = ({
         setMapLevel(map.getLevel());
         setStatus("success");
         setMessage("");
+        setErrorCode(null);
       } catch (error: unknown) {
         if (ignore) {
           return;
@@ -110,13 +115,15 @@ export const KakaoRegionMap = ({
         markerRef.current = null;
         mapContainerRef.current?.replaceChildren();
         setStatus("error");
-        setMessage(
-          isAppError(error)
-            ? error.meta.description
-            : error instanceof Error
-              ? error.message
-              : DEFAULT_ERROR_MESSAGE,
-        );
+        if (isAppError(error)) {
+          setMessage(error.meta.description);
+          setErrorCode(error.meta.code);
+          return;
+        }
+
+        const fallbackError = appErrorMetaMap[APP_ERROR.MAP_LOAD];
+        setMessage(fallbackError.description || DEFAULT_ERROR_MESSAGE);
+        setErrorCode(fallbackError.code);
       }
     };
 
@@ -148,6 +155,7 @@ export const KakaoRegionMap = ({
 
   const effectiveStatus = hasMapTarget ? status : "idle";
   const effectiveMessage = hasMapTarget ? message : emptyMessage;
+  const effectiveErrorCode = hasMapTarget && effectiveStatus === "error" ? errorCode : null;
   const isRadarViewActive = enableRadarView && activeView === "radar";
   const radarImage = useRadarCompositeImage(isRadarViewActive);
   const shouldShowStatus = !isRadarViewActive && effectiveStatus !== "success";
@@ -288,6 +296,7 @@ export const KakaoRegionMap = ({
               </span>
               <span className={cn("mt-2 block text-sm leading-6 text-[var(--text-sub)]")}>
                 {effectiveMessage || DEFAULT_ERROR_MESSAGE}
+                <ErrorCode code={effectiveErrorCode} />
               </span>
             </div>
           </div>

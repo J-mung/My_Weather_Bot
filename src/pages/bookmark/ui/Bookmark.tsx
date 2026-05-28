@@ -1,4 +1,5 @@
 import { fetchRegionNameFromCoord } from "@/entities/kakao/api/fetchRegionNameFromCoord";
+import { APP_ERROR, appErrorMetaMap } from "@/shared/api/app-errors";
 import { weatherConditionMeta } from "@/entities/weather/model/weather-condition-meta";
 import type { GridCoord } from "@/entities/weather/model/weather.types";
 import { useBookmarkForecastPreview } from "@/features/bookmark/model/useBookmarkForecastPreview";
@@ -8,6 +9,7 @@ import { cn } from "@/shared/lib/cn";
 import { convertToGridCoord } from "@/shared/lib/convertToGridCoord";
 import { getUserLocation } from "@/shared/lib/userLocation";
 import Button from "@/shared/ui/button";
+import { ErrorCode } from "@/shared/ui/error-code";
 import { Icon } from "@/shared/ui/icon";
 import { Skeleton } from "@/shared/ui/skeleton";
 import { useEffect, useState } from "react";
@@ -55,9 +57,7 @@ const CurrentLocationForecastCard = ({
   const { data, isFetching, isLoading, error } = useBookmarkForecastPreview(gridCoord);
   const forecastTemperature = data ? formatForecastTemperature(data.forecastTemperature) : "--°";
   const forecastRange = data ? formatTemperatureRange(data.todayMax, data.todayMin) : "";
-  const conditionMeta = data
-    ? weatherConditionMeta[data.condition]
-    : weatherConditionMeta[error ? "unavailable" : "cloudy"];
+  const conditionMeta = data ? weatherConditionMeta[data.condition] : weatherConditionMeta["cloudy"];
 
   return (
     <button
@@ -81,10 +81,12 @@ const CurrentLocationForecastCard = ({
           <p className={cn(bookmarkCurrentLocationStyles.eyebrow)}>Current Location</p>
           <h2 className={cn(bookmarkCurrentLocationStyles.title)}>{regionName}</h2>
         </div>
-        <Icon
-          name={conditionMeta.icon}
-          className={cn(bookmarkCurrentLocationStyles.icon, conditionMeta.iconClassName)}
-        />
+        {!error && (
+          <Icon
+            name={conditionMeta.icon}
+            className={cn(bookmarkCurrentLocationStyles.icon, conditionMeta.iconClassName)}
+          />
+        )}
       </div>
 
       <div className={cn(bookmarkCurrentLocationStyles.body)}>
@@ -108,6 +110,7 @@ const CurrentLocationForecastCard = ({
             </div>
             <span className={cn(bookmarkCurrentLocationStyles.forecastDetail)}>
               {error.meta.description}
+              <ErrorCode code={error.meta.code} />
             </span>
           </div>
         )}
@@ -136,7 +139,10 @@ export default function BookmarkPage() {
     regionName: string;
     gridCoord: GridCoord;
   } | null>(null);
-  const [currentLocationError, setCurrentLocationError] = useState("");
+  const [currentLocationError, setCurrentLocationError] = useState<{
+    description: string;
+    code: string;
+  } | null>(null);
 
   useEffect(() => {
     let ignore = false;
@@ -155,16 +161,22 @@ export default function BookmarkPage() {
           regionName,
           gridCoord: convertToGridCoord(userLocation),
         });
-        setCurrentLocationError("");
+        setCurrentLocationError(null);
       } catch (error: unknown) {
         if (ignore) return;
 
         if (isAppError(error)) {
-          setCurrentLocationError(error.meta.description);
+          setCurrentLocationError({
+            description: error.meta.description,
+            code: error.meta.code,
+          });
           return;
         }
 
-        setCurrentLocationError("현재 위치 대표 카드를 불러오지 못했습니다.");
+        setCurrentLocationError({
+          description: appErrorMetaMap[APP_ERROR.LOCATION_LOOKUP_UNEXPECTED].description,
+          code: appErrorMetaMap[APP_ERROR.LOCATION_LOOKUP_UNEXPECTED].code,
+        });
       }
     };
 
@@ -239,7 +251,8 @@ export default function BookmarkPage() {
         <div className={cn(bookmarkCurrentLocationStyles.card)}>
           <p className={cn(bookmarkCurrentLocationStyles.eyebrow)}>Current Location</p>
           <h2 className={cn(bookmarkCurrentLocationStyles.title)}>
-            {currentLocationError}
+            {currentLocationError.description}
+            <ErrorCode code={currentLocationError.code} />
           </h2>
           <p className={cn(bookmarkCurrentLocationStyles.placeholderText)}>
             권한을 허용하거나 검색에서 지역을 추가해 주세요.

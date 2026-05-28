@@ -1,6 +1,10 @@
 import { formatRadarTmDisplay } from "@/entities/weather/model/radarTime";
-import type { RadarCompositeImageData } from "@/entities/weather/api/fetchRadarCompositeImage";
+import {
+  getRadarCompositeImageErrorCode,
+  type RadarCompositeImageData,
+} from "@/entities/weather/api/fetchRadarCompositeImage";
 import { cn } from "@/shared/lib/cn";
+import { ErrorCode } from "@/shared/ui/error-code";
 
 const formatObservedAt = (observedAtText: string): string => {
   if (/^\d{12}$/.test(observedAtText)) {
@@ -61,10 +65,11 @@ export const RadarCompositeImagePanel = ({
 
       {isError && !isLoading && (
         <div className={cn("absolute inset-0 grid place-items-center bg-slate-950 px-5 text-center")}>
-          <div className={cn("max-w-sm text-white")}>
+          <div className={cn("mx-auto w-full max-w-[450px] text-center text-white")}>
             <span className={cn("block font-extrabold")}>레이더 영상을 표시하지 못했어요</span>
             <span className={cn("mt-2 block text-sm leading-6 text-white/70")}>
               {error?.message ?? "잠시 후 다시 시도해 주세요."}
+              <ErrorCode code={getRadarCompositeImageErrorCode(error)} className={cn("text-white/45")} />
             </span>
             <button
               type={"button"}

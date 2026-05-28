@@ -1,4 +1,5 @@
 import { fetchRegionNameFromCoord } from "@/entities/kakao/api/fetchRegionNameFromCoord";
+import { APP_ERROR, appErrorMetaMap } from "@/shared/api/app-errors";
 import type { GridCoord, LatLon } from "@/entities/weather/model/weather.types";
 import type { BookmarkItem } from "@/features/bookmark/model/types";
 import { readBookmarkFromStorage } from "@/features/bookmark/model/useBookmarks";
@@ -7,6 +8,7 @@ import { useWeatherSummary } from "@/features/get-current-weather/model/useWeath
 import { isAppError } from "@/shared/api/types";
 import { cn } from "@/shared/lib/cn";
 import { getUserLocation } from "@/shared/lib/userLocation";
+import { ErrorCode } from "@/shared/ui/error-code";
 import { IconInput } from "@/shared/ui/input";
 import { KakaoRegionMap } from "@/shared/ui/map";
 import { useEffect, useMemo, useState } from "react";
@@ -69,7 +71,10 @@ export default function MainPage() {
   );
   const [currentRegionName, setCurrentRegionName] = useState("");
   const [currentLatLon, setCurrentLatLon] = useState<LatLon | null>(null);
-  const [currentRegionError, setCurrentRegionError] = useState("");
+  const [currentRegionError, setCurrentRegionError] = useState<{
+    description: string;
+    code: string;
+  } | null>(null);
 
   useEffect(() => {
     const syncFavoritePreviewList = () => {
@@ -99,7 +104,7 @@ export default function MainPage() {
         if (!ignore) {
           setCurrentRegionName(regionName);
           setCurrentLatLon(userLocation);
-          setCurrentRegionError("");
+          setCurrentRegionError(null);
         }
       } catch (fetchError: unknown) {
         if (ignore) return;
@@ -108,14 +113,19 @@ export default function MainPage() {
 
         if (isAppError(fetchError)) {
           alert(fetchError.meta.description);
-          setCurrentRegionError(fetchError.meta.description);
+          setCurrentRegionError({
+            description: fetchError.meta.description,
+            code: fetchError.meta.code,
+          });
           return;
         }
 
-        alert("지역 정보를 불러오는 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.");
-        setCurrentRegionError(
-          "지역 정보를 불러오는 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.",
-        );
+        const fallbackError = appErrorMetaMap[APP_ERROR.LOCATION_LOOKUP_UNEXPECTED];
+        alert(fallbackError.description);
+        setCurrentRegionError({
+          description: fallbackError.description,
+          code: fallbackError.code,
+        });
       }
     };
 
@@ -154,7 +164,10 @@ export default function MainPage() {
           disabled={false}
         />
         {currentRegionError && !displayDistrict && (
-          <p className={cn(mainPageStyles.searchStatus)}>{currentRegionError}</p>
+          <p className={cn(mainPageStyles.searchStatus)}>
+            {currentRegionError.description}
+            <ErrorCode code={currentRegionError.code} />
+          </p>
         )}
       </div>
 
@@ -211,6 +224,7 @@ export default function MainPage() {
               displayDistrict={getAirQualityDisplayDistrict(districtDisplay.fullDistrict)}
               isLoading={airQuality.isLoading}
               isError={airQuality.isError}
+              errorCode={airQuality.error?.code}
             />
 
             <AirQualityMetricCard
@@ -220,6 +234,7 @@ export default function MainPage() {
               displayDistrict={getAirQualityDisplayDistrict(districtDisplay.fullDistrict)}
               isLoading={airQuality.isLoading}
               isError={airQuality.isError}
+              errorCode={airQuality.error?.code}
             />
 
             <div className={cn(mainPageStyles.metricCard)}>

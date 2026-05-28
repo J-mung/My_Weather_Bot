@@ -1,4 +1,6 @@
 import { fetchAirQualityBySido } from "@/entities/air-quality/api/fetchAirQualityBySido";
+import { APP_ERROR, appErrorMetaMap } from "@/shared/api/app-errors";
+import type { AppErrorMeta } from "@/shared/api/types";
 import {
   ensureAirQualityItems,
   resolveDistrictStationKeywords,
@@ -20,6 +22,7 @@ export const useAirQualitySummary = (
   isLoading: boolean;
   isFetching: boolean;
   isError: boolean;
+  error: AppErrorMeta | null;
 } => {
   const sidoName = useMemo(() => resolveSidoName(district), [district]);
   const stationKeywords = useMemo(() => resolveDistrictStationKeywords(district), [district]);
@@ -54,5 +57,6 @@ export const useAirQualitySummary = (
     isLoading: query.isLoading,
     isFetching: query.isFetching,
     isError: query.isError,
+    error: query.isError ? appErrorMetaMap[APP_ERROR.AIR_QUALITY] : null,
   };
 };

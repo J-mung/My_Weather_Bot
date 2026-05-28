@@ -59,6 +59,7 @@ export const Tooltip = ({
           "font-semibold",
           "leading-5",
           "text-white",
+          "whitespace-nowrap",
           "shadow-lg",
           isOpen ? ["visible", "opacity-100"] : ["invisible", "opacity-0"],
           tooltipAlignClass[align],
