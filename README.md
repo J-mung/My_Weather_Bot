@@ -100,8 +100,10 @@ v1.4에서는 Codex AI 에이전트를 활용해 로드맵 정리, UI 개선 방
 > <img width="1440" height="1889" alt="readme-v1 4-main-desktop" src="https://github.com/user-attachments/assets/d10f0268-1fd3-473d-9201-13f4a3f28458" />
    
 > 메인 모바일   
-> <img width="780" height="5458" alt="readme-v1 4-main-mobile" src="https://github.com/user-attachments/assets/03748795-5c8b-48c7-9f8e-6d927f40785c" />
-   
+> <img width="316" height="680" alt="스크린샷 2026-05-29 오전 1 05 43" src="https://github.com/user-attachments/assets/20c1b2f6-ae64-4b8c-a9d4-6e060c37320a" />
+> <img width="313" height="680" alt="스크린샷 2026-05-29 오전 1 06 27" src="https://github.com/user-attachments/assets/07acf98b-4b81-41b9-bfae-7cf6cda756d6" />
+> <img width="313" height="680" alt="readme-v1 4-main-mobile-iphone17pro-04" src="https://github.com/user-attachments/assets/19282148-f63a-4997-bc96-b93123ac08e2" />
+
 > 시간대별 예보 강수 확률   
 > <img width="752" height="280" alt="readme-v1 4-hourly-rain-chance" src="https://github.com/user-attachments/assets/cf6cbf66-7bc4-4c22-bde9-1d361bc30e6d" />
    
@@ -121,8 +123,10 @@ v1.4에서는 Codex AI 에이전트를 활용해 로드맵 정리, UI 개선 방
 > <img width="1440" height="2838" alt="readme-v1 4-search-map" src="https://github.com/user-attachments/assets/49927317-942f-49e2-8930-2c302af7e42f" />
    
 > 검색 화면 모바일   
-> <img width="780" height="5610" alt="readme-v1 4-search-mobile" src="https://github.com/user-attachments/assets/ea486139-55c8-4af8-80c5-3c4dd7a9ebfc" />
-
+> <img width="313" height="680" alt="스크린샷 2026-05-29 오전 1 12 25" src="https://github.com/user-attachments/assets/ae092df9-dedd-4216-83e7-eef9292aa036" />
+> <img width="313" height="680" alt="스크린샷 2026-05-29 오전 1 12 37" src="https://github.com/user-attachments/assets/1b55b34b-1fab-4fad-8acc-3ed83f806b35" />
+> <img width="313" height="680" alt="스크린샷 2026-05-29 오전 1 12 50" src="https://github.com/user-attachments/assets/bd644c56-7998-48d5-b9ce-f60b5dff42f5" />
+> <img width="313" height="680" alt="스크린샷 2026-05-29 오전 1 13 00" src="https://github.com/user-attachments/assets/6781060c-84d2-45ce-bed3-2271ab9e1175" />
 
 ### 3) 북마크 화면
 
@@ -138,7 +142,9 @@ v1.4에서는 Codex AI 에이전트를 활용해 로드맵 정리, UI 개선 방
 > <img width="1440" height="1100" alt="readme-v1 4-bookmark-list" src="https://github.com/user-attachments/assets/561f4db8-e6bc-4ae5-8fca-7caa8d01b073" />
    
 > 북마크 목록 모바일   
-> <img width="780" height="2454" alt="readme-v1 4-bookmark-mobile" src="https://github.com/user-attachments/assets/5908a371-57c1-4814-a4e0-1686f2b61793" />
+> <img width="313" height="680" alt="스크린샷 2026-05-29 오전 1 15 24" src="https://github.com/user-attachments/assets/b7bc45ef-51e9-4efb-aaaa-e42e0f523dff" />
+> <img width="313" height="680" alt="스크린샷 2026-05-29 오전 1 15 34" src="https://github.com/user-attachments/assets/e16d2ee9-e014-4067-8509-07563921ca76" />
+
 
 ### 4) 공통 지도/API
 
