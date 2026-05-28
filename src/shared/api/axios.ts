@@ -6,6 +6,7 @@ const API_BASE_URL = {
   weather: "/api",
   kakao: "/api/kakao",
   airQuality: "/api/air-quality",
+  clientConfig: "/api/client-config",
 } as const;
 
 export type ApiClientName = keyof typeof API_BASE_URL;
@@ -64,6 +65,7 @@ const apiClients: Record<ApiClientName, AxiosInstance> = {
   weather: createAxiosInstance(API_BASE_URL.weather),
   kakao: createAxiosInstance(API_BASE_URL.kakao),
   airQuality: createAxiosInstance(API_BASE_URL.airQuality),
+  clientConfig: createAxiosInstance(API_BASE_URL.clientConfig),
 };
 
 /**

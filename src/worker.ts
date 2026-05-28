@@ -6,9 +6,11 @@
  */
 
 import { handleAirQualityApiRequest } from "./worker/air-quality";
+import { handleClientConfigRequest } from "./worker/client-config";
 import { serveAsset } from "./worker/assets";
 import {
   AIR_QUALITY_API_PREFIX,
+  CLIENT_CONFIG_API_PATH,
   KAKAO_API_PREFIX,
   KAKAO_MAP_SDK_API_PATH,
   WEATHER_API_PREFIX,
@@ -27,6 +29,10 @@ export default {
    */
   async fetch(request: Request, env: Env, context: WorkerExecutionContext): Promise<Response> {
     const url = new URL(request.url);
+
+    if (url.pathname === CLIENT_CONFIG_API_PATH) {
+      return handleClientConfigRequest(request, env);
+    }
 
     if (url.pathname === KAKAO_MAP_SDK_API_PATH) {
       return handleKakaoMapSdkRequest(request, env);
