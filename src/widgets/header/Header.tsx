@@ -5,9 +5,9 @@ import { headerClassStyles } from "./styles";
 
 export default function Header() {
   const links = [
-    { key: 1, name: "Main", url: "/" },
-    { key: 2, name: "Search", url: "/search" },
-    { key: 3, name: "bookmark", url: "/bookmark" },
+    { key: 1, name: "홈", url: "/" },
+    { key: 2, name: "검색", url: "/search" },
+    { key: 3, name: "북마크", url: "/bookmark" },
   ];
 
   return (

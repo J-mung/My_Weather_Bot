@@ -33,7 +33,7 @@ export const FavoritePreviewPanel = ({
   return (
     <aside className={cn(favoritePreviewPanelStyles.root)} aria-label={"즐겨찾기 미리보기"}>
       <div className={cn(favoritePreviewPanelStyles.header)}>
-        <h2 className={cn(favoritePreviewPanelStyles.title)}>Favorites</h2>
+        <h2 className={cn(favoritePreviewPanelStyles.title)}>즐겨찾기</h2>
         <Button
           variant={"ghost"}
           size={"sm"}
@@ -69,7 +69,7 @@ export const FavoritePreviewPanel = ({
           onClick={onAddClick}
         >
           <Icon name={"addCircle"} tone={"subtle"} />
-          <span>Add Location</span>
+          <span>지역 추가</span>
         </button>
       </div>
     </aside>

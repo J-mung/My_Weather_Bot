@@ -97,7 +97,7 @@ export const RadarCompositeInfoPanel = ({ data }: RadarCompositeInfoPanelProps) 
               "text-xs font-extrabold tracking-[0.18em] text-[var(--text-muted)] uppercase",
             )}
           >
-            Recent Radar
+            최근 레이더
           </p>
           <p className={cn("mt-1 break-words text-sm font-bold text-[var(--text-main)]")}>
             {data ? formatObservedAt(data.observedAtText) : "기준 시각 확인 중"}

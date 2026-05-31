@@ -78,7 +78,7 @@ const CurrentLocationForecastCard = ({
     >
       <div className={cn(bookmarkCurrentLocationStyles.header)}>
         <div className={"min-w-0"}>
-          <p className={cn(bookmarkCurrentLocationStyles.eyebrow)}>Current Location</p>
+          <p className={cn(bookmarkCurrentLocationStyles.eyebrow)}>현재 위치</p>
           <h2 className={cn(bookmarkCurrentLocationStyles.title)}>{regionName}</h2>
         </div>
         {!error && (
@@ -191,8 +191,8 @@ export default function BookmarkPage() {
     <div className={cn(bookmarkPageStyles.page)}>
       <section className={cn(bookmarkPageStyles.hero)}>
         <div className={cn(bookmarkPageStyles.heroText)}>
-          <p className={cn(bookmarkPageStyles.eyebrow)}>Your Locations</p>
-          <h1 className={cn(bookmarkPageStyles.title)}>Manage Favorites</h1>
+          <p className={cn(bookmarkPageStyles.eyebrow)}>내 지역</p>
+          <h1 className={cn(bookmarkPageStyles.title)}>즐겨찾기 관리</h1>
           <p className={cn(bookmarkPageStyles.description)}>
             자주 확인하는 지역을 저장하고 메인 날씨 화면으로 빠르게 이동하세요.
           </p>
@@ -208,7 +208,7 @@ export default function BookmarkPage() {
             }}
           >
             <Icon name={"edit"} />
-            {isManageMode ? "Done" : "Edit List"}
+            {isManageMode ? "완료" : "목록 편집"}
           </Button>
           <Button
             type={"button"}
@@ -220,7 +220,7 @@ export default function BookmarkPage() {
             }}
           >
             <Icon name={"addCircle"} />
-            Add New
+            새 지역 추가
           </Button>
         </div>
       </section>
@@ -249,7 +249,7 @@ export default function BookmarkPage() {
         <CurrentLocationSkeletonCard />
       ) : (
         <div className={cn(bookmarkCurrentLocationStyles.card)}>
-          <p className={cn(bookmarkCurrentLocationStyles.eyebrow)}>Current Location</p>
+          <p className={cn(bookmarkCurrentLocationStyles.eyebrow)}>현재 위치</p>
           <h2 className={cn(bookmarkCurrentLocationStyles.title)}>
             {currentLocationError.description}
             <ErrorCode code={currentLocationError.code} />
@@ -283,7 +283,7 @@ export default function BookmarkPage() {
           <Icon name={"cloudAlert"} />
         </span>
         <span className={cn(bookmarkPageStyles.manageAlertsText)}>
-          <strong>Manage Alerts</strong>
+          <strong>알림 관리</strong>
           <span>알림 기능은 이후 단계에서 연결할 예정이에요.</span>
         </span>
         <Icon name={"arrowUp"} className={cn(bookmarkPageStyles.manageAlertsArrow)} />

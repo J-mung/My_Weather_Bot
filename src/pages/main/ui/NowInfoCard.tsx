@@ -27,7 +27,7 @@ export const NowInfoCard = ({
   error,
   refresh,
 }: NowInfoCardProps) => {
-  const dateInfo = new Intl.DateTimeFormat("en-GB", {
+  const dateInfo = new Intl.DateTimeFormat("ko-KR", {
     weekday: "long",
     day: "numeric",
     month: "long",
@@ -36,9 +36,9 @@ export const NowInfoCard = ({
 
   const detailItems: DetailWeatherItem[] = data
     ? [
-        { icon: "arrowUp" as const, label: "HIGH" as const, value: data.todayMax },
-        { icon: "arrowDown" as const, label: "LOW" as const, value: data.todayMin },
-        { icon: "waterDrop" as const, label: "HUMIDITY" as const, value: data.now.humidity },
+        { icon: "arrowUp" as const, label: "최고" as const, value: data.todayMax },
+        { icon: "arrowDown" as const, label: "최저" as const, value: data.todayMin },
+        { icon: "waterDrop" as const, label: "습도" as const, value: data.now.humidity },
       ]
     : [];
   const conditionMeta = data
@@ -162,7 +162,7 @@ export const NowInfoCard = ({
             <div className={cn(nowInfoCardStyles.currentMeta)}>
               <div className={cn(nowInfoCardStyles.currentSummary)}>{conditionMeta.label}</div>
               <div className={cn(nowInfoCardStyles.currentFeelsLike)}>
-                Feels like {formatMetric(data.now.feelsLike, "°")}
+                체감 {formatMetric(data.now.feelsLike, "°")}
               </div>
             </div>
           </div>
@@ -191,10 +191,10 @@ const DetailWeather = ({
   value,
 }: {
   icon: IconName;
-  label: "HIGH" | "LOW" | "HUMIDITY";
+  label: "최고" | "최저" | "습도";
   value: number | null;
 }) => {
-  const unit = label === "HUMIDITY" ? "%" : "°";
+  const unit = label === "습도" ? "%" : "°";
   return (
     <div className={cn(nowInfoCardStyles.detailItem)}>
       <Icon

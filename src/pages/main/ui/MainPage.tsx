@@ -203,9 +203,9 @@ export default function MainPage() {
                   isFetching && mainPageStyles.sectionTitleFetching,
                 )}
               >
-                Hourly Forecast
+                시간대별 예보
               </h2>
-              <span className={cn(mainPageStyles.sectionActionText)}>24-hour view</span>
+              <span className={cn(mainPageStyles.sectionActionText)}>24시간 보기</span>
             </div>
             <HourlyInfoCard
               data={data}
@@ -218,7 +218,7 @@ export default function MainPage() {
 
           <div className={cn(mainPageStyles.metricGrid)}>
             <AirQualityMetricCard
-              title={"Fine Dust"}
+              title={"미세먼지"}
               metric={airQuality.data?.pm10}
               label={"미세먼지"}
               displayDistrict={getAirQualityDisplayDistrict(districtDisplay.fullDistrict)}
@@ -228,7 +228,7 @@ export default function MainPage() {
             />
 
             <AirQualityMetricCard
-              title={"Ultra Fine Dust"}
+              title={"초미세먼지"}
               metric={airQuality.data?.pm25}
               label={"초미세먼지"}
               displayDistrict={getAirQualityDisplayDistrict(districtDisplay.fullDistrict)}
@@ -239,7 +239,7 @@ export default function MainPage() {
 
             <div className={cn(mainPageStyles.metricCard)}>
               <div className={cn(mainPageStyles.metricHeader)}>
-                <span className={cn(mainPageStyles.metricHeaderLabel)}>Rain Chance</span>
+                <span className={cn(mainPageStyles.metricHeaderLabel)}>강수확률</span>
               </div>
               <strong className={cn(mainPageStyles.metricValue)}>
                 {formatProbability(data?.precipitation.probability)}
@@ -256,7 +256,7 @@ export default function MainPage() {
 
             <div className={cn(mainPageStyles.metricCard)}>
               <div className={cn(mainPageStyles.metricHeader)}>
-                <span className={cn(mainPageStyles.metricHeaderLabel)}>Wind Speed</span>
+                <span className={cn(mainPageStyles.metricHeaderLabel)}>풍속</span>
               </div>
               <strong className={cn(mainPageStyles.metricValue)}>
                 {data?.now.windSpeedMs ?? "--"}
@@ -271,7 +271,7 @@ export default function MainPage() {
           <KakaoRegionMap
             location={mapLocationLabel}
             coordinates={mapCoordinates}
-            title={"Weather Map"}
+            title={"날씨 지도"}
             mapClassName={cn(mainPageStyles.mapCanvas)}
             showHeader={false}
             enableRadarView

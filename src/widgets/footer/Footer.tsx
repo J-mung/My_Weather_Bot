@@ -45,7 +45,7 @@ export default function Footer() {
       </footer>
 
       <nav
-        aria-label="Mobile navigation"
+        aria-label="모바일 내비게이션"
         className={cn(
           footerClassStyles.mobileNavShell,
           isMobileNavVisible
@@ -68,7 +68,7 @@ export default function Footer() {
             <span className={cn(footerClassStyles.mobileNavIconWrap)}>
               <Icon name="cloud" size={"lg"} tone={"current"} />
             </span>
-            <span className={cn(footerClassStyles.mobileNavLabel)}>Home</span>
+            <span className={cn(footerClassStyles.mobileNavLabel)}>홈</span>
           </NavLink>
           <NavLink
             to="/search"
@@ -84,7 +84,7 @@ export default function Footer() {
             <span className={cn(footerClassStyles.mobileNavIconWrap)}>
               <Icon name={"search"} size={"lg"} tone={"current"} />
             </span>
-            <span className={cn(footerClassStyles.mobileNavLabel)}>Search</span>
+            <span className={cn(footerClassStyles.mobileNavLabel)}>검색</span>
           </NavLink>
           <NavLink
             to="/bookmark"
@@ -100,7 +100,7 @@ export default function Footer() {
             <span className={cn(footerClassStyles.mobileNavIconWrap)}>
               <Icon name="bookmark" size={"lg"} tone={"current"} />
             </span>
-            <span className={cn(footerClassStyles.mobileNavLabel)}>Bookmarks</span>
+            <span className={cn(footerClassStyles.mobileNavLabel)}>북마크</span>
           </NavLink>
         </div>
       </nav>

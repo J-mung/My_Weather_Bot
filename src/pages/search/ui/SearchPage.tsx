@@ -147,7 +147,7 @@ export default function SearchPage() {
         >
           <KakaoRegionMap
             location={renderedMapLocationLabel}
-            title={"Weather Map"}
+            title={"날씨 지도"}
             mapClassName={cn(searchPageStyles.mapCanvas)}
             showHeader={false}
           />
@@ -155,13 +155,13 @@ export default function SearchPage() {
       )}
       {candidates.length > 0 && (
         <section className={cn(searchPageStyles.stackItem, searchPageStyles.sectionGroup)}>
-          <h2 className={cn(searchPageStyles.sectionTitle)}>Search Results</h2>
+          <h2 className={cn(searchPageStyles.sectionTitle)}>검색 결과</h2>
           <CandidateList candidates={candidates} input={input} selectDistrict={selectDistrict} />
         </section>
       )}
       {recentSearches.length > 0 && (
         <section className={cn(searchPageStyles.stackItem, searchPageStyles.sectionGroup)}>
-          <h2 className={cn(searchPageStyles.sectionTitle)}>Recent Searches</h2>
+          <h2 className={cn(searchPageStyles.sectionTitle)}>최근 검색</h2>
           <div className={cn(searchPageStyles.recentList)}>
             {recentSearches.map((recent) => (
               <div key={recent.fullName} className={cn(searchPageStyles.recentItem)}>

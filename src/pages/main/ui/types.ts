@@ -43,7 +43,7 @@ export interface FavoritePreviewCardProps {
 
 export type DetailWeatherItem = {
   icon: IconName;
-  label: "HIGH" | "LOW" | "HUMIDITY";
+  label: "최고" | "최저" | "습도";
   value: number | null;
 };
 

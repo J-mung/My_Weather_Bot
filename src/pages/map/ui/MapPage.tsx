@@ -9,7 +9,7 @@ export default function MapPage() {
   return (
     <KakaoRegionMap
       location={location}
-      title={"Weather Map"}
+      title={"날씨 지도"}
       mapClassName={mapPageStyles.mapCanvas.join(" ")}
       className={mapPageStyles.page.join(" ")}
       enableRadarView

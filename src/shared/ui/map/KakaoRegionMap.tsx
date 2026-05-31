@@ -38,7 +38,7 @@ const ZOOM_ANIMATION_DURATION_MS = 300;
 export const KakaoRegionMap = ({
   location,
   coordinates = null,
-  title = "Weather Map",
+  title = "날씨 지도",
   description,
   className,
   mapClassName,
