@@ -78,12 +78,31 @@ const toNullableNumber = (value: string | undefined): number | null => {
   return Number.isFinite(parsed) ? parsed : null;
 };
 
+const getFirstNumericValueFromText = (value: string | undefined): number | null => {
+  const matched = value?.match(/\d+(?:\.\d+)?/);
+
+  if (!matched) {
+    return null;
+  }
+
+  const parsed = Number(matched[0]);
+  return Number.isFinite(parsed) ? parsed : null;
+};
+
 const isNoPrecipitationText = (value: string | undefined): boolean => {
   if (!value) {
     return true;
   }
 
-  return value.includes("없음") || value === "0" || value === "0.0";
+  const normalized = value.replace(/\s/g, "");
+
+  if (normalized.includes("없음")) {
+    return true;
+  }
+
+  const numericValue = getFirstNumericValueFromText(normalized);
+
+  return numericValue === 0 && !normalized.includes("미만");
 };
 
 const getFirstNumericValue = (value: string | undefined): number | null => {
@@ -91,13 +110,7 @@ const getFirstNumericValue = (value: string | undefined): number | null => {
     return null;
   }
 
-  const matched = value.match(/\d+(?:\.\d+)?/);
-  if (!matched) {
-    return null;
-  }
-
-  const parsed = Number(matched[0]);
-  return Number.isFinite(parsed) ? parsed : null;
+  return getFirstNumericValueFromText(value);
 };
 
 const normalizePrecipitationText = (value: string | undefined): string | null => {
