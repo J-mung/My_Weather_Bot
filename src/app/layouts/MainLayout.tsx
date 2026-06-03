@@ -10,7 +10,7 @@ export const MainLayout = () => {
       <Header />
 
       <main id="main" role="main" className={cn(layoutClassNameStyles.content)}>
-        <div>{<Outlet />}</div>
+        <Outlet />
       </main>
 
       <Footer />

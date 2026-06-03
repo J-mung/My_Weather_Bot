@@ -4,7 +4,7 @@ import { weatherConditionMeta } from "@/entities/weather/model/weather-condition
 import type { GridCoord } from "@/entities/weather/model/weather.types";
 import { useBookmarkForecastPreview } from "@/features/bookmark/model/useBookmarkForecastPreview";
 import { useBookmarks } from "@/features/bookmark/model/useBookmarks";
-import { isAppError } from "@/shared/api/types";
+import { isAppError, type AppErrorMeta } from "@/shared/api/types";
 import { cn } from "@/shared/lib/cn";
 import { convertToGridCoord } from "@/shared/lib/convertToGridCoord";
 import { getUserLocation } from "@/shared/lib/userLocation";
@@ -130,6 +130,48 @@ const CurrentLocationForecastCard = ({
   );
 };
 
+const CurrentLocationErrorCard = ({ errorMeta }: { errorMeta: AppErrorMeta }) => {
+  return (
+    <div className={cn(bookmarkCurrentLocationStyles.card)}>
+      <div className={cn(bookmarkCurrentLocationStyles.header)}>
+        <div className={"min-w-0"}>
+          <span className={cn(bookmarkCurrentLocationStyles.eyebrow)}>현재 위치</span>
+          <h2 className={cn(bookmarkCurrentLocationStyles.title)}>
+            현재 위치를 불러오지 못했어요
+          </h2>
+        </div>
+        <Icon
+          name={"error"}
+          size={"lg"}
+          tone={"danger"}
+          className={cn(bookmarkCurrentLocationStyles.icon)}
+        />
+      </div>
+
+      <div className={cn(bookmarkCurrentLocationStyles.body)}>
+        <div className={cn(bookmarkCurrentLocationStyles.statusWrap)}>
+          <div className={cn(bookmarkCurrentLocationStyles.forecastTitle)}>
+            <Icon
+              name={"error"}
+              size={"sm"}
+              tone={"danger"}
+              className={cn(bookmarkCurrentLocationStyles.forecastTitleIcon)}
+            />
+            <span>현재 위치 확인이 필요해요</span>
+          </div>
+          <span className={cn(bookmarkCurrentLocationStyles.forecastDetail)}>
+            {errorMeta.description}
+            <ErrorCode code={errorMeta.code} />
+          </span>
+        </div>
+        <span className={cn(bookmarkCurrentLocationStyles.placeholderText)}>
+          위치 권한을 허용하거나 검색에서 지역을 추가해 주세요.
+        </span>
+      </div>
+    </div>
+  );
+};
+
 export default function BookmarkPage() {
   const { bookmarkList, isFull, deleteBookmark, updateAlias, remainingList, totalBookmarkList } =
     useBookmarks();
@@ -139,10 +181,7 @@ export default function BookmarkPage() {
     regionName: string;
     gridCoord: GridCoord;
   } | null>(null);
-  const [currentLocationError, setCurrentLocationError] = useState<{
-    description: string;
-    code: string;
-  } | null>(null);
+  const [currentLocationError, setCurrentLocationError] = useState<AppErrorMeta | null>(null);
 
   useEffect(() => {
     let ignore = false;
@@ -166,17 +205,11 @@ export default function BookmarkPage() {
         if (ignore) return;
 
         if (isAppError(error)) {
-          setCurrentLocationError({
-            description: error.meta.description,
-            code: error.meta.code,
-          });
+          setCurrentLocationError(error.meta);
           return;
         }
 
-        setCurrentLocationError({
-          description: appErrorMetaMap[APP_ERROR.LOCATION_LOOKUP_UNEXPECTED].description,
-          code: appErrorMetaMap[APP_ERROR.LOCATION_LOOKUP_UNEXPECTED].code,
-        });
+        setCurrentLocationError(appErrorMetaMap[APP_ERROR.LOCATION_LOOKUP_UNEXPECTED]);
       }
     };
 
@@ -248,16 +281,7 @@ export default function BookmarkPage() {
       ) : !currentLocationError ? (
         <CurrentLocationSkeletonCard />
       ) : (
-        <div className={cn(bookmarkCurrentLocationStyles.card)}>
-          <p className={cn(bookmarkCurrentLocationStyles.eyebrow)}>현재 위치</p>
-          <h2 className={cn(bookmarkCurrentLocationStyles.title)}>
-            {currentLocationError.description}
-            <ErrorCode code={currentLocationError.code} />
-          </h2>
-          <p className={cn(bookmarkCurrentLocationStyles.placeholderText)}>
-            권한을 허용하거나 검색에서 지역을 추가해 주세요.
-          </p>
-        </div>
+        <CurrentLocationErrorCard errorMeta={currentLocationError} />
       )}
 
       <BookmarkCardList

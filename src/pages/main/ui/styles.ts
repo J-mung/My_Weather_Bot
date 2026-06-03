@@ -1,5 +1,5 @@
 export const mainPageStyles = {
-  page: ["space-y-5", "md:space-y-8"],
+  page: ["w-full", "self-start", "space-y-5", "md:space-y-8"],
   searchWrap: [
     "rounded-2xl",
     "border",

@@ -1,5 +1,5 @@
 export const searchPageStyles = {
-  page: ["flex", "flex-col"],
+  page: ["flex", "w-full", "self-start", "flex-col"],
   stackItem: ["mt-6", "md:mt-8"],
   searchWrap: [
     "rounded-2xl",

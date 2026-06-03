@@ -1,5 +1,5 @@
 export const bookmarkPageStyles = {
-  page: ["space-y-6", "md:space-y-8"],
+  page: ["w-full", "self-start", "space-y-6", "md:space-y-8"],
   hero: [
     "flex",
     "min-w-0",

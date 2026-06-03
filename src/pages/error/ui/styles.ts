@@ -1,7 +1,8 @@
 export const errorPageStyles = {
   page: [
-    "min-h-screen",
-    "min-w-[var(--app-min-width)]",
+    "min-w-0",
+    "w-full",
+    "max-w-3xl",
     "bg-[var(--bg)]",
     "px-4",
     "py-8",
@@ -9,13 +10,7 @@ export const errorPageStyles = {
     "sm:px-6",
   ],
   card: [
-    "mx-auto",
-    "flex",
-    "min-h-[calc(100vh-4rem)]",
     "w-full",
-    "max-w-3xl",
-    "flex-col",
-    "justify-center",
   ],
   panel: [
     "rounded-[2rem]",

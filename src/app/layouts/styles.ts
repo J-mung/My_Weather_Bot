@@ -10,6 +10,9 @@ export const layoutClassNameStyles = {
   ],
   content: [
     "mx-auto",
+    "flex",
+    "items-center",
+    "justify-center",
     "min-w-0",
     "w-full",
     "max-w-6xl",
