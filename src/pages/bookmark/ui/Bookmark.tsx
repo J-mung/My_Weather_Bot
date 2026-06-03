@@ -1,18 +1,15 @@
-import { fetchRegionNameFromCoord } from "@/entities/kakao/api/fetchRegionNameFromCoord";
-import { APP_ERROR, appErrorMetaMap } from "@/shared/api/app-errors";
 import { weatherConditionMeta } from "@/entities/weather/model/weather-condition-meta";
 import type { GridCoord } from "@/entities/weather/model/weather.types";
 import { useBookmarkForecastPreview } from "@/features/bookmark/model/useBookmarkForecastPreview";
+import { useCurrentLocationRegion } from "@/features/location-current/model";
 import { useBookmarks } from "@/features/bookmark/model/useBookmarks";
-import { isAppError, type AppErrorMeta } from "@/shared/api/types";
+import type { AppErrorMeta } from "@/shared/api/types";
 import { cn } from "@/shared/lib/cn";
-import { convertToGridCoord } from "@/shared/lib/convertToGridCoord";
-import { getUserLocation } from "@/shared/lib/userLocation";
 import Button from "@/shared/ui/button";
 import { ErrorNotice } from "@/shared/ui/error-notice";
 import { Icon } from "@/shared/ui/icon";
 import { Skeleton } from "@/shared/ui/skeleton";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { BookmarkCardList } from "./card/BookmarkCardList";
 import { bookmarkCurrentLocationStyles, bookmarkPageStyles } from "./styles";
@@ -159,48 +156,10 @@ export default function BookmarkPage() {
     useBookmarks();
   const navigate = useNavigate();
   const [isManageMode, setIsManageMode] = useState(false);
-  const [currentLocation, setCurrentLocation] = useState<{
-    regionName: string;
-    gridCoord: GridCoord;
-  } | null>(null);
-  const [currentLocationError, setCurrentLocationError] = useState<AppErrorMeta | null>(null);
-
-  useEffect(() => {
-    let ignore = false;
-
-    const loadCurrentLocation = async () => {
-      try {
-        const userLocation = await getUserLocation();
-        const [regionName] = await Promise.all([
-          fetchRegionNameFromCoord(userLocation),
-          Promise.resolve(),
-        ]);
-
-        if (ignore) return;
-
-        setCurrentLocation({
-          regionName,
-          gridCoord: convertToGridCoord(userLocation),
-        });
-        setCurrentLocationError(null);
-      } catch (error: unknown) {
-        if (ignore) return;
-
-        if (isAppError(error)) {
-          setCurrentLocationError(error.meta);
-          return;
-        }
-
-        setCurrentLocationError(appErrorMetaMap[APP_ERROR.LOCATION_LOOKUP_UNEXPECTED]);
-      }
-    };
-
-    void loadCurrentLocation();
-
-    return () => {
-      ignore = true;
-    };
-  }, []);
+  const currentLocation = useCurrentLocationRegion({
+    promptBeforeRequest: false,
+    showDialogOnError: false,
+  });
 
   return (
     <div className={cn(bookmarkPageStyles.page)}>
@@ -255,15 +214,15 @@ export default function BookmarkPage() {
         )}
       </div>
 
-      {currentLocation ? (
+      {currentLocation.status === "success" && currentLocation.gridCoord ? (
         <CurrentLocationForecastCard
           regionName={currentLocation.regionName}
           gridCoord={currentLocation.gridCoord}
         />
-      ) : !currentLocationError ? (
-        <CurrentLocationSkeletonCard />
+      ) : currentLocation.status === "error" && currentLocation.errorMeta ? (
+        <CurrentLocationErrorCard errorMeta={currentLocation.errorMeta} />
       ) : (
-        <CurrentLocationErrorCard errorMeta={currentLocationError} />
+        <CurrentLocationSkeletonCard />
       )}
 
       <BookmarkCardList
