@@ -1,6 +1,7 @@
 export const errorPageStyles = {
   page: [
     "min-h-screen",
+    "min-w-[var(--app-min-width)]",
     "bg-[var(--bg)]",
     "px-4",
     "py-8",

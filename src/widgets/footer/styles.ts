@@ -2,6 +2,7 @@ export const footerClassStyles = {
   // desktop 전용
   desktopShell: [
     "hidden",
+    "min-w-[var(--app-min-width)]",
     "border-t",
     "border-[var(--line)]",
     "bg-[color:var(--surface)]/70",
@@ -36,6 +37,7 @@ export const footerClassStyles = {
     "inset-x-0",
     "bottom-0",
     "z-30",
+    "min-w-[var(--app-min-width)]",
     "border-t",
     "border-[var(--line)]",
     "bg-[color:var(--surface)]/95",

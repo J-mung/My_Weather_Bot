@@ -1,6 +1,7 @@
 export const layoutClassNameStyles = {
   container: [
     "min-h-screen",
+    "min-w-[var(--app-min-width)]",
     "w-full",
     "flex",
     "flex-col",
@@ -9,6 +10,7 @@ export const layoutClassNameStyles = {
   ],
   content: [
     "mx-auto",
+    "min-w-0",
     "w-full",
     "max-w-6xl",
     "flex-1",

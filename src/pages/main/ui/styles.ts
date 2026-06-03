@@ -148,6 +148,7 @@ export const mainPageStyles = {
     "fixed",
     "inset-0",
     "z-50",
+    "min-w-[var(--app-min-width)]",
     "flex",
     "items-end",
     "justify-center",

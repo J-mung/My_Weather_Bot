@@ -3,6 +3,8 @@
 @import "../src/shared/styles/component-tokens.css";
 
 :root {
+  --app-min-width: 360px;
+
   /* core */
   --bg: var(--color-bg);
   --surface: var(--color-white);
@@ -39,10 +41,12 @@ html,
 body,
 #root {
   min-height: 100%;
+  min-width: var(--app-min-width);
 }
 
 body {
   margin: 0;
+  overflow-x: auto;
   color: var(--text-main);
   background:
     radial-gradient(circle at 0% 0%, var(--color-bg-glow-start) 0%, transparent 38%),

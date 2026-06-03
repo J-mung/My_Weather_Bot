@@ -3,6 +3,7 @@ export const headerClassStyles = {
     "sticky",
     "top-0",
     "z-20",
+    "min-w-[var(--app-min-width)]",
     "border-b",
     "border-[var(--line)]",
     "bg-[color:var(--surface)]/90",
