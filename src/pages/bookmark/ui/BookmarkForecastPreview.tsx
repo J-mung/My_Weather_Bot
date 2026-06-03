@@ -1,7 +1,7 @@
 import type { GridCoord } from "@/entities/weather/model/weather.types";
 import { useBookmarkForecastPreview } from "@/features/bookmark/model/useBookmarkForecastPreview";
 import { cn } from "@/shared/lib/cn";
-import { ErrorCode } from "@/shared/ui/error-code";
+import { ErrorNotice } from "@/shared/ui/error-notice";
 import { Icon } from "@/shared/ui/icon";
 import { Skeleton } from "@/shared/ui/skeleton";
 import { useEffect, useRef, useState } from "react";
@@ -75,21 +75,13 @@ export const BookmarkForecastPreview = ({ nx, ny }: GridCoord) => {
 
   if (error) {
     return (
-      <div ref={targetRef} className={cn(bookmarkSummaryStyles.summaryStatusWrap)}>
-        <div className={cn(bookmarkSummaryStyles.summaryTitle)}>
-          <Icon
-            name={"error"}
-            size={"sm"}
-            tone={"danger"}
-            className={cn(bookmarkSummaryStyles.summaryTitleIcon)}
-          />
-          <span>예보를 불러오지 못했어요</span>
-        </div>
-        <span className={cn(bookmarkSummaryStyles.summaryDetail)}>
-          {error.meta.description}
-          <ErrorCode code={error.meta.code} />
-        </span>
-      </div>
+      <ErrorNotice
+        ref={targetRef}
+        title={"예보를 불러오지 못했어요"}
+        description={error.meta.description}
+        code={error.meta.code}
+        className={cn(bookmarkSummaryStyles.summaryStatusWrap)}
+      />
     );
   }
 

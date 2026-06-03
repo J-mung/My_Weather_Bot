@@ -9,7 +9,7 @@ import { cn } from "@/shared/lib/cn";
 import { convertToGridCoord } from "@/shared/lib/convertToGridCoord";
 import { getUserLocation } from "@/shared/lib/userLocation";
 import Button from "@/shared/ui/button";
-import { ErrorCode } from "@/shared/ui/error-code";
+import { ErrorNotice } from "@/shared/ui/error-notice";
 import { Icon } from "@/shared/ui/icon";
 import { Skeleton } from "@/shared/ui/skeleton";
 import { useEffect, useState } from "react";
@@ -98,21 +98,12 @@ const CurrentLocationForecastCard = ({
         )}
 
         {!isLoading && error && (
-          <div className={cn(bookmarkCurrentLocationStyles.statusWrap)}>
-            <div className={cn(bookmarkCurrentLocationStyles.forecastTitle)}>
-              <Icon
-                name={"error"}
-                size={"sm"}
-                tone={"danger"}
-                className={cn(bookmarkCurrentLocationStyles.forecastTitleIcon)}
-              />
-              <span>예보를 불러오지 못했어요</span>
-            </div>
-            <span className={cn(bookmarkCurrentLocationStyles.forecastDetail)}>
-              {error.meta.description}
-              <ErrorCode code={error.meta.code} />
-            </span>
-          </div>
+          <ErrorNotice
+            title={"예보를 불러오지 못했어요"}
+            description={error.meta.description}
+            code={error.meta.code}
+            variant={"card"}
+          />
         )}
 
         {!isLoading && !error && data && (
@@ -149,21 +140,12 @@ const CurrentLocationErrorCard = ({ errorMeta }: { errorMeta: AppErrorMeta }) =>
       </div>
 
       <div className={cn(bookmarkCurrentLocationStyles.body)}>
-        <div className={cn(bookmarkCurrentLocationStyles.statusWrap)}>
-          <div className={cn(bookmarkCurrentLocationStyles.forecastTitle)}>
-            <Icon
-              name={"error"}
-              size={"sm"}
-              tone={"danger"}
-              className={cn(bookmarkCurrentLocationStyles.forecastTitleIcon)}
-            />
-            <span>현재 위치 확인이 필요해요</span>
-          </div>
-          <span className={cn(bookmarkCurrentLocationStyles.forecastDetail)}>
-            {errorMeta.description}
-            <ErrorCode code={errorMeta.code} />
-          </span>
-        </div>
+        <ErrorNotice
+          title={"현재 위치 확인이 필요해요"}
+          description={errorMeta.description}
+          code={errorMeta.code}
+          variant={"card"}
+        />
         <span className={cn(bookmarkCurrentLocationStyles.placeholderText)}>
           위치 권한을 허용하거나 검색에서 지역을 추가해 주세요.
         </span>

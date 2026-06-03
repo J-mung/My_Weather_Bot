@@ -1,7 +1,7 @@
 import { weatherConditionMeta } from "@/entities/weather/model/weather-condition-meta";
 import { cn } from "@/shared/lib/cn";
 import Button, { IconButton } from "@/shared/ui/button";
-import { ErrorCode } from "@/shared/ui/error-code";
+import { ErrorNotice } from "@/shared/ui/error-notice";
 import { Icon, type IconName } from "@/shared/ui/icon";
 import { Tooltip } from "@/shared/ui/tooltip";
 import { NowInfoSkeletonCard } from "./NowInfoSkeletonCard";
@@ -49,25 +49,28 @@ export const NowInfoCard = ({
     return (
       <div className={cn(nowInfoCardStyles.root, nowInfoCardStyles.error)}>
         <Icon name={"error"} size={"lg"} tone={"danger"} className={"h-25 w-25 md:h-30 md:w-30"} />
-        <div className={"flex flex-fill flex-col gap-5"}>
-          <span className={"max-w-100 min-w-50 whitespace-pre-wrap"}>
-            {error.meta.description}
-            <ErrorCode code={error.meta.code} />
-          </span>
-          <IconButton
-            variant={"ghost"}
-            size={"md"}
-            onClick={(e) => {
-              e.stopPropagation();
-              refresh();
-            }}
-            iconName={"refresh"}
-            iconSize={"md"}
-            iconClassName={cn(isFetching && "animate-spin")}
-          >
-            {error.meta.actionLabel}
-          </IconButton>
-        </div>
+        <ErrorNotice
+          variant={"plain"}
+          title={error.meta.title}
+          description={error.meta.description}
+          code={error.meta.code}
+          className={"max-w-100 min-w-50 gap-2"}
+          action={
+            <IconButton
+              variant={"ghost"}
+              size={"md"}
+              onClick={(e) => {
+                e.stopPropagation();
+                refresh();
+              }}
+              iconName={"refresh"}
+              iconSize={"md"}
+              iconClassName={cn(isFetching && "animate-spin")}
+            >
+              {error.meta.actionLabel}
+            </IconButton>
+          }
+        />
       </div>
     );
   }

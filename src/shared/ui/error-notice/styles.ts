@@ -1,0 +1,48 @@
+export const errorNoticeStyles = {
+  root: ["flex", "min-w-0", "flex-col", "gap-1.5"],
+  variant: {
+    inline: [
+      "rounded-2xl",
+      "border",
+      "border-red-100",
+      "bg-red-50/60",
+      "p-3",
+    ],
+    card: [
+      "rounded-2xl",
+      "border",
+      "border-red-100",
+      "bg-red-50/60",
+      "p-4",
+    ],
+    panel: [
+      "rounded-[1.25rem]",
+      "border",
+      "border-red-100",
+      "bg-red-50/60",
+      "p-4",
+    ],
+    plain: [],
+  },
+  title: [
+    "inline-flex",
+    "min-w-0",
+    "items-center",
+    "gap-1.5",
+    "break-words",
+    "text-sm",
+    "font-bold",
+    "leading-5",
+    "text-[var(--text-main)]",
+  ],
+  titleIcon: ["shrink-0", "translate-y-px"],
+  description: [
+    "break-words",
+    "whitespace-pre-wrap",
+    "text-sm",
+    "font-normal",
+    "leading-5",
+    "text-[var(--text-sub)]",
+  ],
+  actions: ["mt-3"],
+} as const;
