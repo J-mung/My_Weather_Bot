@@ -5,7 +5,6 @@ import { readBookmarkFromStorage } from "@/features/bookmark/model/useBookmarks"
 import { useWeatherSummary } from "@/features/get-current-weather/model/useWeatherSummary";
 import { useCurrentLocationRegion } from "@/features/location-current/model";
 import { cn } from "@/shared/lib/cn";
-import { ErrorCode } from "@/shared/ui/error-code";
 import { IconInput } from "@/shared/ui/input";
 import { KakaoRegionMap } from "@/shared/ui/map";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -126,12 +125,6 @@ export default function MainPage() {
           readOnly
           disabled={false}
         />
-        {currentLocation.errorMeta && !displayDistrict && (
-          <p className={cn(mainPageStyles.searchStatus)}>
-            {currentLocation.errorMeta.description}
-            <ErrorCode code={currentLocation.errorMeta.code} />
-          </p>
-        )}
       </div>
 
       <LocationPermissionDialog

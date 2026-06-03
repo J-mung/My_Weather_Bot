@@ -8,7 +8,6 @@ export const mainPageStyles = {
     "shadow-sm",
     "md:rounded-[1.5rem]",
   ],
-  searchStatus: ["mt-2", "text-sm", "text-[var(--text-sub)]"],
   searchInput: [
     "w-full",
     "rounded-xl",
