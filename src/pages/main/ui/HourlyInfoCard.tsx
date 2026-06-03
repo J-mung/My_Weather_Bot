@@ -1,6 +1,6 @@
 import { weatherConditionMeta } from "@/entities/weather/model/weather-condition-meta";
 import { cn } from "@/shared/lib/cn";
-import Button from "@/shared/ui/button";
+import { IconButton } from "@/shared/ui/button";
 import { ErrorCode } from "@/shared/ui/error-code";
 import { Icon } from "@/shared/ui/icon";
 import { useRef } from "react";
@@ -86,18 +86,19 @@ export const HourlyInfoCard = ({
             {error.meta.description}
             <ErrorCode code={error.meta.code} />
           </span>
-          <Button
+          <IconButton
             variant={"ghost"}
             size={"md"}
-            className={"gap-2"}
             onClick={(e) => {
               e.stopPropagation();
               refresh();
             }}
+            iconName={"refresh"}
+            iconSize={"md"}
+            iconClassName={cn(isFetching && "animate-spin")}
           >
-            <Icon name={"refresh"} size={"md"} className={isFetching ? "animate-spin" : ""} />
             {error.meta.actionLabel}
-          </Button>
+          </IconButton>
         </div>
       </div>
     );

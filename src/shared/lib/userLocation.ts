@@ -1,15 +1,17 @@
 import type { LatLon } from "@/entities/weather/model/weather.types";
+import { APP_ERROR, type AppErrorType } from "@/shared/api/app-errors";
+import { AppError } from "@/shared/api/types";
 
-const getGeolocationErrorMessage = (error: GeolocationPositionError): string => {
+const getGeolocationAppErrorType = (error: GeolocationPositionError): AppErrorType => {
   switch (error.code) {
     case error.PERMISSION_DENIED:
-      return "위치 권한이 거부되었습니다.";
+      return APP_ERROR.LOCATION_PERMISSION;
     case error.POSITION_UNAVAILABLE:
-      return "현재 위치를 확인할 수 없습니다.";
+      return APP_ERROR.LOCATION_UNAVAILABLE;
     case error.TIMEOUT:
-      return "위치 확인 시간이 초과되었습니다.";
+      return APP_ERROR.LOCATION_TIMEOUT;
     default:
-      return error.message || "알 수 없는 위치 오류가 발생했습니다.";
+      return APP_ERROR.LOCATION_LOOKUP_UNEXPECTED;
   }
 };
 
@@ -39,7 +41,7 @@ const requestCurrentPosition = (options: PositionOptions): Promise<LatLon> => {
 export const getUserLocation = (options?: PositionOptions): Promise<LatLon> => {
   return new Promise((resolve, reject) => {
     if (!("geolocation" in navigator)) {
-      reject(new Error("Geolocation을 지원하지 않습니다."));
+      reject(new AppError(APP_ERROR.LOCATION_UNAVAILABLE));
       return;
     }
 
@@ -64,12 +66,12 @@ export const getUserLocation = (options?: PositionOptions): Promise<LatLon> => {
             return;
           } catch (fallbackError) {
             const geolocationFallbackError = fallbackError as GeolocationPositionError;
-            reject(new Error(getGeolocationErrorMessage(geolocationFallbackError)));
+            reject(new AppError(getGeolocationAppErrorType(geolocationFallbackError), fallbackError));
             return;
           }
         }
 
-        reject(new Error(getGeolocationErrorMessage(error)));
+        reject(new AppError(getGeolocationAppErrorType(error), error));
       });
   });
 };

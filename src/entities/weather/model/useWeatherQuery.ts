@@ -57,6 +57,11 @@ export const useWeatherQuery = <T extends WeatherApiType>(
     let ignore = false;
 
     const init = async () => {
+      if (!isQueryEnabled) {
+        setParams(buildParamsFromGridCoord());
+        return;
+      }
+
       const newParams = await resolveParams();
       if (!ignore) {
         setParams(newParams);
@@ -68,14 +73,20 @@ export const useWeatherQuery = <T extends WeatherApiType>(
     return () => {
       ignore = true;
     };
-  }, [resolveParams]);
+  }, [buildParamsFromGridCoord, isQueryEnabled, resolveParams]);
 
   // UI에서 데이터 조회 요청할 때 사용
   const refresh = useCallback(async () => {
+    if (!isQueryEnabled) {
+      const gridParams = buildParamsFromGridCoord();
+      setParams(gridParams);
+      return gridParams;
+    }
+
     const newParams = await resolveParams();
     setParams(newParams);
     return newParams;
-  }, [resolveParams]);
+  }, [buildParamsFromGridCoord, isQueryEnabled, resolveParams]);
 
   const queries: UseQueryOptions<
     WeatherResponseMap[T],

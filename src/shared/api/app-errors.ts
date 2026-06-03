@@ -1,7 +1,12 @@
 import type { AppErrorMeta } from "./types";
 
 export const APP_ERROR = {
+  APP_RUNTIME: "APP_RUNTIME",
+  APP_ROUTE_NOT_FOUND: "APP_ROUTE_NOT_FOUND",
   LOCATION_PERMISSION: "LOCATION_PERMISSION",
+  LOCATION_UNAVAILABLE: "LOCATION_UNAVAILABLE",
+  LOCATION_TIMEOUT: "LOCATION_TIMEOUT",
+  LOCATION_REQUEST_LIMIT: "LOCATION_REQUEST_LIMIT",
   WEATHER_PARAMETER: "WEATHER_PARAMETER",
   ULTRA_FORECAST: "ULTRA_FORECAST",
   ULTRA_FORECAST_NOT_FOUND: "ULTRA_FORECAST_NOT_FOUND",
@@ -36,7 +41,12 @@ export const APP_ERROR = {
 export type AppErrorType = (typeof APP_ERROR)[keyof typeof APP_ERROR];
 
 export const APP_ERROR_CODE = {
+  [APP_ERROR.APP_RUNTIME]: "MWB-APP-001",
+  [APP_ERROR.APP_ROUTE_NOT_FOUND]: "MWB-APP-404",
   [APP_ERROR.LOCATION_PERMISSION]: "MWB-LOCATION-001",
+  [APP_ERROR.LOCATION_UNAVAILABLE]: "MWB-LOCATION-002",
+  [APP_ERROR.LOCATION_TIMEOUT]: "MWB-LOCATION-003",
+  [APP_ERROR.LOCATION_REQUEST_LIMIT]: "MWB-LOCATION-004",
   [APP_ERROR.WEATHER_PARAMETER]: "MWB-WEATHER-001",
   [APP_ERROR.ULTRA_FORECAST]: "MWB-WEATHER-101",
   [APP_ERROR.ULTRA_FORECAST_NOT_FOUND]: "MWB-WEATHER-102",
@@ -69,11 +79,42 @@ export const APP_ERROR_CODE = {
 } satisfies Record<AppErrorType, string>;
 
 export const appErrorMetaMap = {
+  [APP_ERROR.APP_RUNTIME]: {
+    code: APP_ERROR_CODE[APP_ERROR.APP_RUNTIME],
+    title: "화면을 표시하지 못했어요",
+    description: "앱 화면을 불러오는 중 문제가 발생했습니다. 다시 시도해 주세요.",
+    actionLabel: "다시 시도",
+  },
+  [APP_ERROR.APP_ROUTE_NOT_FOUND]: {
+    code: APP_ERROR_CODE[APP_ERROR.APP_ROUTE_NOT_FOUND],
+    title: "페이지를 찾지 못했어요",
+    description: "요청한 페이지가 없거나 이동되었습니다.",
+    actionLabel: "홈으로 이동",
+  },
   [APP_ERROR.LOCATION_PERMISSION]: {
     code: APP_ERROR_CODE[APP_ERROR.LOCATION_PERMISSION],
     title: "위치 정보 권한이 필요해요",
     description: "현재 위치 기반 서비스를 이용하려면 브라우저에서 위치 정보 권한을 허용해 주세요.",
     actionLabel: "현재 위치 다시 확인",
+  },
+  [APP_ERROR.LOCATION_UNAVAILABLE]: {
+    code: APP_ERROR_CODE[APP_ERROR.LOCATION_UNAVAILABLE],
+    title: "현재 위치를 확인하지 못했어요",
+    description: "브라우저 또는 기기에서 현재 위치를 확인할 수 없습니다. 위치 설정을 확인하거나 지역을 검색해 주세요.",
+    actionLabel: "현재 위치 다시 확인",
+  },
+  [APP_ERROR.LOCATION_TIMEOUT]: {
+    code: APP_ERROR_CODE[APP_ERROR.LOCATION_TIMEOUT],
+    title: "위치 확인 시간이 초과됐어요",
+    description: "현재 위치를 확인하는 데 시간이 오래 걸리고 있습니다. 다시 시도하거나 지역을 검색해 주세요.",
+    actionLabel: "현재 위치 다시 확인",
+  },
+  [APP_ERROR.LOCATION_REQUEST_LIMIT]: {
+    code: APP_ERROR_CODE[APP_ERROR.LOCATION_REQUEST_LIMIT],
+    title: "현재 위치 확인을 잠시 중단했어요",
+    description:
+      "현재 위치 확인이 여러 번 실패했습니다. 브라우저와 기기의 위치 설정을 확인한 뒤 다시 시도하거나 지역 검색을 이용해 주세요.",
+    actionLabel: "지역 검색으로 선택",
   },
   [APP_ERROR.WEATHER_PARAMETER]: {
     code: APP_ERROR_CODE[APP_ERROR.WEATHER_PARAMETER],

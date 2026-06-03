@@ -1,23 +1,36 @@
 import { fetchRegionNameFromCoord } from "@/entities/kakao/api/fetchRegionNameFromCoord";
-import { APP_ERROR, appErrorMetaMap } from "@/shared/api/app-errors";
 import type { GridCoord, LatLon } from "@/entities/weather/model/weather.types";
+import { useAirQualitySummary } from "@/features/air-quality/model/useAirQualitySummary";
 import type { BookmarkItem } from "@/features/bookmark/model/types";
 import { readBookmarkFromStorage } from "@/features/bookmark/model/useBookmarks";
-import { useAirQualitySummary } from "@/features/air-quality/model/useAirQualitySummary";
 import { useWeatherSummary } from "@/features/get-current-weather/model/useWeatherSummary";
+import { APP_ERROR, appErrorMetaMap } from "@/shared/api/app-errors";
+import type { AppErrorMeta } from "@/shared/api/types";
 import { isAppError } from "@/shared/api/types";
 import { cn } from "@/shared/lib/cn";
+import { convertToGridCoord } from "@/shared/lib/convertToGridCoord";
+import {
+  createRequestAttemptState,
+  recordRequestFailure,
+  resetRequestAttemptState,
+  type RequestAttemptPolicy,
+  type RequestAttemptState,
+} from "@/shared/lib/requestAttemptPolicy";
 import { getUserLocation } from "@/shared/lib/userLocation";
 import { ErrorCode } from "@/shared/ui/error-code";
 import { IconInput } from "@/shared/ui/input";
 import { KakaoRegionMap } from "@/shared/ui/map";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { getAirQualityDisplayDistrict } from "../lib/air-quality-display.lib";
 import { buildDistrictDisplay } from "../lib/district-display.lib";
 import { AirQualityMetricCard } from "./AirQualityMetricCard";
 import { FavoritePreviewPanel } from "./FavoritePreviewPanel";
 import { HourlyInfoCard } from "./HourlyInfoCard";
+import {
+  LocationPermissionDialog,
+  type LocationPermissionStatus,
+} from "./LocationPermissionDialog";
 import { NowInfoCard } from "./NowInfoCard";
 import { OutfitRecommendationCard } from "./OutfitRecommendationCard";
 import { mainPageStyles } from "./styles";
@@ -29,6 +42,35 @@ const formatProbability = (value: number | null | undefined): string => {
 
   return String(value);
 };
+
+const hasResolvedGridCoord = ({ nx, ny }: GridCoord): boolean =>
+  Number.isFinite(nx) && Number.isFinite(ny);
+
+const LOCATION_REQUEST_ATTEMPT_POLICY: RequestAttemptPolicy = {
+  maxFailures: 3,
+  minFeedbackMs: 700,
+};
+
+const waitForMinimumFeedback = async (startedAt: number): Promise<void> => {
+  const elapsedMs = Date.now() - startedAt;
+  const remainingMs = LOCATION_REQUEST_ATTEMPT_POLICY.minFeedbackMs - elapsedMs;
+
+  if (remainingMs > 0) {
+    await new Promise((resolve) => window.setTimeout(resolve, remainingMs));
+  }
+};
+
+type CurrentLocationResolution =
+  | {
+      status: "success";
+      regionName: string;
+      userLocation: LatLon;
+    }
+  | {
+      status: "error";
+      errorMeta: AppErrorMeta;
+      isPermissionDenied: boolean;
+    };
 
 export default function MainPage() {
   const routelocation = useLocation();
@@ -64,17 +106,34 @@ export default function MainPage() {
     };
   }, [routelocation.search]);
 
-  const { data, isLoading, isFetching, error, refresh } = useWeatherSummary(param);
   const navigate = useNavigate();
   const [favoritePreviewList, setFavoritePreviewList] = useState<BookmarkItem[]>(() =>
     readBookmarkFromStorage(),
   );
   const [currentRegionName, setCurrentRegionName] = useState("");
   const [currentLatLon, setCurrentLatLon] = useState<LatLon | null>(null);
-  const [currentRegionError, setCurrentRegionError] = useState<{
-    description: string;
-    code: string;
-  } | null>(null);
+  const [currentRegionError, setCurrentRegionError] = useState<AppErrorMeta | null>(null);
+  const [locationPermissionStatus, setLocationPermissionStatus] =
+    useState<LocationPermissionStatus>("unknown");
+  const [isLocationDialogOpen, setIsLocationDialogOpen] = useState(false);
+  const [isRequestingLocation, setIsRequestingLocation] = useState(false);
+  const [locationRequestAttemptState, setLocationRequestAttemptState] =
+    useState<RequestAttemptState>(() =>
+      createRequestAttemptState(LOCATION_REQUEST_ATTEMPT_POLICY),
+    );
+  const isLocationRequestInFlightRef = useRef(false);
+  const locationRequestAttemptStateRef = useRef(locationRequestAttemptState);
+  const weatherParam = currentLatLon && !displayDistrict ? convertToGridCoord(currentLatLon) : param;
+  const isWeatherEnabled = displayDistrict
+    ? hasResolvedGridCoord(param)
+    : currentLatLon !== null;
+  const { data, isLoading, isFetching, error, refresh } = useWeatherSummary(weatherParam, {
+    enabled: isWeatherEnabled,
+  });
+
+  useEffect(() => {
+    locationRequestAttemptStateRef.current = locationRequestAttemptState;
+  }, [locationRequestAttemptState]);
 
   useEffect(() => {
     const syncFavoritePreviewList = () => {
@@ -90,51 +149,158 @@ export default function MainPage() {
     };
   }, []);
 
+  const navigateToLocationRequestLimitError = useCallback(() => {
+    navigate("/error?reason=location-request-limit", { replace: true });
+  }, [navigate]);
+
+  const loadCurrentRegionName = useCallback(async () => {
+    if (isLocationRequestInFlightRef.current) {
+      return;
+    }
+
+    if (locationRequestAttemptStateRef.current.isLimitReached) {
+      navigateToLocationRequestLimitError();
+      return;
+    }
+
+    isLocationRequestInFlightRef.current = true;
+    setIsRequestingLocation(true);
+    const startedAt = Date.now();
+    let resolution: CurrentLocationResolution;
+
+    try {
+      const userLocation = await getUserLocation();
+      const regionName = await fetchRegionNameFromCoord(userLocation);
+
+      resolution = {
+        status: "success",
+        regionName,
+        userLocation,
+      };
+    } catch (fetchError: unknown) {
+      const errorMeta = isAppError(fetchError)
+        ? fetchError.meta
+        : appErrorMetaMap[APP_ERROR.LOCATION_LOOKUP_UNEXPECTED];
+
+      resolution = {
+        status: "error",
+        errorMeta,
+        isPermissionDenied:
+          isAppError(fetchError) && fetchError.type === APP_ERROR.LOCATION_PERMISSION,
+      };
+    }
+
+    await waitForMinimumFeedback(startedAt);
+
+    if (resolution.status === "success") {
+      setCurrentRegionName(resolution.regionName);
+      setCurrentLatLon(resolution.userLocation);
+      setCurrentRegionError(null);
+      setLocationPermissionStatus("granted");
+      setIsLocationDialogOpen(false);
+      const resetState = resetRequestAttemptState(LOCATION_REQUEST_ATTEMPT_POLICY);
+      locationRequestAttemptStateRef.current = resetState;
+      setLocationRequestAttemptState(resetState);
+    } else {
+      const nextAttemptState = recordRequestFailure(
+        locationRequestAttemptStateRef.current,
+        LOCATION_REQUEST_ATTEMPT_POLICY,
+      );
+      locationRequestAttemptStateRef.current = nextAttemptState;
+      setLocationRequestAttemptState(nextAttemptState);
+
+      if (resolution.isPermissionDenied) {
+        setLocationPermissionStatus("denied");
+      }
+
+      if (nextAttemptState.isLimitReached) {
+        setIsRequestingLocation(false);
+        isLocationRequestInFlightRef.current = false;
+        navigateToLocationRequestLimitError();
+        return;
+      }
+
+      setCurrentRegionName("");
+      setCurrentLatLon(null);
+      setCurrentRegionError(resolution.errorMeta);
+      setIsLocationDialogOpen(true);
+    }
+
+    setIsRequestingLocation(false);
+    isLocationRequestInFlightRef.current = false;
+  }, [navigateToLocationRequestLimitError]);
+
   useEffect(() => {
     if (displayDistrict) {
       return;
     }
 
+    if (!("geolocation" in navigator)) {
+      const unsupportedTimer = window.setTimeout(() => {
+        setLocationPermissionStatus("unsupported");
+        setCurrentRegionError(appErrorMetaMap[APP_ERROR.LOCATION_UNAVAILABLE]);
+        setIsLocationDialogOpen(true);
+      }, 0);
+
+      return () => {
+        window.clearTimeout(unsupportedTimer);
+      };
+    }
+
     let ignore = false;
+    let permissionStatus: PermissionStatus | null = null;
 
-    const loadCurrentRegionName = async () => {
+    const prepareCurrentLocation = async () => {
+      if (!("permissions" in navigator) || !navigator.permissions.query) {
+        setIsLocationDialogOpen(true);
+        return;
+      }
+
       try {
-        const userLocation = await getUserLocation();
-        const regionName = await fetchRegionNameFromCoord(userLocation);
-        if (!ignore) {
-          setCurrentRegionName(regionName);
-          setCurrentLatLon(userLocation);
-          setCurrentRegionError(null);
-        }
-      } catch (fetchError: unknown) {
-        if (ignore) return;
-        setCurrentRegionName("");
-        setCurrentLatLon(null);
+        permissionStatus = await navigator.permissions.query({
+          name: "geolocation" as PermissionName,
+        });
 
-        if (isAppError(fetchError)) {
-          alert(fetchError.meta.description);
-          setCurrentRegionError({
-            description: fetchError.meta.description,
-            code: fetchError.meta.code,
-          });
+        if (ignore) {
           return;
         }
 
-        const fallbackError = appErrorMetaMap[APP_ERROR.LOCATION_LOOKUP_UNEXPECTED];
-        alert(fallbackError.description);
-        setCurrentRegionError({
-          description: fallbackError.description,
-          code: fallbackError.code,
-        });
+        const applyPermissionState = () => {
+          if (!permissionStatus) {
+            return;
+          }
+
+          const nextState = permissionStatus.state;
+          setLocationPermissionStatus(nextState);
+
+          if (nextState === "granted") {
+            setIsLocationDialogOpen(false);
+            void loadCurrentRegionName();
+            return;
+          }
+
+          setIsLocationDialogOpen(true);
+        };
+
+        permissionStatus.onchange = applyPermissionState;
+        applyPermissionState();
+      } catch {
+        if (!ignore) {
+          setLocationPermissionStatus("unknown");
+          setIsLocationDialogOpen(true);
+        }
       }
     };
 
-    void loadCurrentRegionName();
+    void prepareCurrentLocation();
 
     return () => {
       ignore = true;
+      if (permissionStatus) {
+        permissionStatus.onchange = null;
+      }
     };
-  }, [displayDistrict]);
+  }, [displayDistrict, loadCurrentRegionName]);
 
   const locationLabel = displayDistrict || currentRegionName;
   const aliasLabel = displayAlias || currentRegionName;
@@ -170,6 +336,20 @@ export default function MainPage() {
           </p>
         )}
       </div>
+
+      <LocationPermissionDialog
+        isOpen={isLocationDialogOpen && !displayDistrict}
+        status={locationPermissionStatus}
+        error={currentRegionError}
+        isRequesting={isRequestingLocation}
+        onRequestLocation={() => {
+          void loadCurrentRegionName();
+        }}
+        onSearchLocation={() => {
+          setIsLocationDialogOpen(false);
+          navigate("/search", { replace: true });
+        }}
+      />
 
       <div className={cn(mainPageStyles.dashboardGrid)}>
         <div className={cn(mainPageStyles.mainColumn)}>

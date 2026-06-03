@@ -23,6 +23,7 @@ import type { AppError } from "@/shared/api/types";
  */
 export const useWeatherSummary = (
   param: GridCoord,
+  options?: { enabled?: boolean },
 ): {
   data: SummaryDomain | null;
   isLoading: boolean;
@@ -31,10 +32,11 @@ export const useWeatherSummary = (
   error: AppError | null;
   refresh: () => Promise<void>;
 } => {
-  const ultraQuery = useWeatherQuery(WeatherApiType.ULTRA_NOW, param);
-  const ultraForecastQuery = useWeatherQuery(WeatherApiType.ULTRA_FORECAST, param);
-  const shortQuery = useWeatherQuery(WeatherApiType.SHORT_FORECAST, param);
-  const todayTempRangeQuery = useWeatherQuery(WeatherApiType.TODAY_TEMP_RANGE, param);
+  const queryOptions = { enabled: options?.enabled ?? true };
+  const ultraQuery = useWeatherQuery(WeatherApiType.ULTRA_NOW, param, queryOptions);
+  const ultraForecastQuery = useWeatherQuery(WeatherApiType.ULTRA_FORECAST, param, queryOptions);
+  const shortQuery = useWeatherQuery(WeatherApiType.SHORT_FORECAST, param, queryOptions);
+  const todayTempRangeQuery = useWeatherQuery(WeatherApiType.TODAY_TEMP_RANGE, param, queryOptions);
 
   const isLoading =
     ultraQuery.isLoading ||
