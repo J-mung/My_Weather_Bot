@@ -20,6 +20,7 @@ export type CurrentLocationFailureReason =
   | "unavailable"
   | "timeout"
   | "unsupported"
+  | "unsupported-service-area"
   | "region-lookup-failed"
   | "unexpected";
 
@@ -106,6 +107,8 @@ export const getCurrentLocationFailureReason = (
       return "unavailable";
     case APP_ERROR.LOCATION_TIMEOUT:
       return "timeout";
+    case APP_ERROR.LOCATION_LOOKUP_OUT_OF_SERVICE_AREA:
+      return "unsupported-service-area";
     case APP_ERROR.LOCATION_LOOKUP:
     case APP_ERROR.LOCATION_LOOKUP_NOT_FOUND:
     case APP_ERROR.LOCATION_LOOKUP_RETRY_LATER:

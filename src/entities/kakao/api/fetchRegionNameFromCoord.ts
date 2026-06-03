@@ -21,7 +21,7 @@ export const fetchRegionNameFromCoord = async ({ lat, lon }: LatLon): Promise<st
       response.data.documents[0];
 
     if (!region) {
-      throw new AppError(APP_ERROR.LOCATION_LOOKUP_NOT_FOUND);
+      throw new AppError(APP_ERROR.LOCATION_LOOKUP_OUT_OF_SERVICE_AREA);
     }
 
     return [region.region_1depth_name, region.region_2depth_name, region.region_3depth_name]
@@ -33,6 +33,10 @@ export const fetchRegionNameFromCoord = async ({ lat, lon }: LatLon): Promise<st
     }
 
     if (isApiError(error) && error.type === API_ERROR.HTTP) {
+      if (error.status === 400) {
+        throw new AppError(APP_ERROR.LOCATION_LOOKUP_OUT_OF_SERVICE_AREA, error);
+      }
+
       if (error.status === 404) {
         throw new AppError(APP_ERROR.LOCATION_LOOKUP_NOT_FOUND, error);
       }
