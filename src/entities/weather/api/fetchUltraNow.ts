@@ -3,6 +3,7 @@ import { APP_ERROR } from "@/shared/api/app-errors";
 import { getApiClient } from "@/shared/api/axios";
 import { API_ERROR, AppError, isApiError } from "@/shared/api/types";
 import type { UltraNowResponseType } from "./weather-api.types";
+import { validateWeatherApiResponse } from "./weather-api-response";
 
 const weatherApiClient = getApiClient("weather");
 
@@ -24,7 +25,12 @@ export const fetchUltraNow = async (
       },
     });
 
-    return response.data;
+    return validateWeatherApiResponse<UltraNowResponseType>(response.data, {
+      fallback: APP_ERROR.ULTRA_NOW,
+      notFound: APP_ERROR.ULTRA_NOW_NOT_FOUND,
+      retryLater: APP_ERROR.ULTRA_NOW_RETRY_LATER,
+      unexpected: APP_ERROR.ULTRA_NOW_UNEXPECTED,
+    });
   } catch (fetchError: unknown) {
     if (fetchError instanceof AppError) {
       throw fetchError;

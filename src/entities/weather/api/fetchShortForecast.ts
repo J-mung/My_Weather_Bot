@@ -3,6 +3,7 @@ import { APP_ERROR } from "@/shared/api/app-errors";
 import { getApiClient } from "@/shared/api/axios";
 import { API_ERROR, AppError, isApiError } from "@/shared/api/types";
 import type { ShortFcstResponseType } from "./weather-api.types";
+import { validateWeatherApiResponse } from "./weather-api-response";
 
 const weatherApiClient = getApiClient("weather");
 
@@ -26,7 +27,12 @@ export const fetchShortForecast = async (
       },
     });
 
-    return response.data;
+    return validateWeatherApiResponse<ShortFcstResponseType>(response.data, {
+      fallback: APP_ERROR.SHORT_FORECAST,
+      notFound: APP_ERROR.SHORT_FORECAST_NOT_FOUND,
+      retryLater: APP_ERROR.SHORT_FORECAST_RETRY_LATER,
+      unexpected: APP_ERROR.SHORT_FORECAST_UNEXPECTED,
+    });
   } catch (fetchError: unknown) {
     if (fetchError instanceof AppError) {
       throw fetchError;
