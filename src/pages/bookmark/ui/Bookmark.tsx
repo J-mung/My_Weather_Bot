@@ -118,7 +118,7 @@ const CurrentLocationForecastCard = ({
   );
 };
 
-const CurrentLocationErrorCard = ({ errorMeta }: { errorMeta: AppErrorMeta }) => {
+export const CurrentLocationErrorCard = ({ errorMeta }: { errorMeta: AppErrorMeta }) => {
   return (
     <div className={cn(bookmarkCurrentLocationStyles.card)}>
       <div className={cn(bookmarkCurrentLocationStyles.header)}>

@@ -3,7 +3,6 @@ import {
   SEARCH_CANDIDATE_POOL_LIMIT,
   SEARCH_STRICT_MATCH_MIN_LENGTH,
   SPACE_REGEX,
-  typedDistricts,
 } from "./location-search.constants";
 import type {
   DistrictSearchEngine,
@@ -95,8 +94,8 @@ const sortSearchResults = (
  *    - 좌표 데이터 없이 지역명 문자열만으로 인덱스를 구성
  * @returns
  */
-export const buildDistrictSearchIndex = (): DistrictSearchItem[] => {
-  return typedDistricts.map((_district) => {
+export const buildDistrictSearchIndex = (districts: string[]): DistrictSearchItem[] => {
+  return districts.map((_district) => {
     const separates = _district.split("-").filter(Boolean);
 
     return {

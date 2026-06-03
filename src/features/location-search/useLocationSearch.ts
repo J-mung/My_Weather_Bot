@@ -4,9 +4,13 @@ import { isAppError } from "@/shared/api/types";
 import { SPACE_REGEX } from "@/shared/lib/location-search.constants";
 import { createDistrictSearchEngine } from "@/shared/lib/location-search.engine";
 import { searchDistricts, toDisplayDistrictName } from "@/shared/lib/location-search.lib";
-import type { DistrictSearchItem, DistrictSearchResult } from "@/shared/lib/location.types";
+import type {
+  DistrictSearchEngine,
+  DistrictSearchItem,
+  DistrictSearchResult,
+} from "@/shared/lib/location.types";
 import { resolveGridCoordByRegion } from "@/shared/lib/resolveGridCoord";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 /**
  * UI와 로직을 분리하기 위해 위치 검색과 관련한 함수들 정의한 훅
@@ -29,8 +33,32 @@ export const useLocationSearch = (): {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [errorCode, setErrorCode] = useState<string | null>(null);
 
-  // JSON 1번만 읽고 메모이제이션
-  const searchEngine = useMemo(() => createDistrictSearchEngine(), []);
+  const [searchEngine, setSearchEngine] = useState<DistrictSearchEngine | null>(null);
+
+  useEffect(() => {
+    let ignore = false;
+
+    createDistrictSearchEngine()
+      .then((engine) => {
+        if (ignore) {
+          return;
+        }
+
+        setSearchEngine(engine);
+      })
+      .catch(() => {
+        if (ignore) {
+          return;
+        }
+
+        setErrorMessage("검색 데이터를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.");
+        setErrorCode(appErrorMetaMap[APP_ERROR.LATLON_LOOKUP_UNEXPECTED].code);
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, []);
 
   /**
    * 사용자 입력으로 위치 후보 목록 생성
@@ -51,6 +79,13 @@ export const useLocationSearch = (): {
       if (parsedInput.length <= 1) {
         setCandidates([]);
         setErrorMessage("검색어를 더 구체적으로 입력해 주세요.");
+        setErrorCode(null);
+        return;
+      }
+
+      if (!searchEngine) {
+        setCandidates([]);
+        setErrorMessage("검색 데이터를 불러오고 있어요.");
         setErrorCode(null);
         return;
       }

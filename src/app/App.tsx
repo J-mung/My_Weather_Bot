@@ -5,8 +5,8 @@ import {
 } from "@/entities/weather/model/weather-cache-policy";
 import { createAsyncStoragePersister } from "@tanstack/query-async-storage-persister";
 import { QueryClient } from "@tanstack/react-query";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
+import { lazy, Suspense } from "react";
 import { RouterProvider } from "react-router-dom";
 
 const queryClient = new QueryClient({
@@ -35,6 +35,14 @@ const queryPersister = createAsyncStoragePersister({
   storage: localStorageAsync,
 });
 
+const ReactQueryDevtools = import.meta.env.DEV
+  ? lazy(() =>
+      import("@tanstack/react-query-devtools").then((module) => ({
+        default: module.ReactQueryDevtools,
+      })),
+    )
+  : null;
+
 function App({ router = defaultRouter }) {
   return (
     <PersistQueryClientProvider
@@ -51,7 +59,11 @@ function App({ router = defaultRouter }) {
       }}
     >
       <RouterProvider router={router} />
-      <ReactQueryDevtools initialIsOpen={false} />
+      {ReactQueryDevtools && (
+        <Suspense fallback={null}>
+          <ReactQueryDevtools initialIsOpen={false} />
+        </Suspense>
+      )}
     </PersistQueryClientProvider>
   );
 }
