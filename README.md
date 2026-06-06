@@ -86,12 +86,18 @@ v1.5에서는 신규 화면 확장보다 운영 안정성과 장애 복구 흐�
 - 북마크 화면의 현재 위치 카드도 동일한 오류 안내 컴포넌트를 사용합니다.
 - 국내 서비스 영역 밖 좌표는 별도 오류 코드로 분류해 지역 검색을 안내합니다.
 
+> 위치 확인 실패 처리   
+> <img width="333" height="238" alt="스크린샷 2026-06-06 오후 10 57 21" src="https://github.com/user-attachments/assets/af6aa124-5403-41b0-9952-b3b08c9999c8" />
+> <img width="333" height="238" alt="스크린샷 2026-06-06 오후 10 57 39" src="https://github.com/user-attachments/assets/48880074-3703-49d2-a4e7-2174f7f05736" />
+
+> 위치 확인 재시도 3회 실패
+> <img width="1027" height="555" alt="스크린샷 2026-06-06 오후 10 58 34" src="https://github.com/user-attachments/assets/85036dee-f5e2-4102-993e-a06aa022b630" />
+
 ### 2) 외부 API 응답 방어
 
 - 기상청 응답이 HTTP 200이어도 `resultCode`, `items.item`이 비정상인 경우를 안전하게 처리합니다.
 - `PCP`, `SNO`의 `없음`, `0mm`, `1mm 미만` 같은 특수 문자열 파싱을 보강했습니다.
 - AirKorea, Radar, Kakao 조회 실패가 전체 화면 오류로 번지지 않도록 사용자 친화 오류 코드와 fallback을 유지합니다.
-- 강수 레이더는 클라이언트가 기본 `tm`을 고정 전송하지 않고 Worker가 최신 후보 시각을 순차 탐색하도록 정리해, 단일 시각 404가 전체 레이더 실패로 보이지 않게 했습니다.
 
 ### 3) 운영 관측성
 
@@ -115,20 +121,6 @@ v1.5에서는 신규 화면 확장보다 운영 안정성과 장애 복구 흐�
 - 현재 위치 조회 정책을 공통 hook으로 분리해 메인/북마크 화면의 동작 차이를 줄였습니다.
 - 라우트 단위 lazy loading, 검색 데이터 JSON asset 분리, production React Query Devtools 제외로 초기 번들 경고를 해소했습니다.
 - React Router 보안 advisory 대응 후 `npm audit --audit-level=moderate` 기준 취약점 0건을 확인했습니다.
-
-### 6) v1.5 검증
-
-```bash
-npm run lint
-npm run test
-npm run build
-npm audit --audit-level=moderate
-```
-
-로컬/배포 스모크에서는 `/api/client-config`와 `/api/radar/composite-image` 응답에서 `X-Request-Id`, Radar cache/tm 헤더, CORS 노출 헤더가 내려오는 것을 확인했습니다.
-로컬 브라우저 스모크에서는 홈 화면이 skeleton 상태에서 실제 카드 상태로 전환되고, 홈/검색 입력창 shell 높이가 동일한 것도 확인했습니다.
-
-> 참고: 아래 v1.4 섹션의 스크린샷은 고도화 1차 구현 당시 화면 자료입니다. v1.5에서 추가된 skeleton/오류 복구/레이더 안정화 상태의 최신 화면 이미지는 별도 화면 자료 갱신 작업에서 교체할 예정입니다.
 
 ## 구현한 기능 설명 (v1.4)
 
