@@ -5,6 +5,7 @@ import type {
 import { cn } from "@/shared/lib/cn";
 import { ErrorCode } from "@/shared/ui/error-code";
 import { Tooltip } from "@/shared/ui/tooltip";
+import { MetricSkeletonCard } from "./MetricSkeletonCard";
 import { mainPageStyles } from "./styles";
 
 const AIR_QUALITY_GRADE_LABEL: Record<AirQualityMetric["grade"], string> = {
@@ -77,6 +78,10 @@ export const AirQualityMetricCard = ({
   errorCode,
 }: AirQualityMetricCardProps) => {
   const grade = getAirQualityGrade(metric, isLoading, isError);
+
+  if (isLoading) {
+    return <MetricSkeletonCard showBadge />;
+  }
 
   return (
     <div className={cn(mainPageStyles.metricCard)}>

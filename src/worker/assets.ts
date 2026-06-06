@@ -13,8 +13,8 @@ export const serveAsset = async (request: Request, env: Env): Promise<Response> 
 
   const acceptsHtml = request.headers.get("Accept")?.includes("text/html");
   if (request.method === "GET" && acceptsHtml) {
-    const indexUrl = new URL("/index.html", request.url);
-    return env.ASSETS.fetch(new Request(indexUrl.toString(), request));
+    const appShellUrl = new URL("/", request.url);
+    return env.ASSETS.fetch(new Request(appShellUrl.toString(), request));
   }
 
   return assetResponse;

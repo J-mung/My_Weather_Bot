@@ -15,6 +15,7 @@ import { AirQualityMetricCard } from "./AirQualityMetricCard";
 import { FavoritePreviewPanel } from "./FavoritePreviewPanel";
 import { HourlyInfoCard } from "./HourlyInfoCard";
 import { LocationPermissionDialog } from "./LocationPermissionDialog";
+import { MetricSkeletonCard } from "./MetricSkeletonCard";
 import { NowInfoCard } from "./NowInfoCard";
 import { OutfitRecommendationCard } from "./OutfitRecommendationCard";
 import { mainPageStyles } from "./styles";
@@ -100,7 +101,9 @@ export default function MainPage() {
 
   const locationLabel = displayDistrict || currentLocation.regionName;
   const aliasLabel = displayAlias || currentLocation.regionName;
+  const isWeatherPending = !error && (isLoading || !data);
   const airQuality = useAirQualitySummary(locationLabel);
+  const isAirQualityPending = !airQuality.isError && (!locationLabel || airQuality.isLoading);
   const districtDisplay = buildDistrictDisplay({
     district: locationLabel || "알 수 없음",
     alias: aliasLabel || "",
@@ -150,7 +153,7 @@ export default function MainPage() {
               fullDistrict={districtDisplay.fullDistrict}
               isAlias={districtDisplay.isAlias}
               data={data}
-              isLoading={isLoading}
+              isLoading={isWeatherPending}
               isFetching={isFetching}
               error={error}
               refresh={refresh}
@@ -160,7 +163,7 @@ export default function MainPage() {
             <div className={cn(mainPageStyles.section)}>
               <OutfitRecommendationCard
                 recommendation={data?.outfitRecommendation ?? null}
-                isLoading={isLoading}
+                isLoading={isWeatherPending}
                 isFetching={isFetching}
               />
             </div>
@@ -179,7 +182,7 @@ export default function MainPage() {
             </div>
             <HourlyInfoCard
               data={data}
-              isLoading={isLoading}
+              isLoading={isWeatherPending}
               isFetching={isFetching}
               error={error}
               refresh={refresh}
@@ -192,7 +195,7 @@ export default function MainPage() {
               metric={airQuality.data?.pm10}
               label={"미세먼지"}
               displayDistrict={getAirQualityDisplayDistrict(districtDisplay.fullDistrict)}
-              isLoading={airQuality.isLoading}
+              isLoading={isAirQualityPending}
               isError={airQuality.isError}
               errorCode={airQuality.error?.code}
             />
@@ -202,40 +205,48 @@ export default function MainPage() {
               metric={airQuality.data?.pm25}
               label={"초미세먼지"}
               displayDistrict={getAirQualityDisplayDistrict(districtDisplay.fullDistrict)}
-              isLoading={airQuality.isLoading}
+              isLoading={isAirQualityPending}
               isError={airQuality.isError}
               errorCode={airQuality.error?.code}
             />
 
-            <div className={cn(mainPageStyles.metricCard)}>
-              <div className={cn(mainPageStyles.metricHeader)}>
-                <span className={cn(mainPageStyles.metricHeaderLabel)}>강수확률</span>
+            {isWeatherPending ? (
+              <MetricSkeletonCard />
+            ) : (
+              <div className={cn(mainPageStyles.metricCard)}>
+                <div className={cn(mainPageStyles.metricHeader)}>
+                  <span className={cn(mainPageStyles.metricHeaderLabel)}>강수확률</span>
+                </div>
+                <strong className={cn(mainPageStyles.metricValue)}>
+                  {formatProbability(data?.precipitation.probability)}
+                  <span className={cn(mainPageStyles.metricUnit)}>%</span>
+                </strong>
+                <p className={cn(mainPageStyles.metricDescription)}>
+                  {data?.precipitation.rainAmountText || data?.precipitation.snowAmountText
+                    ? [data.precipitation.rainAmountText, data.precipitation.snowAmountText]
+                        .filter(Boolean)
+                        .join(" · ")
+                    : "강수 가능성을 확인하고 우산을 준비하세요."}
+                </p>
               </div>
-              <strong className={cn(mainPageStyles.metricValue)}>
-                {formatProbability(data?.precipitation.probability)}
-                <span className={cn(mainPageStyles.metricUnit)}>%</span>
-              </strong>
-              <p className={cn(mainPageStyles.metricDescription)}>
-                {data?.precipitation.rainAmountText || data?.precipitation.snowAmountText
-                  ? [data.precipitation.rainAmountText, data.precipitation.snowAmountText]
-                      .filter(Boolean)
-                      .join(" · ")
-                  : "강수 가능성을 확인하고 우산을 준비하세요."}
-              </p>
-            </div>
+            )}
 
-            <div className={cn(mainPageStyles.metricCard)}>
-              <div className={cn(mainPageStyles.metricHeader)}>
-                <span className={cn(mainPageStyles.metricHeaderLabel)}>풍속</span>
+            {isWeatherPending ? (
+              <MetricSkeletonCard />
+            ) : (
+              <div className={cn(mainPageStyles.metricCard)}>
+                <div className={cn(mainPageStyles.metricHeader)}>
+                  <span className={cn(mainPageStyles.metricHeaderLabel)}>풍속</span>
+                </div>
+                <strong className={cn(mainPageStyles.metricValue)}>
+                  {data?.now.windSpeedMs ?? "--"}
+                  <span className={cn(mainPageStyles.metricUnit)}>m/s</span>
+                </strong>
+                <p className={cn(mainPageStyles.metricDescription)}>
+                  강풍이면 겉옷과 우산 고정에 주의하세요.
+                </p>
               </div>
-              <strong className={cn(mainPageStyles.metricValue)}>
-                {data?.now.windSpeedMs ?? "--"}
-                <span className={cn(mainPageStyles.metricUnit)}>m/s</span>
-              </strong>
-              <p className={cn(mainPageStyles.metricDescription)}>
-                강풍이면 겉옷과 우산 고정에 주의하세요.
-              </p>
-            </div>
+            )}
           </div>
 
           <KakaoRegionMap

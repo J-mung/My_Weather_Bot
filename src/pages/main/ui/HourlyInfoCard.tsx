@@ -72,6 +72,14 @@ export const HourlyInfoCard = ({
 
   const hourly = data?.hourly;
 
+  if (isLoading) {
+    return (
+      <div className={cn(hourlyInfoCardStyles.viewport)}>
+        <HourlyInfoSkeletonCard />
+      </div>
+    );
+  }
+
   if (error) {
     return (
       <div className={cn(hourlyInfoCardStyles.viewport, hourlyInfoCardStyles.error)}>
@@ -109,7 +117,6 @@ export const HourlyInfoCard = ({
 
   return (
     <div className={cn(hourlyInfoCardStyles.viewport)}>
-      {isLoading && <HourlyInfoSkeletonCard />}
       {/* 마우스 drag로 스크롤 가능 */}
       <div
         ref={scrollRef}

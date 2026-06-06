@@ -45,6 +45,10 @@ export const NowInfoCard = ({
     ? weatherConditionMeta[data.now.condition]
     : weatherConditionMeta["unavailable"];
 
+  if (isLoading) {
+    return <NowInfoSkeletonCard />;
+  }
+
   if (error) {
     return (
       <div className={cn(nowInfoCardStyles.root, nowInfoCardStyles.error)}>
@@ -77,7 +81,6 @@ export const NowInfoCard = ({
 
   return (
     <div className={cn(nowInfoCardStyles.root)}>
-      {isLoading && <NowInfoSkeletonCard />}
       {data && (
         <>
           <div className={cn(nowInfoCardStyles.header)}>
