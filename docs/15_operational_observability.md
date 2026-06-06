@@ -6,10 +6,10 @@ MyWeatherBot v1.5 운영 안정화 기준 문서입니다. 배포 후 외부 API
 
 | 영역 | 경로/기능 | 주요 신호 | 정상 기준 |
 | --- | --- | --- | --- |
-| 기상청 날씨 proxy | `/api/getUltraSrtNcst`, `/api/getUltraSrtFcst`, `/api/getVilageFcst` | `X-Weather-Cache`, `Cache-Control`, 앱 오류 코드 `MWB-WEATHER-*` | 동일 요청 반복 시 `MISS` 이후 `HIT` 가능, HTTP 200이어도 KMA `resultCode=00` 필요 |
-| AirKorea proxy | `/api/air-quality/getCtprvnRltmMesureDnsty` | `X-Air-Quality-Cache`, 앱 오류 코드 `MWB-AIRQUALITY-*` | AirKorea `resultCode=00` 응답만 cache 저장 |
-| Radar proxy | `/api/radar/composite-image` | `X-Radar-Cache`, `X-Radar-Tm`, `X-Radar-Observed-At-KST`, 앱 오류 코드 `MWB-RADAR-*` | 이미지 응답이면 `Content-Type=image/*`, 관측 시각 헤더 존재 |
-| Kakao 위치 조회 | `/api/kakao/coord2regioncode`, `/api/kakao/search/address`, `/api/kakao/search/keyword` | 앱 오류 코드 `MWB-LOCATION-*` | 국내 좌표는 행정구역명 반환, 서비스 영역 밖은 `MWB-LOCATION-105` |
+| 기상청 날씨 proxy | `/api/getUltraSrtNcst`, `/api/getUltraSrtFcst`, `/api/getVilageFcst` | `X-Request-Id`, `X-Weather-Cache`, `Cache-Control`, 앱 오류 코드 `MWB-WEATHER-*` | 동일 요청 반복 시 `MISS` 이후 `HIT` 가능, HTTP 200이어도 KMA `resultCode=00` 필요 |
+| AirKorea proxy | `/api/air-quality/getCtprvnRltmMesureDnsty` | `X-Request-Id`, `X-Air-Quality-Cache`, 앱 오류 코드 `MWB-AIRQUALITY-*` | AirKorea `resultCode=00` 응답만 cache 저장 |
+| Radar proxy | `/api/radar/composite-image` | `X-Request-Id`, `X-Radar-Cache`, `X-Radar-Tm`, `X-Radar-Observed-At-KST`, 앱 오류 코드 `MWB-RADAR-*` | 이미지 응답이면 `Content-Type=image/*`, 관측 시각 헤더 존재 |
+| Kakao 위치 조회 | `/api/kakao/coord2regioncode`, `/api/kakao/search/address`, `/api/kakao/search/keyword` | `X-Request-Id`, 앱 오류 코드 `MWB-LOCATION-*` | 국내 좌표는 행정구역명 반환, 서비스 영역 밖은 `MWB-LOCATION-105` |
 | 브라우저 위치 권한 | `navigator.geolocation` | `MWB-LOCATION-001~004`, 권한 상태 `granted/prompt/denied` | 권한 허용 후 좌표→지역명→격자 변환 성공 |
 
 ## 2. Cache 헤더 해석
@@ -22,16 +22,41 @@ MyWeatherBot v1.5 운영 안정화 기준 문서입니다. 배포 후 외부 API
 
 관련 구현 위치:
 
+- Request id / 구조화 로그: `src/worker/observability.ts`, `src/worker.ts`
 - Weather: `src/worker/weather.ts`, `src/entities/weather/model/weather-cache-policy.ts`
 - AirQuality: `src/worker/air-quality.ts`
 - Radar: `src/worker/radar.ts`
 - Cache adapter: `src/worker/cache.ts`
 
-## 3. 빠른 점검 절차
+## 3. Request id와 Worker 로그
 
-### 3.1 날씨 데이터가 비어 있거나 카드가 에러인 경우
+Worker가 직접 처리하는 API 응답에는 `X-Request-Id`가 붙는다. 클라이언트가 안전한 `X-Request-Id`를 전달하면 그대로 사용하고, 없거나 형식이 안전하지 않으면 Worker가 새 UUID를 생성한다.
+
+정적 자산은 Cloudflare Assets가 Worker보다 먼저 응답할 수 있으므로, 운영 triage의 request id 기준은 `/api/*`, 지도 SDK proxy, Radar proxy처럼 Worker handler를 거치는 요청에 적용한다.
+
+Cloudflare Worker 로그는 JSON 문자열 1줄로 남긴다.
+
+```json
+{
+  "event": "worker_request",
+  "requestId": "요청 식별자",
+  "method": "GET",
+  "path": "/api/getVilageFcst",
+  "route": "weather",
+  "status": 200,
+  "durationMs": 12,
+  "cache": "MISS"
+}
+```
+
+로그에는 query string, API key, service key, upstream URL, 원본 payload를 남기지 않는다. 장애 triage는 사용자 화면의 `MWB-*` 오류 코드, 브라우저/`curl -i` 응답의 `X-Request-Id`, Worker 로그의 `requestId`를 연결해서 진행한다.
+
+## 4. 빠른 점검 절차
+
+### 4.1 날씨 데이터가 비어 있거나 카드가 에러인 경우
 
 1. 브라우저 또는 `curl -i`로 Weather proxy 응답 헤더 확인
+   - `X-Request-Id`
    - `X-Weather-Cache`
    - `Cache-Control`
 2. 응답 body의 KMA `response.header.resultCode` 확인
@@ -41,7 +66,7 @@ MyWeatherBot v1.5 운영 안정화 기준 문서입니다. 배포 후 외부 API
 3. `body.items.item`이 없거나 빈 배열이면 fetcher 단계에서 AppError로 전환되는지 확인
    - 보호 테스트: `src/entities/weather/api/weather-api-response.test.ts`
 
-### 3.2 현재 위치가 계속 실패하는 경우
+### 4.2 현재 위치가 계속 실패하는 경우
 
 1. Chrome 사이트 위치 권한과 macOS 위치 서비스 권한을 각각 확인
 2. 앱 오류 코드 확인
@@ -53,26 +78,27 @@ MyWeatherBot v1.5 운영 안정화 기준 문서입니다. 배포 후 외부 API
 3. `MWB-LOCATION-004` 이후에는 `/error?reason=location-request-limit` 페이지 안내를 기준으로 지역 검색 우회가 가능해야 함
 4. 공통 hook 확인 위치: `src/features/location-current/model/useCurrentLocationRegion.ts`
 
-### 3.3 Radar 이미지가 표시되지 않는 경우
+### 4.3 Radar 이미지가 표시되지 않는 경우
 
-1. `X-Radar-Cache`, `X-Radar-Tm`, `X-Radar-Observed-At-KST` 헤더 확인
+1. `X-Request-Id`, `X-Radar-Cache`, `X-Radar-Tm`, `X-Radar-Observed-At-KST` 헤더 확인
 2. `MWB-RADAR-001`: runtime config/proxy path 문제
 3. `MWB-RADAR-002`: upstream HTTP 실패
 4. `MWB-RADAR-003`: 응답 format 문제
 5. 보호 테스트: `src/worker/radar.test.ts`, `src/entities/weather/api/fetchRadarCompositeImage.test.ts`
 
-## 4. 배포 후 스모크 체크리스트
+## 5. 배포 후 스모크 체크리스트
 
 - [ ] 메인 화면: 현재 위치 권한 `prompt` 상태에서 권한 요청 모달이 표시된다.
 - [ ] 메인 화면: 권한 허용 후 현재 위치 날씨/지도/대기질 카드가 표시된다.
 - [ ] 메인 화면: 위치 요청 반복 실패 시 `/error?reason=location-request-limit`로 이동한다.
 - [ ] 북마크 화면: 현재 위치 카드가 성공/로딩/에러 레이아웃 중 하나로 표시된다.
+- [ ] Worker handler를 거치는 API 응답에 `X-Request-Id`가 붙고, 같은 값이 Worker 로그의 `requestId`로 남는다.
 - [ ] 날씨 proxy: 동일 요청 2회 이상에서 `X-Weather-Cache`가 `MISS` 또는 `HIT`로 관측된다.
 - [ ] AirQuality proxy: 정상 payload만 cache 저장된다.
 - [ ] Radar proxy: 이미지와 관측 시각 헤더가 함께 내려온다.
 - [ ] ErrorCode는 사용자에게 안전한 `MWB-*` 코드만 표시하고 환경변수명/키 이름을 노출하지 않는다.
 
-## 5. 조정 기준
+## 6. 조정 기준
 
 | 신호 | 판단 | 조정 후보 |
 | --- | --- | --- |
@@ -82,7 +108,7 @@ MyWeatherBot v1.5 운영 안정화 기준 문서입니다. 배포 후 외부 API
 | `MWB-LOCATION-105` 증가 | 실제 사용 좌표가 서비스 영역 밖이거나 브라우저 좌표 품질 문제 | 지역 검색 우회 안내 강화, 진단 좌표 표시 후보 검토 |
 | `MWB-WEATHER-*-102/302` 증가 | KMA 발표 시각/좌표/요청 base time 문제 가능성 | base time 계산과 `numOfRows` 확인 |
 
-## 6. 변경 시 검증 명령
+## 7. 변경 시 검증 명령
 
 ```bash
 npm run lint

@@ -17,6 +17,7 @@ import {
 } from "./worker/constants";
 import { handleKakaoApiRequest } from "./worker/kakao";
 import { handleKakaoMapSdkRequest } from "./worker/kakao-map-sdk";
+import { withWorkerObservability } from "./worker/observability";
 import { handleRadarApiRequest, isRadarApiRequest } from "./worker/radar";
 import type { Env, WorkerExecutionContext } from "./worker/types";
 import { handleApiRequest } from "./worker/weather";
@@ -31,29 +32,39 @@ export default {
     const url = new URL(request.url);
 
     if (url.pathname === CLIENT_CONFIG_API_PATH) {
-      return handleClientConfigRequest(request, env);
+      return withWorkerObservability(request, "client-config", () =>
+        handleClientConfigRequest(request, env),
+      );
     }
 
     if (url.pathname === KAKAO_MAP_SDK_API_PATH) {
-      return handleKakaoMapSdkRequest(request, env);
+      return withWorkerObservability(request, "kakao-map-sdk", () =>
+        handleKakaoMapSdkRequest(request, env),
+      );
     }
 
     if (url.pathname.startsWith(KAKAO_API_PREFIX)) {
-      return handleKakaoApiRequest(request, env);
+      return withWorkerObservability(request, "kakao", () => handleKakaoApiRequest(request, env));
     }
 
     if (url.pathname.startsWith(AIR_QUALITY_API_PREFIX)) {
-      return handleAirQualityApiRequest(request, env, context);
+      return withWorkerObservability(request, "air-quality", () =>
+        handleAirQualityApiRequest(request, env, context),
+      );
     }
 
     if (isRadarApiRequest(url.pathname, env)) {
-      return handleRadarApiRequest(request, env, context);
+      return withWorkerObservability(request, "radar", () =>
+        handleRadarApiRequest(request, env, context),
+      );
     }
 
     if (url.pathname.startsWith(WEATHER_API_PREFIX)) {
-      return handleApiRequest(request, env, context);
+      return withWorkerObservability(request, "weather", () =>
+        handleApiRequest(request, env, context),
+      );
     }
 
-    return serveAsset(request, env);
+    return withWorkerObservability(request, "asset", () => serveAsset(request, env));
   },
 };

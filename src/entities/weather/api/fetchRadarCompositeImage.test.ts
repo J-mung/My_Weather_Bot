@@ -62,6 +62,31 @@ describe("radar composite image errors", () => {
     );
   });
 
+  it("lets the worker choose fallback radar timestamps when tm is omitted", async () => {
+    clientConfigGetMock.mockResolvedValue({ data: { radarApiProxyPath: "/api/radar" } });
+    const fetchMock = vi.fn(async () => {
+      return new Response(new Blob(["radar"]), {
+        status: 200,
+        headers: {
+          "Content-Type": "image/png",
+          "X-Radar-Tm": "202605291410",
+          "X-Radar-Observed-At-KST": "2026-05-29 14:10",
+        },
+      });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:radar");
+
+    await expect(fetchRadarCompositeImage()).resolves.toMatchObject({
+      imageUrl: "blob:radar",
+      tm: "202605291410",
+    });
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/radar/composite-image",
+      expect.objectContaining({ method: "GET" }),
+    );
+  });
+
   it("maps missing runtime radar proxy path to the radar config code", async () => {
     clientConfigGetMock.mockResolvedValue({ data: {} });
 

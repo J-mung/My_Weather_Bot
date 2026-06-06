@@ -3,12 +3,20 @@ import react from "@vitejs/plugin-react";
 import fs from "node:fs";
 import path from "node:path";
 import { defineConfig, loadEnv } from "vite";
+import type { Plugin } from "vite";
 
 const KAKAO_COORD2REGION_PATH = "/v2/local/geo/coord2regioncode.json";
 const KAKAO_ADDRESS_SEARCH_PATH = "/v2/local/search/address.json";
 const KAKAO_KEYWORD_SEARCH_PATH = "/v2/local/search/keyword.json";
 const KAKAO_MAP_SDK_PROXY_PATH = "/dapi.kakao.com/v2/maps/sdk.js";
 const KAKAO_MAP_SDK_UPSTREAM_PATH = "/v2/maps/sdk.js";
+const CLIENT_CONFIG_API_PATH = "/api/client-config";
+const RADAR_COMPOSITE_IMAGE_ENDPOINT = "composite-image";
+const RADAR_SAFE_DELAY_MINUTES = 20;
+const RADAR_INTERVAL_MINUTES = 10;
+const RADAR_FALLBACK_CANDIDATE_COUNT = 6;
+const MINUTE_MS = 60 * 1000;
+const KST_OFFSET_MS = 9 * 60 * MINUTE_MS;
 
 const parseLocalEnvFile = (filePath: string): Record<string, string> => {
   if (!fs.existsSync(filePath)) {
@@ -213,6 +221,154 @@ const buildRadarRewritePath = (path: string, apiKey?: string): string => {
   return search ? `${upstreamUrl.pathname}?${search}` : upstreamUrl.pathname;
 };
 
+const normalizeProxyPath = (value: string): string => {
+  const trimmedPath = value.trim();
+  const withLeadingSlash = trimmedPath.startsWith("/") ? trimmedPath : `/${trimmedPath}`;
+  return withLeadingSlash.replace(/\/+$/, "");
+};
+
+const pad2 = (value: number): string => String(value).padStart(2, "0");
+
+const formatRadarTmKst = (date: Date): string => {
+  const kstDate = new Date(date.getTime() + KST_OFFSET_MS);
+
+  return [
+    kstDate.getUTCFullYear(),
+    pad2(kstDate.getUTCMonth() + 1),
+    pad2(kstDate.getUTCDate()),
+    pad2(kstDate.getUTCHours()),
+    pad2(kstDate.getUTCMinutes()),
+  ].join("");
+};
+
+const formatRadarObservedAtKst = (tm: string): string =>
+  `${tm.slice(0, 4)}-${tm.slice(4, 6)}-${tm.slice(6, 8)} ${tm.slice(8, 10)}:${tm.slice(10, 12)}`;
+
+const isValidRadarTm = (tm: string | null): tm is string =>
+  Boolean(tm && /^\d{12}$/.test(tm));
+
+const getRadarCandidateTimes = (
+  now = new Date(),
+  candidateCount = RADAR_FALLBACK_CANDIDATE_COUNT,
+): string[] => {
+  const delayedTimestamp = now.getTime() - RADAR_SAFE_DELAY_MINUTES * MINUTE_MS;
+  const roundedTimestamp =
+    Math.floor(delayedTimestamp / (RADAR_INTERVAL_MINUTES * MINUTE_MS)) *
+    RADAR_INTERVAL_MINUTES *
+    MINUTE_MS;
+
+  return Array.from({ length: candidateCount }, (_, index) =>
+    formatRadarTmKst(new Date(roundedTimestamp - index * RADAR_INTERVAL_MINUTES * MINUTE_MS)),
+  );
+};
+
+const isRadarImageResponse = (response: Response): boolean => {
+  const contentType = response.headers.get("Content-Type") ?? "";
+  return response.ok && contentType.toLowerCase().startsWith("image/");
+};
+
+const createClientConfigDevPlugin = (radarApiProxyPath?: string): Plugin => ({
+  name: "my-weather-bot-client-config-dev",
+  configureServer(server) {
+    server.middlewares.use(CLIENT_CONFIG_API_PATH, (req, res) => {
+      if (req.method === "OPTIONS") {
+        res.statusCode = 204;
+        res.end();
+        return;
+      }
+
+      if (req.method !== "GET") {
+        res.statusCode = 405;
+        res.end("Method Not Allowed");
+        return;
+      }
+
+      if (!radarApiProxyPath) {
+        res.statusCode = 503;
+        res.end("Client configuration unavailable");
+        return;
+      }
+
+      res.statusCode = 200;
+      res.setHeader("Content-Type", "application/json; charset=utf-8");
+      res.setHeader("Cache-Control", "no-store");
+      res.end(JSON.stringify({ radarApiProxyPath: normalizeProxyPath(radarApiProxyPath) }));
+    });
+  },
+});
+
+const createRadarDevPlugin = (
+  radarApiProxyPath?: string,
+  radarApiBaseUrl?: string,
+  radarApiKey?: string,
+): Plugin => ({
+  name: "my-weather-bot-radar-dev",
+  configureServer(server) {
+    if (!radarApiProxyPath) {
+      return;
+    }
+
+    const normalizedProxyPath = normalizeProxyPath(radarApiProxyPath);
+    const radarCompositeImagePath = `${normalizedProxyPath}/${RADAR_COMPOSITE_IMAGE_ENDPOINT}`;
+
+    server.middlewares.use(async (req, res, next) => {
+      const requestUrl = req.url ?? "";
+      const url = new URL(requestUrl, "http://localhost");
+
+      if (url.pathname !== radarCompositeImagePath) {
+        next();
+        return;
+      }
+
+      if (req.method === "OPTIONS") {
+        res.statusCode = 204;
+        res.end();
+        return;
+      }
+
+      if (req.method !== "GET") {
+        res.statusCode = 405;
+        res.end("Method Not Allowed");
+        return;
+      }
+
+      if (!radarApiBaseUrl || !radarApiKey) {
+        res.statusCode = 503;
+        res.end("Radar service unavailable");
+        return;
+      }
+
+      const requestedTm = url.searchParams.get("tm");
+      const candidates = isValidRadarTm(requestedTm) ? [requestedTm] : getRadarCandidateTimes();
+
+      for (const tm of candidates) {
+        const upstreamPath = buildRadarRewritePath(`${radarCompositeImagePath}?tm=${tm}`, radarApiKey);
+        const upstreamResponse = await fetch(`${radarApiBaseUrl.replace(/\/+$/, "")}${upstreamPath}`);
+
+        if (!isRadarImageResponse(upstreamResponse)) {
+          continue;
+        }
+
+        const body = Buffer.from(await upstreamResponse.arrayBuffer());
+        res.statusCode = upstreamResponse.status;
+        res.setHeader("Content-Type", upstreamResponse.headers.get("Content-Type") ?? "image/png");
+        res.setHeader("Cache-Control", "no-store");
+        res.setHeader("X-Radar-Cache", "BYPASS");
+        res.setHeader("X-Radar-Tm", tm);
+        res.setHeader("X-Radar-Observed-At-KST", formatRadarObservedAtKst(tm));
+        res.setHeader("X-Radar-Candidate-Count", String(candidates.length));
+        res.end(body);
+        return;
+      }
+
+      res.statusCode = 502;
+      res.setHeader("Cache-Control", "no-store");
+      res.setHeader("X-Radar-Cache", "BYPASS");
+      res.end("Radar image unavailable");
+    });
+  },
+});
+
 // Kakao API 전용 dev 프록시 생성
 const createKakaoProxy = (baseUrl: string, apiKey?: string) => ({
   target: baseUrl,
@@ -296,7 +452,12 @@ export default defineConfig(({ mode }) => {
   const radarApiKey = resolveRadarApiKey(env);
 
   return {
-    plugins: [react(), tailwindcss()],
+    plugins: [
+      react(),
+      tailwindcss(),
+      createClientConfigDevPlugin(radarApiProxyPath),
+      createRadarDevPlugin(radarApiProxyPath, radarApiBaseUrl, radarApiKey),
+    ],
     resolve: {
       alias: {
         "@": path.resolve(__dirname, "src"),

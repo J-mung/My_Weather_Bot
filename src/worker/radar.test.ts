@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   formatRadarObservedAtKst,
   formatRadarTmKst,
@@ -22,6 +22,11 @@ const createEnv = (overrides: Partial<Env> = {}): Env =>
   }) as Env;
 
 describe("radar time helpers", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+  });
+
   it("formats UTC Date as KST radar timestamp", () => {
     expect(formatRadarTmKst(new Date("2026-05-29T05:20:00.000Z"))).toBe("202605291420");
   });
@@ -59,5 +64,46 @@ describe("radar time helpers", () => {
     expect(body).not.toContain("RADAR");
     expect(body).not.toContain("API");
     expect(body).not.toContain("https://");
+  });
+
+  it("tries fallback candidate times when the client omits tm", async () => {
+    const fetchedUrls: string[] = [];
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: RequestInfo | URL) => {
+        fetchedUrls.push(String(input));
+
+        if (fetchedUrls.length === 1) {
+          return new Response("not found", {
+            status: 404,
+            headers: { "Content-Type": "text/plain" },
+          });
+        }
+
+        return new Response(new Blob(["radar"]), {
+          status: 200,
+          headers: { "Content-Type": "image/png" },
+        });
+      }),
+    );
+
+    const response = await handleRadarApiRequest(
+      new Request("https://example.test/api/radar/composite-image"),
+      createEnv({
+        RADAR_API_PROXY_PATH: "/api/radar",
+        RADAR_API_UPSTREAM_BASE_URL: "https://radar.example.test",
+        RADAR_API_KEY: "radar-key",
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("X-Radar-Cache")).toBe("BYPASS");
+    expect(response.headers.get("X-Radar-Candidate-Count")).toBe("6");
+    expect(fetchedUrls).toHaveLength(2);
+    expect(fetchedUrls[0]).toContain("authKey=radar-key");
+    expect(fetchedUrls[1]).toContain("authKey=radar-key");
+    expect(new URL(fetchedUrls[0]).searchParams.get("tm")).not.toBe(
+      new URL(fetchedUrls[1]).searchParams.get("tm"),
+    );
   });
 });

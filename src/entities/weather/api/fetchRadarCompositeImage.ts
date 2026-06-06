@@ -1,4 +1,3 @@
-import { getLatestRadarTmKst } from "@/entities/weather/model/radarTime";
 import { APP_ERROR, appErrorMetaMap, type AppErrorType } from "@/shared/api/app-errors";
 import { getApiClient } from "@/shared/api/axios";
 
@@ -83,9 +82,15 @@ export const fetchRadarCompositeImage = async (
   options: { signal?: AbortSignal; tm?: string } = {},
 ): Promise<RadarCompositeImageData> => {
   const radarApiProxyPath = await fetchRadarApiProxyPath(options.signal);
-  const requestedTm = options.tm ?? getLatestRadarTmKst();
-  const searchParams = new URLSearchParams({ tm: requestedTm });
-  const response = await fetch(`${radarApiProxyPath}/composite-image?${searchParams.toString()}`, {
+  const searchParams = new URLSearchParams();
+
+  if (options.tm) {
+    searchParams.set("tm", options.tm);
+  }
+
+  const query = searchParams.toString();
+  const requestUrl = `${radarApiProxyPath}/composite-image${query ? `?${query}` : ""}`;
+  const response = await fetch(requestUrl, {
     method: "GET",
     signal: options.signal,
   }).catch((error: unknown) => {
@@ -103,7 +108,7 @@ export const fetchRadarCompositeImage = async (
   }
 
   const blob = await response.blob();
-  const tm = response.headers.get("X-Radar-Tm") ?? requestedTm;
+  const tm = response.headers.get("X-Radar-Tm") ?? options.tm ?? "";
   const observedAtText = response.headers.get("X-Radar-Observed-At-KST") ?? tm;
 
   return {

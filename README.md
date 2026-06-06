@@ -71,6 +71,52 @@ npm run lint
 npm run build
 ```
 
+## 구현한 기능 설명 (v1.5)
+
+v1.5에서는 신규 화면 확장보다 운영 안정성과 장애 복구 흐름을 보강했습니다.
+외부 API 응답이 비어 있거나 위치 권한/좌표 조회가 실패해도 앱 전체가 깨지지 않도록 에러 경계를 정리하고, 배포 후 원인 추적에 필요한 관측 신호를 추가했습니다.
+
+### 1) 위치 오류 복구 UX
+
+- 현재 위치 확인 실패 흐름을 공통 정책으로 정리했습니다.
+  - 권한 거부, 위치 확인 불가, timeout, 반복 실패 상태를 구분합니다.
+  - 반복 실패 시 지역 검색으로 우회할 수 있는 안내 흐름을 제공합니다.
+- 북마크 화면의 현재 위치 카드도 동일한 오류 안내 컴포넌트를 사용합니다.
+- 국내 서비스 영역 밖 좌표는 별도 오류 코드로 분류해 지역 검색을 안내합니다.
+
+### 2) 외부 API 응답 방어
+
+- 기상청 응답이 HTTP 200이어도 `resultCode`, `items.item`이 비정상인 경우를 안전하게 처리합니다.
+- `PCP`, `SNO`의 `없음`, `0mm`, `1mm 미만` 같은 특수 문자열 파싱을 보강했습니다.
+- AirKorea, Radar, Kakao 조회 실패가 전체 화면 오류로 번지지 않도록 사용자 친화 오류 코드와 fallback을 유지합니다.
+
+### 3) 운영 관측성
+
+- Worker가 처리하는 API 응답에 `X-Request-Id`를 제공합니다.
+  - 안전한 incoming request id가 있으면 재사용하고, 없으면 Worker에서 새 id를 생성합니다.
+  - 장애 확인 시 브라우저 응답 헤더의 `X-Request-Id`와 Worker 로그의 `requestId`를 연결할 수 있습니다.
+- Worker 요청 로그는 query string, API key, service key, upstream URL, 원본 payload를 남기지 않는 구조화 로그로 정리했습니다.
+- Weather/AirKorea/Radar cache 상태는 기존 `X-Weather-Cache`, `X-Air-Quality-Cache`, `X-Radar-Cache` 헤더로 확인할 수 있습니다.
+- 운영 점검 기준은 `docs/15_operational_observability.md`에 정리했습니다.
+
+### 4) 유지보수성과 보안 점검
+
+- 반복되던 에러 안내 UI를 공통 컴포넌트로 정리했습니다.
+- 현재 위치 조회 정책을 공통 hook으로 분리해 메인/북마크 화면의 동작 차이를 줄였습니다.
+- 라우트 단위 lazy loading, 검색 데이터 JSON asset 분리, production React Query Devtools 제외로 초기 번들 경고를 해소했습니다.
+- React Router 보안 advisory 대응 후 `npm audit --audit-level=moderate` 기준 취약점 0건을 확인했습니다.
+
+### 5) v1.5 검증
+
+```bash
+npm run lint
+npm run test
+npm run build
+npm audit --audit-level=moderate
+```
+
+로컬 Worker 스모크에서는 `/api/client-config`와 Radar 오류 응답에서 `X-Request-Id`와 CORS 노출 헤더가 내려오는 것을 확인했습니다.
+
 ## 구현한 기능 설명 (v1.4)
 
 v1.4에서는 Codex AI 에이전트를 활용해 로드맵 정리, UI 개선 방향 도출, 구현·검증 루프를 함께 진행했습니다.
