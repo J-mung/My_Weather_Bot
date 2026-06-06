@@ -74,7 +74,9 @@ npm run build
 ## 구현한 기능 설명 (v1.5)
 
 v1.5에서는 신규 화면 확장보다 운영 안정성과 장애 복구 흐름을 보강했습니다.
+이번 안정화 작업도 Codex AI 에이전트를 활용해 로드맵 점검, 회귀 테스트 보강, 오류 원인 분석, 로컬/배포 스모크 검증을 반복하며 진행했습니다.
 외부 API 응답이 비어 있거나 위치 권한/좌표 조회가 실패해도 앱 전체가 깨지지 않도록 에러 경계를 정리하고, 배포 후 원인 추적에 필요한 관측 신호를 추가했습니다.
+또한 홈 화면의 로딩 순서와 검색 입력창 크기처럼 실제 사용 중 눈에 띄는 UI 일관성 문제를 함께 정리했습니다.
 
 ### 1) 위치 오류 복구 UX
 
@@ -89,6 +91,7 @@ v1.5에서는 신규 화면 확장보다 운영 안정성과 장애 복구 흐�
 - 기상청 응답이 HTTP 200이어도 `resultCode`, `items.item`이 비정상인 경우를 안전하게 처리합니다.
 - `PCP`, `SNO`의 `없음`, `0mm`, `1mm 미만` 같은 특수 문자열 파싱을 보강했습니다.
 - AirKorea, Radar, Kakao 조회 실패가 전체 화면 오류로 번지지 않도록 사용자 친화 오류 코드와 fallback을 유지합니다.
+- 강수 레이더는 클라이언트가 기본 `tm`을 고정 전송하지 않고 Worker가 최신 후보 시각을 순차 탐색하도록 정리해, 단일 시각 404가 전체 레이더 실패로 보이지 않게 했습니다.
 
 ### 3) 운영 관측성
 
@@ -99,14 +102,21 @@ v1.5에서는 신규 화면 확장보다 운영 안정성과 장애 복구 흐�
 - Weather/AirKorea/Radar cache 상태는 기존 `X-Weather-Cache`, `X-Air-Quality-Cache`, `X-Radar-Cache` 헤더로 확인할 수 있습니다.
 - 운영 점검 기준은 `docs/15_operational_observability.md`에 정리했습니다.
 
-### 4) 유지보수성과 보안 점검
+### 4) UI 일관성과 로딩 상태
+
+- 홈 화면의 현재 날씨, 오늘의 옷차림, 시간대별 예보는 데이터가 준비되기 전 실제 카드 내용이 먼저 깜빡이지 않도록 `skeleton → 실제 카드` 순서로 정리했습니다.
+- 미세먼지, 초미세먼지, 강수확률, 풍속 지표 카드에도 skeleton 상태를 추가했습니다.
+- 홈 화면 검색 입력창과 검색 화면 입력창은 같은 `IconInput` shell 높이를 사용하도록 맞췄습니다.
+- SPA 직접 진입 경로(`/bookmark`, `/error` 등)는 Worker asset fallback을 통해 앱 shell로 복구되도록 보정했습니다.
+
+### 5) 유지보수성과 보안 점검
 
 - 반복되던 에러 안내 UI를 공통 컴포넌트로 정리했습니다.
 - 현재 위치 조회 정책을 공통 hook으로 분리해 메인/북마크 화면의 동작 차이를 줄였습니다.
 - 라우트 단위 lazy loading, 검색 데이터 JSON asset 분리, production React Query Devtools 제외로 초기 번들 경고를 해소했습니다.
 - React Router 보안 advisory 대응 후 `npm audit --audit-level=moderate` 기준 취약점 0건을 확인했습니다.
 
-### 5) v1.5 검증
+### 6) v1.5 검증
 
 ```bash
 npm run lint
@@ -115,7 +125,10 @@ npm run build
 npm audit --audit-level=moderate
 ```
 
-로컬 Worker 스모크에서는 `/api/client-config`와 Radar 오류 응답에서 `X-Request-Id`와 CORS 노출 헤더가 내려오는 것을 확인했습니다.
+로컬/배포 스모크에서는 `/api/client-config`와 `/api/radar/composite-image` 응답에서 `X-Request-Id`, Radar cache/tm 헤더, CORS 노출 헤더가 내려오는 것을 확인했습니다.
+로컬 브라우저 스모크에서는 홈 화면이 skeleton 상태에서 실제 카드 상태로 전환되고, 홈/검색 입력창 shell 높이가 동일한 것도 확인했습니다.
+
+> 참고: 아래 v1.4 섹션의 스크린샷은 고도화 1차 구현 당시 화면 자료입니다. v1.5에서 추가된 skeleton/오류 복구/레이더 안정화 상태의 최신 화면 이미지는 별도 화면 자료 갱신 작업에서 교체할 예정입니다.
 
 ## 구현한 기능 설명 (v1.4)
 
