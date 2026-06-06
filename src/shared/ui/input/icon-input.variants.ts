@@ -4,6 +4,7 @@ export const iconInputVariants = cva(
   [
     "flex",
     "w-full",
+    "min-h-16",
     "items-center",
     "gap-2",
     "rounded-xl",
