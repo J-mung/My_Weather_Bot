@@ -12,6 +12,9 @@ export const useBookmarkForecastPreview = (
   });
 
   const { isLoading, isFetching, isError, data, error } = forecastQuery;
+  const refresh = async () => {
+    await forecastQuery.refresh();
+  };
 
   if (!data) {
     return {
@@ -20,6 +23,7 @@ export const useBookmarkForecastPreview = (
       isFetching,
       isError,
       error,
+      refresh,
     };
   }
 
@@ -37,5 +41,6 @@ export const useBookmarkForecastPreview = (
     isFetching,
     isError,
     error,
+    refresh,
   };
 };
