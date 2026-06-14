@@ -9,6 +9,7 @@ export interface HourlyInfoCardProps {
   isFetching: boolean;
   error: AppError | null;
   refresh: () => Promise<void>;
+  isDetailOpen?: boolean;
 }
 
 export interface NowInfoCardProps {

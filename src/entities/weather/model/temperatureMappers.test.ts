@@ -109,4 +109,25 @@ describe("temperature precipitation mappers", () => {
       rainAmountText: "16.0mm",
     });
   });
+
+  it("현재 시각 기준으로 최대 24시간 예보를 반환한다", () => {
+    const items = Array.from({ length: 25 }, (_, hour) => {
+      const fcstTime = `${String(hour).padStart(2, "0")}00`;
+
+      return [
+        createShortItem("TMP", String(20 + hour), fcstTime),
+        createShortItem("SKY", "1", fcstTime),
+        createShortItem("PTY", "0", fcstTime),
+      ];
+    }).flat();
+
+    const summary = getTemperatureSummary(
+      createShortResponse(items),
+      new Date(2026, 5, 3, 0, 0),
+    );
+
+    expect(summary.hourly).toHaveLength(24);
+    expect(summary.hourly[0]).toMatchObject({ time: "12 AM", temp: 20 });
+    expect(summary.hourly.at(-1)).toMatchObject({ time: "11 PM", temp: 43 });
+  });
 });

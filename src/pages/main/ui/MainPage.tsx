@@ -69,6 +69,7 @@ export default function MainPage() {
   const [favoritePreviewList, setFavoritePreviewList] = useState<BookmarkItem[]>(() =>
     readBookmarkFromStorage(),
   );
+  const [isHourlyDetailOpen, setIsHourlyDetailOpen] = useState(false);
   const navigateToLocationRequestLimitError = useCallback(() => {
     navigate("/error?reason=location-request-limit", { replace: true });
   }, [navigate]);
@@ -178,7 +179,16 @@ export default function MainPage() {
               >
                 시간대별 예보
               </h2>
-              <span className={cn(mainPageStyles.sectionActionText)}>24시간 보기</span>
+              <button
+                type={"button"}
+                className={cn(mainPageStyles.sectionActionButton)}
+                aria-expanded={isHourlyDetailOpen}
+                aria-controls={"hourly-forecast-detail"}
+                disabled={isWeatherPending || Boolean(error)}
+                onClick={() => setIsHourlyDetailOpen((prev) => !prev)}
+              >
+                {isHourlyDetailOpen ? "접기" : "24시간 보기"}
+              </button>
             </div>
             <HourlyInfoCard
               data={data}
@@ -186,6 +196,7 @@ export default function MainPage() {
               isFetching={isFetching}
               error={error}
               refresh={refresh}
+              isDetailOpen={isHourlyDetailOpen}
             />
           </div>
 
