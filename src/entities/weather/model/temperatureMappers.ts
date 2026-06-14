@@ -223,16 +223,16 @@ const calculateFeelsLike = (
  * @param observationDT
  * @returns
  */
-const getNearestForecastValue = (
+const getNearestForecastItem = (
   forecast: UltraFcstResponseType,
   category: "SKY" | "PTY",
   observationDT: Date,
-): number | null => {
+): ShortFcstItemType | null => {
   const candidates = forecast.response.body.items.item
     .filter((_item) => _item.category === category)
     .map((_item) => ({
       date: parseDateTime(_item.fcstDate, _item.fcstTime),
-      value: toNumber(_item.fcstValue, 0),
+      item: _item,
     }))
     .filter((_item) => _item.date !== null)
     .sort((a, b) => a.date!.getTime() - b.date!.getTime());
@@ -240,7 +240,7 @@ const getNearestForecastValue = (
   const nearest =
     candidates.find((_item) => _item.date!.getTime() >= observationDT.getTime()) ?? candidates[0];
 
-  return nearest ? nearest.value : null;
+  return nearest?.item ?? null;
 };
 
 const formatYmd = (date: Date): string => {
@@ -307,25 +307,48 @@ export const getCurrentCondition = (
   );
 
   if (currentPty !== 0) {
-    return mapPtyToCondition(currentPty);
+    const currentPtyItem = now.response.body.items.item.find((_item) => _item.category === "PTY");
+
+    return mapPtyToCondition(currentPty, {
+      source: "ultraNow",
+      rawValue: currentPtyItem?.obsrValue,
+      baseDate: currentPtyItem?.baseDate,
+      baseTime: currentPtyItem?.baseTime,
+    });
   }
 
   // 실황에 강수 정보가 없으면 가장 가까운 초단기예보 강수 정보를 사용한다.
-  const forecastPty = getNearestForecastValue(ultraForecast, "PTY", observationDT) ?? 0;
+  const forecastPtyItem = getNearestForecastItem(ultraForecast, "PTY", observationDT);
+  const forecastPty = forecastPtyItem ? toNumber(forecastPtyItem.fcstValue, 0) : 0;
 
   if (forecastPty !== 0) {
-    return mapPtyToCondition(forecastPty);
+    return mapPtyToCondition(forecastPty, {
+      source: "ultraForecast",
+      rawValue: forecastPtyItem?.fcstValue,
+      baseDate: forecastPtyItem?.baseDate,
+      baseTime: forecastPtyItem?.baseTime,
+      fcstDate: forecastPtyItem?.fcstDate,
+      fcstTime: forecastPtyItem?.fcstTime,
+    });
   }
 
   // 강수 정보가 모두 없을 때만 하늘 상태를 사용한다.
-  const sky = getNearestForecastValue(ultraForecast, "SKY", observationDT);
+  const skyItem = getNearestForecastItem(ultraForecast, "SKY", observationDT);
+  const sky = skyItem ? toNumber(skyItem.fcstValue, 0) : null;
 
   if (sky === null) {
     // SKY도 없으면 현재 상태를 확정할 수 없으므로 중립 상태를 반환한다.
     return "unavailable";
   }
 
-  return mapSkyToCondition(sky);
+  return mapSkyToCondition(sky, {
+    source: "ultraForecast",
+    rawValue: skyItem?.fcstValue,
+    baseDate: skyItem?.baseDate,
+    baseTime: skyItem?.baseTime,
+    fcstDate: skyItem?.fcstDate,
+    fcstTime: skyItem?.fcstTime,
+  });
 };
 
 /**
@@ -408,6 +431,7 @@ const getParsedFcstItems = (items: ShortFcstItemType[]): ParsedShortFcstItemType
         date: parseDateTime(_item.fcstDate, _item.fcstTime),
         time: formatHourLabel(_item.fcstDate, _item.fcstTime),
         fcstDate: _item.fcstDate,
+        fcstTime: _item.fcstTime,
         values: {},
         rawValues: {},
       });
@@ -454,15 +478,25 @@ export const getTemperatureSummary = (
   const hourly = getParsedFcstItems(fcstItems)
     .filter((_item) => _item.date !== null && _item.date >= observationDT && _item.date < end)
     .sort((a, b) => a.date!.getTime() - b.date!.getTime())
-    .map(({ time, values, rawValues }) => {
+    .map(({ time, fcstDate, fcstTime, values, rawValues }) => {
       const temp = values.TMP;
       const sky = values.SKY;
       const pty = values.PTY;
       let condition: WeatherCondition;
       if (pty !== 0) {
-        condition = mapPtyToCondition(pty);
+        condition = mapPtyToCondition(pty, {
+          source: "shortForecast",
+          rawValue: rawValues.PTY,
+          fcstDate,
+          fcstTime,
+        });
       } else if (sky !== 0) {
-        condition = mapSkyToCondition(sky);
+        condition = mapSkyToCondition(sky, {
+          source: "shortForecast",
+          rawValue: rawValues.SKY,
+          fcstDate,
+          fcstTime,
+        });
       } else {
         condition = "unavailable";
       }

@@ -1,11 +1,23 @@
 import type { WeatherCondition } from "./weather.types";
+import {
+  reportUnknownWeatherCondition,
+  type UnknownWeatherConditionDiagnostic,
+} from "./weatherConditionDiagnostics";
+
+export type WeatherConditionDiagnosticContext = Omit<
+  UnknownWeatherConditionDiagnostic,
+  "category" | "normalizedValue" | "fallbackCondition"
+>;
 
 /**
  * 하늘상태(SKY) 코드값을 WeatherCondition으로 매핑
  * @param sky
  * @returns
  */
-export const mapSkyToCondition = (sky: number): WeatherCondition => {
+export const mapSkyToCondition = (
+  sky: number,
+  diagnosticContext?: WeatherConditionDiagnosticContext,
+): WeatherCondition => {
   switch (sky) {
     case 1:
       return "sunny";
@@ -16,6 +28,14 @@ export const mapSkyToCondition = (sky: number): WeatherCondition => {
     case 4:
       return "cloudy";
     default:
+      if (diagnosticContext) {
+        reportUnknownWeatherCondition({
+          ...diagnosticContext,
+          category: "SKY",
+          normalizedValue: sky,
+          fallbackCondition: "unavailable",
+        });
+      }
       return "unavailable";
   }
 };
@@ -25,7 +45,10 @@ export const mapSkyToCondition = (sky: number): WeatherCondition => {
  * @param pty
  * @returns
  */
-export const mapPtyToCondition = (pty: number): WeatherCondition => {
+export const mapPtyToCondition = (
+  pty: number,
+  diagnosticContext?: WeatherConditionDiagnosticContext,
+): WeatherCondition => {
   switch (pty) {
     case 1:
       return "rain";
@@ -42,6 +65,14 @@ export const mapPtyToCondition = (pty: number): WeatherCondition => {
     case 7:
       return "snowFlurry";
     default:
+      if (diagnosticContext) {
+        reportUnknownWeatherCondition({
+          ...diagnosticContext,
+          category: "PTY",
+          normalizedValue: pty,
+          fallbackCondition: "unavailable",
+        });
+      }
       return "unavailable";
   }
 };
