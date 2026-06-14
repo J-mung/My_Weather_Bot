@@ -11,6 +11,10 @@ describe("getBookmarkConditionDisplay", () => {
       icon: "weatherMix",
       label: "비/눈",
     });
+    expect(getBookmarkConditionDisplay("shower")).toMatchObject({
+      icon: "rainy",
+      label: "소나기",
+    });
     expect(getBookmarkConditionDisplay("unavailable")).toMatchObject({
       icon: "cloudAlert",
       label: "확인 중",

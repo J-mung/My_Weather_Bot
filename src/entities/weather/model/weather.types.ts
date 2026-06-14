@@ -58,10 +58,12 @@ export interface ShortFcstDomain {
  */
 export type WeatherCondition =
   | "sunny"
+  | "partlyCloudy"
   | "mostlyCloudy"
   | "unavailable"
   | "cloudy"
   | "rain"
+  | "shower"
   | "rainSnow"
   | "snow"
   | "drizzle"

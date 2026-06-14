@@ -89,4 +89,24 @@ describe("temperature precipitation mappers", () => {
       snowAmountText: "1cm 미만",
     });
   });
+
+  it("단기예보 PTY 4를 소나기로 매핑한다", () => {
+    const summary = getTemperatureSummary(
+      createShortResponse([
+        createShortItem("TMP", "23", "2200"),
+        createShortItem("SKY", "3", "2200"),
+        createShortItem("PTY", "4", "2200"),
+        createShortItem("POP", "60", "2200"),
+        createShortItem("PCP", "16.0mm", "2200"),
+      ]),
+      new Date(2026, 5, 3, 21, 30),
+    );
+
+    expect(summary.hourly[0]).toMatchObject({
+      time: "10 PM",
+      condition: "shower",
+      precipitationProbability: 60,
+      rainAmountText: "16.0mm",
+    });
+  });
 });

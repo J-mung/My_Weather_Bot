@@ -3,9 +3,11 @@ import type { WeatherCondition } from "@/entities/weather/model/weather.types";
 
 const BOOKMARK_CONDITION_LABEL: Record<WeatherCondition, string> = {
   sunny: "맑음",
-  mostlyCloudy: "구름 조금",
+  partlyCloudy: "구름 조금",
+  mostlyCloudy: "구름많음",
   cloudy: "흐림",
   rain: "비",
+  shower: "소나기",
   rainSnow: "비/눈",
   snow: "눈",
   drizzle: "약한 비",

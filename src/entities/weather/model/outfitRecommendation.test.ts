@@ -91,7 +91,7 @@ describe("getOutfitRecommendation", () => {
     expect(recommendation.level).toBe(expectedLevel);
   });
 
-  it.each(["rain", "drizzle"] as const)(
+  it.each(["rain", "shower", "drizzle"] as const)(
     "adds rain-ready caution for %s",
     (condition) => {
       const recommendation = getOutfitRecommendation(createNow({ condition }));

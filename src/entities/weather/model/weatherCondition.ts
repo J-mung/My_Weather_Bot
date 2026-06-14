@@ -9,6 +9,8 @@ export const mapSkyToCondition = (sky: number): WeatherCondition => {
   switch (sky) {
     case 1:
       return "sunny";
+    case 2:
+      return "partlyCloudy";
     case 3:
       return "mostlyCloudy";
     case 4:
@@ -31,6 +33,8 @@ export const mapPtyToCondition = (pty: number): WeatherCondition => {
       return "rainSnow";
     case 3:
       return "snow";
+    case 4:
+      return "shower";
     case 5:
       return "drizzle";
     case 6:

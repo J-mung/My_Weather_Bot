@@ -14,8 +14,14 @@ export const weatherConditionMeta: Record<WeatherCondition, WeatherConditionMeta
     icon: "wbSunny",
     iconClassName: "text-[var(--weather-icon-sunny)] md:text-[var(--weather-icon-sunny)]",
   },
-  mostlyCloudy: {
+  partlyCloudy: {
     label: "구름 조금",
+    icon: "partlyCloudyDay",
+    iconClassName:
+      "text-[var(--weather-icon-mostly-cloudy)] md:text-[var(--weather-icon-mostly-cloudy)]",
+  },
+  mostlyCloudy: {
+    label: "구름많음",
     icon: "partlyCloudyDay",
     iconClassName:
       "text-[var(--weather-icon-mostly-cloudy)] md:text-[var(--weather-icon-mostly-cloudy)]",
@@ -33,6 +39,11 @@ export const weatherConditionMeta: Record<WeatherCondition, WeatherConditionMeta
   },
   rain: {
     label: "비",
+    icon: "rainy",
+    iconClassName: "text-[var(--weather-icon-rain)] md:text-[var(--weather-icon-rain)]",
+  },
+  shower: {
+    label: "소나기",
     icon: "rainy",
     iconClassName: "text-[var(--weather-icon-rain)] md:text-[var(--weather-icon-rain)]",
   },

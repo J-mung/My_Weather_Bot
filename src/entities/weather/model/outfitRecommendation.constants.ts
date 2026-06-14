@@ -67,7 +67,7 @@ export const UNAVAILABLE_RECOMMENDATION: OutfitRecommendation = {
   basisSource: "unavailable",
 };
 
-export const RAIN_CONDITIONS = new Set<WeatherCondition>(["rain", "drizzle"]);
+export const RAIN_CONDITIONS = new Set<WeatherCondition>(["rain", "shower", "drizzle"]);
 export const RAIN_SNOW_CONDITIONS = new Set<WeatherCondition>(["rainSnow", "drizzleSnow"]);
 export const SNOW_CONDITIONS = new Set<WeatherCondition>(["snow", "snowFlurry"]);
 
