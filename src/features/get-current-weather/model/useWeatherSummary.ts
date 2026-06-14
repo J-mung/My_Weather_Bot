@@ -14,6 +14,46 @@ import type {
 } from "@/entities/weather/model/weather.types";
 import type { AppError } from "@/shared/api/types";
 
+type WeatherSummaryQuerySnapshot = {
+  data: unknown;
+  isLoading: boolean;
+  isFetching: boolean;
+  isError: boolean;
+  error: AppError | null;
+};
+
+type WeatherSummaryQueryStateInput = {
+  ultraNow: WeatherSummaryQuerySnapshot;
+  ultraForecast: WeatherSummaryQuerySnapshot;
+  shortForecast: WeatherSummaryQuerySnapshot;
+  todayTempRange: WeatherSummaryQuerySnapshot;
+};
+
+export const getWeatherSummaryQueryState = ({
+  ultraNow,
+  ultraForecast,
+  shortForecast,
+  todayTempRange,
+}: WeatherSummaryQueryStateInput): {
+  hasRequiredData: boolean;
+  isLoading: boolean;
+  isFetching: boolean;
+  isError: boolean;
+  error: AppError | null;
+} => {
+  const requiredQueries = [ultraNow, ultraForecast, shortForecast];
+  const allQueries = [...requiredQueries, todayTempRange];
+  const error = ultraNow.error ?? ultraForecast.error ?? shortForecast.error ?? null;
+
+  return {
+    hasRequiredData: requiredQueries.every((query) => Boolean(query.data)),
+    isLoading: requiredQueries.some((query) => query.isLoading),
+    isFetching: allQueries.some((query) => query.isFetching),
+    isError: Boolean(error),
+    error,
+  };
+};
+
 /**
  * 메인/북마크 화면에 필요한 날씨 요약 정보를 반환한다.
  * - 현재 관측값(now): 기온, 습도, 풍속, 체감온도, 상태
@@ -38,29 +78,14 @@ export const useWeatherSummary = (
   const shortQuery = useWeatherQuery(WeatherApiType.SHORT_FORECAST, param, queryOptions);
   const todayTempRangeQuery = useWeatherQuery(WeatherApiType.TODAY_TEMP_RANGE, param, queryOptions);
 
-  const isLoading =
-    ultraQuery.isLoading ||
-    ultraForecastQuery.isLoading ||
-    shortQuery.isLoading ||
-    todayTempRangeQuery.isLoading;
-  const isFetching =
-    ultraQuery.isFetching ||
-    ultraForecastQuery.isFetching ||
-    shortQuery.isFetching ||
-    todayTempRangeQuery.isFetching;
-  const isError =
-    ultraQuery.isError ||
-    ultraForecastQuery.isError ||
-    shortQuery.isError ||
-    todayTempRangeQuery.isError;
-  const error =
-    ultraQuery.error ??
-    ultraForecastQuery.error ??
-    shortQuery.error ??
-    todayTempRangeQuery.error ??
-    null;
+  const queryState = getWeatherSummaryQueryState({
+    ultraNow: ultraQuery,
+    ultraForecast: ultraForecastQuery,
+    shortForecast: shortQuery,
+    todayTempRange: todayTempRangeQuery,
+  });
 
-  // 모든 API로부터 응답을 받을 때까지 대기
+  // 최신 발표시각 기준으로 각 날씨 API를 다시 조회한다.
   const refresh = async () => {
     await Promise.all([
       ultraQuery.refresh(),
@@ -71,17 +96,17 @@ export const useWeatherSummary = (
   };
 
   if (
+    !queryState.hasRequiredData ||
     !ultraQuery.data ||
     !ultraForecastQuery.data ||
-    !shortQuery.data ||
-    !todayTempRangeQuery.data
+    !shortQuery.data
   ) {
     return {
       data: null,
-      isLoading,
-      isFetching,
-      isError,
-      error,
+      isLoading: queryState.isLoading,
+      isFetching: queryState.isFetching,
+      isError: queryState.isError,
+      error: queryState.error,
       refresh,
     };
   }
@@ -108,10 +133,10 @@ export const useWeatherSummary = (
 
   return {
     data: data,
-    isLoading,
-    isFetching,
-    isError,
-    error,
+    isLoading: queryState.isLoading,
+    isFetching: queryState.isFetching,
+    isError: queryState.isError,
+    error: queryState.error,
     refresh,
   };
 };
