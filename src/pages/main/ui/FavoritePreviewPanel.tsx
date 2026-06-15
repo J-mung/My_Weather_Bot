@@ -1,26 +1,11 @@
 import { cn } from "@/shared/lib/cn";
 import Button from "@/shared/ui/button";
 import { Icon } from "@/shared/ui/icon";
+import { FavoritePreviewCard } from "./FavoritePreviewCard";
 import { favoritePreviewPanelStyles } from "./styles";
-import type { FavoritePreviewCardProps, FavoritePreviewPanelProps } from "./types";
+import type { FavoritePreviewPanelProps } from "./types";
 
 const MAX_PREVIEW_COUNT = 3;
-
-const FavoritePreviewCard = ({ bookmark, onClick }: FavoritePreviewCardProps) => {
-  const title = bookmark.alias.trim() || bookmark.displayName;
-
-  return (
-    <button type={"button"} className={cn(favoritePreviewPanelStyles.card)} onClick={onClick}>
-      <div className={cn(favoritePreviewPanelStyles.cardHeader)}>
-        <div className={"min-w-0"}>
-          <p className={cn(favoritePreviewPanelStyles.cardTitle)}>{title}</p>
-          <p className={cn(favoritePreviewPanelStyles.cardLocation)}>{bookmark.displayName}</p>
-        </div>
-        <Icon name={"arrowUp"} tone={"subtle"} className={cn(favoritePreviewPanelStyles.moreIcon)} />
-      </div>
-    </button>
-  );
-};
 
 export const FavoritePreviewPanel = ({
   bookmarks,

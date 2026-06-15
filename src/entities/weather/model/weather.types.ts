@@ -135,6 +135,7 @@ export interface ParsedShortFcstItemType {
   date: Date | null;
   time: string;
   fcstDate: string;
+  fcstTime: string;
   values: Record<string, number>;
   rawValues: Record<string, string>;
 }

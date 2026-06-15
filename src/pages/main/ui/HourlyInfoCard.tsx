@@ -1,18 +1,21 @@
+import { useRef, type MouseEvent } from "react";
+
 import { weatherConditionMeta } from "@/entities/weather/model/weather-condition-meta";
 import { cn } from "@/shared/lib/cn";
 import { IconButton } from "@/shared/ui/button";
 import { ErrorNotice } from "@/shared/ui/error-notice";
 import { Icon } from "@/shared/ui/icon";
-import { useRef } from "react";
+import {
+  formatHourlyPrecipitationProbability,
+  getHourlyPrecipitationAmountShortText,
+  getHourlyPrecipitationAmountText,
+  getHourlyPrecipitationAriaLabel,
+} from "../lib/hourly-forecast-display.lib";
 import { HourlyInfoSkeletonCard } from "./HourlyInfoSkeletonCard";
 import { hourlyInfoCardStyles } from "./styles";
 import type { HourlyInfoCardProps } from "./types";
 
 type HourlyForecast = NonNullable<HourlyInfoCardProps["data"]>["hourly"][number];
-
-const getHourlyPrecipitationText = ({ precipitationProbability }: HourlyForecast): string => {
-  return typeof precipitationProbability === "number" ? `${precipitationProbability}%` : "--%";
-};
 
 const getHourlyPrecipitationTone = ({ precipitationProbability }: HourlyForecast) => {
   if (typeof precipitationProbability !== "number" || precipitationProbability <= 0) {
@@ -36,6 +39,7 @@ export const HourlyInfoCard = ({
   isFetching,
   error,
   refresh,
+  isDetailOpen = false,
 }: HourlyInfoCardProps) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   // 드래그 상태 계산을 위한 reference
@@ -45,7 +49,7 @@ export const HourlyInfoCard = ({
     startScrollLeft: 0,
   });
 
-  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+  const handleMouseDown = (e: MouseEvent<HTMLDivElement>) => {
     const elem = scrollRef.current;
     if (!elem) return;
 
@@ -56,7 +60,7 @@ export const HourlyInfoCard = ({
     };
   };
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+  const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
     const elem = scrollRef.current;
     const drag = dragStateRef.current;
 
@@ -130,8 +134,12 @@ export const HourlyInfoCard = ({
           <div className={cn(hourlyInfoCardStyles.list)}>
             {hourly.map((_hour) => {
               const conditionMeta = weatherConditionMeta[_hour.condition];
-              const precipitationText = getHourlyPrecipitationText(_hour);
+              const precipitationText = formatHourlyPrecipitationProbability(
+                _hour.precipitationProbability,
+              );
               const precipitationTone = getHourlyPrecipitationTone(_hour);
+              const precipitationAmountShortText = getHourlyPrecipitationAmountShortText(_hour);
+              const precipitationAriaLabel = getHourlyPrecipitationAriaLabel(_hour);
 
               return (
                 <div key={_hour.time} className={cn(hourlyInfoCardStyles.detail)}>
@@ -147,11 +155,21 @@ export const HourlyInfoCard = ({
                       hourlyInfoCardStyles.detailPrecipitation,
                       precipitationTone,
                     )}
-                    title={`강수확률: ${precipitationText}`}
-                    aria-label={`강수확률 ${precipitationText}`}
+                    title={precipitationAriaLabel}
+                    aria-label={precipitationAriaLabel}
                   >
                     <Icon name={"waterDrop"} size={"sm"} />
                     <span>{precipitationText}</span>
+                  </span>
+                  <span
+                    className={cn(
+                      hourlyInfoCardStyles.detailAmount,
+                      !precipitationAmountShortText && hourlyInfoCardStyles.detailAmountEmpty,
+                    )}
+                    title={precipitationAmountShortText ?? undefined}
+                    aria-hidden={!precipitationAmountShortText}
+                  >
+                    {precipitationAmountShortText ?? "상세 없음"}
                   </span>
                 </div>
               );
@@ -159,6 +177,43 @@ export const HourlyInfoCard = ({
           </div>
         )}
       </div>
+
+      {hourly && isDetailOpen && (
+        <section
+          id={"hourly-forecast-detail"}
+          className={cn(hourlyInfoCardStyles.detailPanel)}
+          aria-label={"24시간 시간대별 예보 상세"}
+        >
+          {hourly.map((_hour) => {
+            const conditionMeta = weatherConditionMeta[_hour.condition];
+            const precipitationText = formatHourlyPrecipitationProbability(
+              _hour.precipitationProbability,
+            );
+            const precipitationAmountText = getHourlyPrecipitationAmountText(_hour);
+
+            return (
+              <div key={`detail-${_hour.time}`} className={cn(hourlyInfoCardStyles.detailRow)}>
+                <span className={cn(hourlyInfoCardStyles.detailRowTime)}>{_hour.time}</span>
+                <Icon
+                  name={conditionMeta.icon}
+                  size={"md"}
+                  className={cn(hourlyInfoCardStyles.detailRowIcon, conditionMeta.iconClassName)}
+                />
+                <span className={cn(hourlyInfoCardStyles.detailRowCondition)}>
+                  {conditionMeta.label}
+                </span>
+                <span className={cn(hourlyInfoCardStyles.detailRowTemp)}>{_hour.temp}°</span>
+                <span className={cn(hourlyInfoCardStyles.detailRowPrecipitation)}>
+                  강수 {precipitationText}
+                </span>
+                <span className={cn(hourlyInfoCardStyles.detailRowAmount)}>
+                  {precipitationAmountText ?? "강수/적설 없음"}
+                </span>
+              </div>
+            );
+          })}
+        </section>
+      )}
     </div>
   );
 };

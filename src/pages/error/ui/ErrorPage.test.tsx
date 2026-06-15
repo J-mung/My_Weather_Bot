@@ -20,7 +20,7 @@ describe("ErrorPage", () => {
     expect(html).toContain(meta.title);
     expect(html).toContain(meta.description);
     expect(html).toContain(meta.code);
-    expect(html).toContain("다시 시도");
+    expect(html).toContain("지역 검색으로 선택");
     expect(html).toContain("홈으로 이동");
   });
 

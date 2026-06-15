@@ -4,36 +4,31 @@ import type { LatLon } from "@/entities/weather/model/weather.types";
 import { APP_ERROR, appErrorMetaMap } from "@/shared/api/app-errors";
 import { isAppError } from "@/shared/api/types";
 import { cn } from "@/shared/lib/cn";
-import { ErrorCode } from "@/shared/ui/error-code";
 import {
   loadKakaoMapSdk,
   type KakaoMap,
   type KakaoMarker,
 } from "@/shared/lib/loadKakaoMapSdk";
 import { useEffect, useRef, useState } from "react";
+import {
+  DEFAULT_EMPTY_MESSAGE,
+  DEFAULT_ERROR_MESSAGE,
+  INITIAL_MAP_LEVEL,
+  MAX_MAP_LEVEL,
+  MIN_MAP_LEVEL,
+  ZOOM_ANIMATION_DURATION_MS,
+} from "./kakao-region-map.constants";
+import type {
+  KakaoRegionMapProps,
+  KakaoRegionMapStatus,
+  WeatherMapView,
+} from "./kakao-region-map.types";
+import { KakaoMapStatusOverlay } from "./KakaoMapStatusOverlay";
+import { KakaoMapViewToggle } from "./KakaoMapViewToggle";
+import { KakaoMapZoomControls } from "./KakaoMapZoomControls";
 import { RadarCompositeImagePanel, RadarCompositeInfoPanel } from "./RadarCompositePanel";
 
-export type KakaoRegionMapStatus = "idle" | "loading" | "success" | "error";
-type WeatherMapView = "location" | "radar";
-
-type KakaoRegionMapProps = {
-  location: string;
-  coordinates?: LatLon | null;
-  title?: string;
-  description?: string;
-  className?: string;
-  mapClassName?: string;
-  emptyMessage?: string;
-  showHeader?: boolean;
-  enableRadarView?: boolean;
-};
-
-const DEFAULT_EMPTY_MESSAGE = "지도를 표시할 지역을 검색하거나 선택해 주세요.";
-const DEFAULT_ERROR_MESSAGE = "지도를 불러오는 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.";
-const INITIAL_MAP_LEVEL = 5;
-const MIN_MAP_LEVEL = 1;
-const MAX_MAP_LEVEL = 14;
-const ZOOM_ANIMATION_DURATION_MS = 300;
+export type { KakaoRegionMapStatus };
 
 export const KakaoRegionMap = ({
   location,
@@ -200,44 +195,7 @@ export const KakaoRegionMap = ({
             isRadarViewActive && "pointer-events-none opacity-0",
           )}
         />
-        {enableRadarView && (
-          <div
-            className={cn(
-              "absolute left-3 top-3 z-20 flex overflow-hidden rounded-full border border-[var(--line)] bg-white/95 p-1 shadow-sm backdrop-blur",
-            )}
-            role={"tablist"}
-            aria-label={"지도 보기 전환"}
-          >
-            <button
-              type={"button"}
-              role={"tab"}
-              aria-selected={activeView === "location"}
-              className={cn(
-                "rounded-full px-3 py-2 text-xs font-extrabold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]",
-                activeView === "location"
-                  ? "bg-[var(--text-main)] text-white"
-                  : "text-[var(--text-sub)] hover:bg-[var(--surface-soft)]",
-              )}
-              onClick={() => setActiveView("location")}
-            >
-              위치 지도
-            </button>
-            <button
-              type={"button"}
-              role={"tab"}
-              aria-selected={activeView === "radar"}
-              className={cn(
-                "rounded-full px-3 py-2 text-xs font-extrabold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]",
-                activeView === "radar"
-                  ? "bg-[var(--accent-strong)] text-white"
-                  : "text-[var(--text-sub)] hover:bg-[var(--surface-soft)]",
-              )}
-              onClick={() => setActiveView("radar")}
-            >
-              강수 레이더
-            </button>
-          </div>
-        )}
+        {enableRadarView && <KakaoMapViewToggle activeView={activeView} onChange={setActiveView} />}
         {isRadarViewActive && (
           <div className={cn("absolute inset-0 z-10")} role={"tabpanel"}>
             <RadarCompositeImagePanel
@@ -250,56 +208,18 @@ export const KakaoRegionMap = ({
           </div>
         )}
         {shouldShowZoomControls && (
-          <div
-            className={cn(
-              "absolute right-3 top-3 z-10 flex overflow-hidden rounded-full border border-[var(--line)] bg-white/95 shadow-sm backdrop-blur",
-            )}
-            aria-label={"지도 확대/축소"}
-          >
-            <button
-              type={"button"}
-              className={cn(
-                "grid h-10 w-10 place-items-center text-xl font-extrabold text-[var(--text-main)] transition hover:bg-[var(--surface-soft)] focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--accent)] disabled:cursor-not-allowed disabled:text-[var(--text-muted)]",
-              )}
-              aria-label={"지도 확대"}
-              disabled={mapLevel <= MIN_MAP_LEVEL}
-              onClick={() => updateMapLevel(-1)}
-            >
-              +
-            </button>
-            <button
-              type={"button"}
-              className={cn(
-                "grid h-10 w-10 place-items-center border-l border-[var(--line)] text-xl font-extrabold text-[var(--text-main)] transition hover:bg-[var(--surface-soft)] focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--accent)] disabled:cursor-not-allowed disabled:text-[var(--text-muted)]",
-              )}
-              aria-label={"지도 축소"}
-              disabled={mapLevel >= MAX_MAP_LEVEL}
-              onClick={() => updateMapLevel(1)}
-            >
-              −
-            </button>
-          </div>
+          <KakaoMapZoomControls
+            mapLevel={mapLevel}
+            onZoomIn={() => updateMapLevel(-1)}
+            onZoomOut={() => updateMapLevel(1)}
+          />
         )}
         {shouldShowStatus && (
-          <div
-            className={cn(
-              "absolute inset-0 grid place-items-center bg-[var(--surface-soft)] px-5 text-center",
-            )}
-          >
-            <div className={cn("max-w-sm")}>
-              <span className={cn("block font-extrabold text-[var(--text-main)]")}>
-                {effectiveStatus === "loading"
-                  ? "지도를 불러오고 있어요"
-                  : effectiveStatus === "idle"
-                    ? "지도 표시 지역을 선택해 주세요"
-                    : "지도를 표시하지 못했어요"}
-              </span>
-              <span className={cn("mt-2 block text-sm leading-6 text-[var(--text-sub)]")}>
-                {effectiveMessage || DEFAULT_ERROR_MESSAGE}
-                <ErrorCode code={effectiveErrorCode} />
-              </span>
-            </div>
-          </div>
+          <KakaoMapStatusOverlay
+            status={effectiveStatus}
+            message={effectiveMessage}
+            errorCode={effectiveErrorCode}
+          />
         )}
       </div>
       {isRadarViewActive && <RadarCompositeInfoPanel data={radarImage.data} />}
