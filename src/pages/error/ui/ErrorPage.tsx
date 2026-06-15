@@ -1,46 +1,15 @@
-import { APP_ERROR, appErrorMetaMap } from "@/shared/api/app-errors";
-import { isAppError } from "@/shared/api/types";
 import { cn } from "@/shared/lib/cn";
 import Button, { IconButton } from "@/shared/ui/button";
 import { ErrorCode } from "@/shared/ui/error-code";
 import { useState } from "react";
+import { useNavigate, useRouteError, useSearchParams } from "react-router-dom";
 import {
-  isRouteErrorResponse,
-  useNavigate,
-  useRouteError,
-  useSearchParams,
-} from "react-router-dom";
+  ERROR_PAGE_RETRY_LOADING_DELAY_MS,
+  getErrorPagePrimaryAction,
+  resolveErrorPageState,
+} from "../lib/error-page.lib";
+import type { ErrorPageProps } from "../lib/error-page.types";
 import { errorPageStyles } from "./styles";
-
-const ERROR_PAGE_REASON_META = {
-  "location-request-limit": appErrorMetaMap[APP_ERROR.LOCATION_REQUEST_LIMIT],
-} as const;
-
-type ErrorPageReason = keyof typeof ERROR_PAGE_REASON_META;
-
-const isErrorPageReason = (reason: string | null): reason is ErrorPageReason => {
-  return Boolean(reason && reason in ERROR_PAGE_REASON_META);
-};
-
-const getErrorMeta = (routeError: unknown) => {
-  if (isAppError(routeError)) {
-    return routeError.meta;
-  }
-
-  if (isRouteErrorResponse(routeError) && routeError.status === 404) {
-    return appErrorMetaMap[APP_ERROR.APP_ROUTE_NOT_FOUND];
-  }
-
-  return appErrorMetaMap[APP_ERROR.APP_RUNTIME];
-};
-
-type ErrorPageProps = {
-  notFound?: boolean;
-};
-
-const RETRY_LOADING_DELAY_MS = 500;
-
-const SEARCH_FALLBACK_ERROR_REASONS = new Set<ErrorPageReason>(["location-request-limit"]);
 
 export default function ErrorPage({ notFound = false }: ErrorPageProps) {
   const routeError = useRouteError();
@@ -48,34 +17,9 @@ export default function ErrorPage({ notFound = false }: ErrorPageProps) {
   const [searchParams] = useSearchParams();
   const [isRetrying, setIsRetrying] = useState(false);
   const errorReason = searchParams.get("reason");
-  const shouldNavigateSearchOnRetry =
-    isErrorPageReason(errorReason) && SEARCH_FALLBACK_ERROR_REASONS.has(errorReason);
-  const shouldNavigateHomeOnRetry =
-    notFound ||
-    (isErrorPageReason(errorReason) && !shouldNavigateSearchOnRetry) ||
-    (isRouteErrorResponse(routeError) && routeError.status === 404);
-  const errorMeta = (() => {
-    if (notFound) {
-      return appErrorMetaMap[APP_ERROR.APP_ROUTE_NOT_FOUND];
-    }
-
-    if (routeError) {
-      return getErrorMeta(routeError);
-    }
-
-    if (isErrorPageReason(errorReason)) {
-      return ERROR_PAGE_REASON_META[errorReason];
-    }
-
-    return appErrorMetaMap[APP_ERROR.APP_RUNTIME];
-  })();
-
-  const primaryActionLabel = errorMeta.actionLabel ?? "다시 시도";
-  const primaryLoadingLabel =
-    shouldNavigateSearchOnRetry || shouldNavigateHomeOnRetry
-      ? "이동 중..."
-      : "다시 불러오는 중...";
-  const primaryIconName = shouldNavigateSearchOnRetry ? "search" : "refresh";
+  const errorPageState = resolveErrorPageState({ notFound, routeError, errorReason });
+  const primaryAction = getErrorPagePrimaryAction(errorPageState);
+  const errorMeta = errorPageState.meta;
 
   const handleRetry = () => {
     if (isRetrying) {
@@ -84,18 +28,18 @@ export default function ErrorPage({ notFound = false }: ErrorPageProps) {
 
     setIsRetrying(true);
     window.setTimeout(() => {
-      if (shouldNavigateSearchOnRetry) {
+      if (errorPageState.retryTarget === "search") {
         navigate("/search", { replace: true });
         return;
       }
 
-      if (shouldNavigateHomeOnRetry) {
+      if (errorPageState.retryTarget === "home") {
         navigate("/", { replace: true });
         return;
       }
 
       window.location.reload();
-    }, RETRY_LOADING_DELAY_MS);
+    }, ERROR_PAGE_RETRY_LOADING_DELAY_MS);
   };
 
   return (
@@ -115,10 +59,10 @@ export default function ErrorPage({ notFound = false }: ErrorPageProps) {
               variant="primary"
               disabled={isRetrying}
               onClick={handleRetry}
-              iconName={primaryIconName}
-              iconClassName={cn(!shouldNavigateSearchOnRetry && isRetrying && "animate-spin")}
+              iconName={primaryAction.iconName}
+              iconClassName={cn(primaryAction.shouldSpinIcon && isRetrying && "animate-spin")}
             >
-              {isRetrying ? primaryLoadingLabel : primaryActionLabel}
+              {isRetrying ? primaryAction.loadingLabel : primaryAction.label}
             </IconButton>
             <Button
               type="button"
