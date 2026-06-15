@@ -1,7 +1,7 @@
 import { APP_ERROR, appErrorMetaMap } from "@/shared/api/app-errors";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { CurrentLocationErrorCard } from "./Bookmark";
+import { CurrentLocationErrorCard } from "./CurrentLocationErrorCard";
 
 describe("CurrentLocationErrorCard", () => {
   it("현재 위치 실패를 별도 에러 안내 레이아웃으로 표시한다", () => {
