@@ -40,15 +40,19 @@ type ErrorPageProps = {
 
 const RETRY_LOADING_DELAY_MS = 500;
 
+const SEARCH_FALLBACK_ERROR_REASONS = new Set<ErrorPageReason>(["location-request-limit"]);
+
 export default function ErrorPage({ notFound = false }: ErrorPageProps) {
   const routeError = useRouteError();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [isRetrying, setIsRetrying] = useState(false);
   const errorReason = searchParams.get("reason");
+  const shouldNavigateSearchOnRetry =
+    isErrorPageReason(errorReason) && SEARCH_FALLBACK_ERROR_REASONS.has(errorReason);
   const shouldNavigateHomeOnRetry =
     notFound ||
-    isErrorPageReason(errorReason) ||
+    (isErrorPageReason(errorReason) && !shouldNavigateSearchOnRetry) ||
     (isRouteErrorResponse(routeError) && routeError.status === 404);
   const errorMeta = (() => {
     if (notFound) {
@@ -66,6 +70,13 @@ export default function ErrorPage({ notFound = false }: ErrorPageProps) {
     return appErrorMetaMap[APP_ERROR.APP_RUNTIME];
   })();
 
+  const primaryActionLabel = errorMeta.actionLabel ?? "다시 시도";
+  const primaryLoadingLabel =
+    shouldNavigateSearchOnRetry || shouldNavigateHomeOnRetry
+      ? "이동 중..."
+      : "다시 불러오는 중...";
+  const primaryIconName = shouldNavigateSearchOnRetry ? "search" : "refresh";
+
   const handleRetry = () => {
     if (isRetrying) {
       return;
@@ -73,6 +84,11 @@ export default function ErrorPage({ notFound = false }: ErrorPageProps) {
 
     setIsRetrying(true);
     window.setTimeout(() => {
+      if (shouldNavigateSearchOnRetry) {
+        navigate("/search", { replace: true });
+        return;
+      }
+
       if (shouldNavigateHomeOnRetry) {
         navigate("/", { replace: true });
         return;
@@ -99,10 +115,10 @@ export default function ErrorPage({ notFound = false }: ErrorPageProps) {
               variant="primary"
               disabled={isRetrying}
               onClick={handleRetry}
-              iconName="refresh"
-              iconClassName={cn(isRetrying && "animate-spin")}
+              iconName={primaryIconName}
+              iconClassName={cn(!shouldNavigateSearchOnRetry && isRetrying && "animate-spin")}
             >
-              {isRetrying ? "다시 불러오는 중..." : "다시 시도"}
+              {isRetrying ? primaryLoadingLabel : primaryActionLabel}
             </IconButton>
             <Button
               type="button"

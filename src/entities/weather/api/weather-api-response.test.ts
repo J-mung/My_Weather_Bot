@@ -99,6 +99,18 @@ describe("weather api response validation", () => {
     await expect(fetcher(requestParams)).rejects.toMatchObject({ type: expectedType });
   });
 
+  it.each([
+    ["초단기실황", fetchUltraNow, APP_ERROR.ULTRA_NOW],
+    ["초단기예보", fetchUltraForecast, APP_ERROR.ULTRA_FORECAST],
+    ["단기예보", fetchShortForecast, APP_ERROR.SHORT_FORECAST],
+  ])("%s 응답 resultCode=10은 일반 날씨 AppError로 변환한다", async (_, fetcher, expectedType) => {
+    weatherGetMock.mockResolvedValue({
+      data: createWeatherBody({ resultCode: "10", resultMsg: "INVALID_REQUEST_PARAMETER_ERROR" }),
+    });
+
+    await expect(fetcher(requestParams)).rejects.toMatchObject({ type: expectedType });
+  });
+
   it("item이 단일 객체로 내려와도 mapper가 사용할 수 있도록 배열로 정규화한다", async () => {
     weatherGetMock.mockResolvedValue({
       data: createWeatherBody({

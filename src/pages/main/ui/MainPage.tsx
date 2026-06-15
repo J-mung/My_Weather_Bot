@@ -135,6 +135,7 @@ export default function MainPage() {
         isOpen={currentLocation.isDialogOpen && !displayDistrict}
         status={currentLocation.permissionStatus}
         error={currentLocation.errorMeta}
+        failureReason={currentLocation.failureReason}
         isRequesting={currentLocation.isRequesting}
         onRequestLocation={() => {
           void currentLocation.requestCurrentLocation();

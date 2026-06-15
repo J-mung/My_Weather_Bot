@@ -120,21 +120,21 @@ export const appErrorMetaMap = {
   },
   [APP_ERROR.WEATHER_PARAMETER]: {
     code: APP_ERROR_CODE[APP_ERROR.WEATHER_PARAMETER],
-    title: "위치 정보가 없어요.",
+    title: "날씨를 확인할 위치가 없어요",
     description:
-      "위치 정보가 없어서 날씨 정보를 불러오는 중 문제가 발생했습니다. 관리자에게 문의하세요.",
-    actionLabel: "관리자 문의",
+      "날씨를 불러올 위치 정보가 없습니다. 지역 검색으로 원하는 위치를 다시 선택해 주세요.",
+    actionLabel: "지역 검색으로 선택",
   },
   [APP_ERROR.ULTRA_FORECAST]: {
     code: APP_ERROR_CODE[APP_ERROR.ULTRA_FORECAST],
     title: "날씨 정보를 찾지 못했어요.",
-    description: "날씨 정보를 불러오는 중 문제가 발생했습니다.\n잠시 후 다시 시도해 주세요.",
+    description: "날씨 정보를 불러오는 중 문제가 발생했습니다.\n잠시 후 다시 시도하거나 다른 지역을 검색해 주세요.",
     actionLabel: "다시 시도",
   },
   [APP_ERROR.ULTRA_FORECAST_NOT_FOUND]: {
     code: APP_ERROR_CODE[APP_ERROR.ULTRA_FORECAST_NOT_FOUND],
     title: "날씨 정보를 찾지 못했어요.",
-    description: `날씨 정보를 불러오는 중 문제가 발생했습니다.\n잠시 후 다시 시도해 주세요.`,
+    description: `날씨 데이터가 아직 준비되지 않았어요.\n잠시 후 다시 시도하거나 다른 지역을 검색해 주세요.`,
     actionLabel: "다시 시도",
   },
   [APP_ERROR.ULTRA_FORECAST_RETRY_LATER]: {
@@ -152,13 +152,13 @@ export const appErrorMetaMap = {
   [APP_ERROR.ULTRA_NOW]: {
     code: APP_ERROR_CODE[APP_ERROR.ULTRA_NOW],
     title: "날씨 정보를 찾지 못했어요.",
-    description: "날씨 정보를 불러오는 중 문제가 발생했습니다.\n잠시 후 다시 시도해 주세요.",
+    description: "날씨 정보를 불러오는 중 문제가 발생했습니다.\n잠시 후 다시 시도하거나 다른 지역을 검색해 주세요.",
     actionLabel: "다시 시도",
   },
   [APP_ERROR.ULTRA_NOW_NOT_FOUND]: {
     code: APP_ERROR_CODE[APP_ERROR.ULTRA_NOW_NOT_FOUND],
     title: "날씨 정보를 찾지 못했어요.",
-    description: `날씨 정보를 불러오는 중 문제가 발생했습니다.\n잠시 후 다시 시도해 주세요.`,
+    description: `날씨 데이터가 아직 준비되지 않았어요.\n잠시 후 다시 시도하거나 다른 지역을 검색해 주세요.`,
     actionLabel: "다시 시도",
   },
   [APP_ERROR.ULTRA_NOW_RETRY_LATER]: {
@@ -176,13 +176,13 @@ export const appErrorMetaMap = {
   [APP_ERROR.SHORT_FORECAST]: {
     code: APP_ERROR_CODE[APP_ERROR.SHORT_FORECAST],
     title: "날씨 정보를 찾지 못했어요.",
-    description: "날씨 정보를 불러오는 중 문제가 발생했습니다.\n잠시 후 다시 시도해 주세요.",
+    description: "날씨 정보를 불러오는 중 문제가 발생했습니다.\n잠시 후 다시 시도하거나 다른 지역을 검색해 주세요.",
     actionLabel: "다시 시도",
   },
   [APP_ERROR.SHORT_FORECAST_NOT_FOUND]: {
     code: APP_ERROR_CODE[APP_ERROR.SHORT_FORECAST_NOT_FOUND],
     title: "날씨 정보를 찾지 못했어요.",
-    description: `날씨 정보를 불러오는 중 문제가 발생했습니다.\n잠시 후 다시 시도해 주세요.`,
+    description: `날씨 데이터가 아직 준비되지 않았어요.\n잠시 후 다시 시도하거나 다른 지역을 검색해 주세요.`,
     actionLabel: "다시 시도",
   },
   [APP_ERROR.SHORT_FORECAST_RETRY_LATER]: {
@@ -211,9 +211,9 @@ export const appErrorMetaMap = {
   },
   [APP_ERROR.LOCATION_LOOKUP_OUT_OF_SERVICE_AREA]: {
     code: APP_ERROR_CODE[APP_ERROR.LOCATION_LOOKUP_OUT_OF_SERVICE_AREA],
-    title: "지원 지역 밖의 위치예요",
+    title: "현재 위치로는 날씨를 찾을 수 없어요",
     description:
-      "현재 좌표가 Kakao 지역 조회 서비스 영역 밖이거나 국내 행정구역으로 확인되지 않습니다. 지역 검색으로 위치를 직접 선택해 주세요.",
+      "현재 앱은 국내 지역 날씨를 기준으로 제공돼요. 지역명을 검색해서 원하는 지역의 날씨를 확인해 주세요.",
     actionLabel: "지역 검색으로 선택",
   },
   [APP_ERROR.LOCATION_LOOKUP_RETRY_LATER]: {
