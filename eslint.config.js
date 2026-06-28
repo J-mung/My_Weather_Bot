@@ -44,6 +44,20 @@ export default tseslint.config(
     },
   },
 
+  {
+    files: ["scripts/**/*.mjs"],
+    languageOptions: {
+      ecmaVersion: "latest",
+      sourceType: "module",
+      globals: {
+        ...globals.node,
+      },
+    },
+    rules: {
+      "no-console": "off",
+    },
+  },
+
   // Prettier와 충돌하는 ESLint 스타일 룰을 꺼줌
   prettier,
 );

@@ -12,7 +12,11 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "check:temporary": "node scripts/check-temporary-artifacts.mjs",
+    "check:commit-msg": "node scripts/validate-commit-msg.mjs",
+    "verify": "npm run check:temporary && npm test && npm run lint && npm run build",
+    "hooks:install": "node scripts/install-git-hooks.mjs"
   },
   "dependencies": {
     "@tanstack/query-async-storage-persister": "^5.96.2",
