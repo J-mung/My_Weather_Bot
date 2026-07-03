@@ -3,6 +3,7 @@ import {
   CLIENT_CONFIG_API_PATH,
   KAKAO_API_PREFIX,
   KAKAO_MAP_SDK_API_PATH,
+  RISE_SET_API_PREFIX,
   WEATHER_API_PREFIX,
 } from "./constants";
 
@@ -14,6 +15,7 @@ type WorkerRouteGroup =
   | "weather"
   | "air-quality"
   | "radar"
+  | "rise-set"
   | "kakao"
   | "kakao-map-sdk"
   | "client-config"
@@ -46,6 +48,10 @@ const resolveRouteGroup = (path: string): WorkerRouteGroup => {
     return "air-quality";
   }
 
+  if (path.startsWith(RISE_SET_API_PREFIX)) {
+    return "rise-set";
+  }
+
   if (path.startsWith(KAKAO_API_PREFIX)) {
     return "kakao";
   }
@@ -69,6 +75,7 @@ const resolveCacheStatus = (headers: Headers): string | undefined =>
   headers.get("X-Weather-Cache") ??
   headers.get("X-Air-Quality-Cache") ??
   headers.get("X-Radar-Cache") ??
+  headers.get("X-Rise-Set-Cache") ??
   undefined;
 
 export const addRequestIdHeader = (response: Response, requestId: string): Response => {

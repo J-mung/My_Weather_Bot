@@ -7,10 +7,12 @@ export const WEATHER_ALLOWED_ENDPOINTS = new Set([
 ]);
 export const WEATHER_API_PREFIX = "/api/";
 export const KAKAO_API_PREFIX = "/api/kakao/";
+export const RISE_SET_API_PREFIX = "/api/rise-set/";
 export const AIR_QUALITY_API_PREFIX = "/api/air-quality/";
 export const CLIENT_CONFIG_API_PATH = "/api/client-config";
 export const KAKAO_MAP_SDK_API_PATH = "/dapi.kakao.com/v2/maps/sdk.js";
 export const AIR_QUALITY_ALLOWED_ENDPOINTS = new Set(["getCtprvnRltmMesureDnsty"]);
+export const RISE_SET_ALLOWED_ENDPOINTS = new Set(["getAreaRiseSetInfo"]);
 export const KAKAO_ENDPOINT_KEYS = [
   "coord2regioncode",
   "searchAddress",

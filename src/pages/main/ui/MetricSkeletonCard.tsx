@@ -4,11 +4,12 @@ import { mainPageStyles } from "./styles";
 
 type MetricSkeletonCardProps = {
   showBadge?: boolean;
+  className?: string;
 };
 
-export const MetricSkeletonCard = ({ showBadge = false }: MetricSkeletonCardProps) => {
+export const MetricSkeletonCard = ({ showBadge = false, className }: MetricSkeletonCardProps) => {
   return (
-    <div className={cn(mainPageStyles.metricCard)} aria-hidden={"true"}>
+    <div className={cn(mainPageStyles.metricCard, className)} aria-hidden={"true"}>
       <div className={cn(mainPageStyles.metricHeader)}>
         <Skeleton className={"h-4 w-20"} />
         {showBadge && <Skeleton rounded={"full"} className={"h-5 w-12"} />}
