@@ -6,6 +6,7 @@ const API_BASE_URL = {
   weather: "/api",
   kakao: "/api/kakao",
   airQuality: "/api/air-quality",
+  riseSet: "/api/rise-set",
   clientConfig: "/api/client-config",
 } as const;
 
@@ -65,6 +66,7 @@ const apiClients: Record<ApiClientName, AxiosInstance> = {
   weather: createAxiosInstance(API_BASE_URL.weather),
   kakao: createAxiosInstance(API_BASE_URL.kakao),
   airQuality: createAxiosInstance(API_BASE_URL.airQuality),
+  riseSet: createAxiosInstance(API_BASE_URL.riseSet),
   clientConfig: createAxiosInstance(API_BASE_URL.clientConfig),
 };
 

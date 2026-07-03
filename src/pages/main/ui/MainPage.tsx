@@ -4,6 +4,7 @@ import type { BookmarkItem } from "@/features/bookmark/model/types";
 import { readBookmarkFromStorage } from "@/features/bookmark/model/useBookmarks";
 import { useWeatherSummary } from "@/features/get-current-weather/model/useWeatherSummary";
 import { useCurrentLocationRegion } from "@/features/location-current/model";
+import { useSunriseSunsetSummary } from "@/features/sunrise-sunset/model/useSunriseSunsetSummary";
 import { cn } from "@/shared/lib/cn";
 import { IconInput } from "@/shared/ui/input";
 import { KakaoRegionMap } from "@/shared/ui/map";
@@ -17,6 +18,7 @@ import { HourlyInfoCard } from "./HourlyInfoCard";
 import { LocationPermissionDialog } from "./LocationPermissionDialog";
 import { MetricSkeletonCard } from "./MetricSkeletonCard";
 import { NowInfoCard } from "./NowInfoCard";
+import { SunriseSunsetMetricCard } from "./SunriseSunsetMetricCard";
 import { OutfitRecommendationCard } from "./OutfitRecommendationCard";
 import { mainPageStyles } from "./styles";
 
@@ -104,6 +106,9 @@ export default function MainPage() {
   const aliasLabel = displayAlias || currentLocation.regionName;
   const isWeatherPending = !error && (isLoading || !data);
   const airQuality = useAirQualitySummary(locationLabel);
+  const sunriseSunset = useSunriseSunsetSummary(locationLabel, {
+    enabled: Boolean(locationLabel),
+  });
   const isAirQualityPending = !airQuality.isError && (!locationLabel || airQuality.isLoading);
   const districtDisplay = buildDistrictDisplay({
     district: locationLabel || "알 수 없음",
@@ -259,6 +264,12 @@ export default function MainPage() {
                 </p>
               </div>
             )}
+
+            <SunriseSunsetMetricCard
+              data={sunriseSunset.data}
+              isLoading={sunriseSunset.isLoading}
+              isError={sunriseSunset.isError}
+            />
           </div>
 
           <KakaoRegionMap

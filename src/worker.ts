@@ -13,12 +13,14 @@ import {
   CLIENT_CONFIG_API_PATH,
   KAKAO_API_PREFIX,
   KAKAO_MAP_SDK_API_PATH,
+  RISE_SET_API_PREFIX,
   WEATHER_API_PREFIX,
 } from "./worker/constants";
 import { handleKakaoApiRequest } from "./worker/kakao";
 import { handleKakaoMapSdkRequest } from "./worker/kakao-map-sdk";
 import { withWorkerObservability } from "./worker/observability";
 import { handleRadarApiRequest, isRadarApiRequest } from "./worker/radar";
+import { handleRiseSetApiRequest } from "./worker/rise-set";
 import type { Env, WorkerExecutionContext } from "./worker/types";
 import { handleApiRequest } from "./worker/weather";
 
@@ -56,6 +58,12 @@ export default {
     if (isRadarApiRequest(url.pathname, env)) {
       return withWorkerObservability(request, "radar", () =>
         handleRadarApiRequest(request, env, context),
+      );
+    }
+
+    if (url.pathname.startsWith(RISE_SET_API_PREFIX)) {
+      return withWorkerObservability(request, "rise-set", () =>
+        handleRiseSetApiRequest(request, env, context),
       );
     }
 

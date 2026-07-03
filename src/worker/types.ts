@@ -11,6 +11,8 @@ export interface Env {
   RADAR_API_PROXY_PATH?: string;
   RADAR_API_KEY?: string;
   APIHUB_API_KEY?: string;
+  RISE_SET_API_BASE_URL?: string;
+  RISE_SET_API_KEY?: string;
   KAKAO_REST_API_KEY: string;
   KAKAO_REST_API_BASE_URL: string;
   KAKAO_MAP_KEY?: string;

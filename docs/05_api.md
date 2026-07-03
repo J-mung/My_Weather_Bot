@@ -39,3 +39,51 @@
 - 발표시각 예시: 2000 (20시 정각)
 - 기상청 내부에서 1시간 간격으로 정각에 데이터를 생성하고, 그로부터 10분 뒤에 API로 데이터를 제공함
 - Date 객체에서 발표일자와 발표시각을 구하는 메서드 구현하기
+
+---
+
+## 한국천문연구원 출몰시각 정보 API - 일출/일몰
+
+### 소개
+
+- 공공데이터포털 `한국천문연구원_출몰시각 정보`를 사용해 오늘의 일출/일몰 시각을 조회한다.
+- 1차 구현은 지역명 기반 `getAreaRiseSetInfo`를 사용한다.
+- API 키는 프론트에 노출하지 않고 Worker에서 `serviceKey`를 주입한다.
+
+### 로컬/배포 환경 변수
+
+로컬 `.dev.vars`:
+
+```bash
+RISE_SET_API_KEY=공공데이터포털_일반_인증키_Decoding
+```
+
+Cloudflare 배포 secret:
+
+```bash
+npx wrangler secret put RISE_SET_API_KEY
+```
+
+`wrangler.toml`에는 secret이 아닌 base URL만 둔다.
+
+```toml
+RISE_SET_API_BASE_URL = "https://apis.data.go.kr/B090041/openapi/service/RiseSetInfoService"
+```
+
+### 키 발급
+
+1. 공공데이터포털에 로그인한다.
+2. `한국천문연구원_출몰시각 정보` 페이지에서 `활용신청`을 진행한다.
+3. 승인 후 마이페이지/활용신청 상세에서 `일반 인증키(Decoding)` 값을 복사한다.
+4. Worker가 `URLSearchParams`로 인코딩하므로 Encoding 키보다 Decoding 키를 환경 변수에 넣는 것을 권장한다.
+
+### 요청 파라미터
+
+- `locdate`: `YYYYMMDD`
+- `location`: 지역명. 예: `서울`, `부산`, `수원`
+
+### UI 정책
+
+- API 실패는 전체 날씨 화면 실패로 전파하지 않는다.
+- 실패 시 일출/일몰 카드만 `--:--`와 안내 문구를 표시한다.
+- 아크 라인 차트는 실제 천문 고도 계산이 아니라 낮 시간 진행을 설명하는 시각화다.
