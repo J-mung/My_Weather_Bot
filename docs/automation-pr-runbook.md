@@ -1,46 +1,47 @@
-# Automation PR runbook
+# 자동 PR 운영 런북
 
-This runbook describes the repository-local automation that verifies an existing branch, opens a draft pull request, and leaves a non-approving review comment.
+이 문서는 저장소의 `Automation PR` 워크플로우가 기존 브랜치를 검증하고, draft PR을 만들고, 승인 없는 리뷰 코멘트를 남기는 절차를 설명한다.
 
-## Purpose
+## 목적
 
-Use the `Automation PR` workflow when an automation branch already exists and should be promoted into a reviewable draft PR with repeatable verification evidence.
+자동화 브랜치가 이미 존재하고, 그 변경을 반복 가능한 검증 증거와 함께 리뷰 가능한 draft PR로 올려야 할 때 `Automation PR` 워크플로우를 사용한다.
 
-The workflow is intentionally conservative:
+워크플로우는 보수적으로 동작한다.
 
-- it runs `npm run verify` before creating or updating a PR,
-- it creates draft PRs only,
-- it submits a `COMMENT` review only,
-- it does not approve, mark ready, merge, deploy, or change secrets.
+- PR 생성/업데이트 전에 `npm run verify`를 실행한다.
+- PR은 draft 상태로만 생성한다.
+- 리뷰는 `COMMENT` 이벤트로만 남긴다.
+- 자동 승인, Ready 전환, 병합, 배포, secret 변경은 수행하지 않는다.
+- 생성되는 PR 제목, 본문, 자동화 리뷰 코멘트는 기본적으로 한글로 작성한다.
 
-## Manual dispatch inputs
+## 수동 실행 입력값
 
-Run the workflow from GitHub Actions on the default branch.
+GitHub Actions의 기본 브랜치에서 워크플로우를 수동 실행한다.
 
-| Input | Required | Description |
+| 입력값 | 필수 | 설명 |
 | --- | --- | --- |
-| `head_branch` | yes | Branch that already contains the automation changes. |
-| `base_branch` | no | Target branch, normally `main`. |
-| `task_id` | yes | Short identifier used in the PR title and review body. |
-| `summary` | yes | Human-readable summary for the generated PR body. |
-| `create_pr` | no | Set to `false` for no-op smoke runs. |
+| `head_branch` | 예 | 자동화 변경이 들어 있는 브랜치. |
+| `base_branch` | 아니오 | 대상 브랜치. 일반적으로 `main`. |
+| `task_id` | 예 | PR 제목과 본문에 표시할 짧은 작업 식별자. |
+| `summary` | 예 | 생성되는 PR 본문에 들어갈 작업 요약. 한글 작성을 권장한다. |
+| `create_pr` | 아니오 | no-op smoke 실행 시 `false`로 둔다. |
 
-## Expected result
+## 기대 결과
 
-When `create_pr=true` and the branch has changes against `base_branch`, the workflow should:
+`create_pr=true`이고 `head_branch`가 `base_branch` 대비 변경을 포함하면 워크플로우는 다음을 수행해야 한다.
 
-1. verify the branch with `npm run verify`,
-2. create or update one draft PR for the branch,
-3. include changed files and verification output in the PR body,
-4. leave a non-approving `COMMENT` review,
-5. stop before approval, ready-for-review, merge, or deployment.
+1. `npm run verify`로 브랜치를 검증한다.
+2. 해당 브랜치의 draft PR을 생성하거나 기존 PR을 업데이트한다.
+3. PR 본문에 변경 파일과 검증 로그를 포함한다.
+4. 승인 없는 `COMMENT` 리뷰를 남긴다.
+5. 자동 승인, Ready 전환, 병합, 배포 전에 멈춘다.
 
-## Operator checklist
+## 운영자 체크리스트
 
-Before merging an automation-created PR:
+자동화가 만든 PR을 병합하기 전에 다음을 확인한다.
 
-- [ ] Confirm the branch diff matches the requested task.
-- [ ] Confirm GitHub CI passed on the PR.
-- [ ] Confirm the automation review is a comment, not an approval.
-- [ ] Request human or Codex review when the change is non-trivial.
-- [ ] Merge only after the protected-branch checks are satisfied.
+- [ ] 브랜치 diff가 요청한 작업 범위와 일치한다.
+- [ ] PR의 GitHub CI가 통과했다.
+- [ ] 자동화 리뷰가 승인(`APPROVE`)이 아니라 코멘트(`COMMENT`)다.
+- [ ] 변경이 단순하지 않으면 사람 또는 Codex 리뷰를 추가로 확인했다.
+- [ ] 보호 브랜치 필수 체크가 만족된 뒤에만 병합한다.
