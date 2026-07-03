@@ -84,7 +84,7 @@ export const SunriseSunsetMetricCard = ({
   isError: boolean;
 }) => {
   if (isLoading) {
-    return <MetricSkeletonCard className="sm:col-span-2 xl:col-span-2" />;
+    return <MetricSkeletonCard className="sm:col-span-2 xl:col-span-4" />;
   }
 
   const statusText = data
@@ -96,7 +96,7 @@ export const SunriseSunsetMetricCard = ({
     : "일출·일몰 정보를 불러오지 못했어요.";
 
   return (
-    <div className={cn(mainPageStyles.metricCard, "sm:col-span-2", "xl:col-span-2")}>
+    <div className={cn(mainPageStyles.metricCard, "sm:col-span-2", "xl:col-span-4")}>
       <div className={cn(mainPageStyles.metricHeader)}>
         <span className={cn(mainPageStyles.metricHeaderLabel)}>일출 · 일몰</span>
       </div>
@@ -105,8 +105,8 @@ export const SunriseSunsetMetricCard = ({
         <>
           <SunPathChart data={data} />
           <div className="mt-3 grid grid-cols-2 gap-3 text-sm font-bold text-[var(--text-main)]">
-            <span>🌅 일출 {data.sunriseText}</span>
-            <span className="text-right">일몰 {data.sunsetText} 🌇</span>
+            <span>일출 {data.sunriseText}</span>
+            <span className="text-right">일몰 {data.sunsetText}</span>
           </div>
           <p className={cn(mainPageStyles.metricDescription)}>
             낮 {data.dayLengthText} · {statusText}
