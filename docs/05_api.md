@@ -52,13 +52,25 @@
 
 ### 로컬/배포 환경 변수
 
-로컬 `.dev.vars`:
+로컬 Vite 개발 환경에서 사용자가 `.env`에 기록한 값:
+
+```bash
+VITE_RISE_SET_API_KEY=공공데이터포털_일반_인증키_Decoding
+```
+
+주의: 현재 구현은 클라이언트에서 이 값을 직접 읽지 않는다. 일출/일몰 API 키는 Worker가 서버 측 환경 변수 `RISE_SET_API_KEY`로 주입하는 구조가 안전하다. 로컬 Worker 프록시를 함께 실행할 때는 `.dev.vars`에도 다음 값을 둔다.
 
 ```bash
 RISE_SET_API_KEY=공공데이터포털_일반_인증키_Decoding
 ```
 
-Cloudflare 배포 secret:
+Cloudflare Pages/Worker 환경 변수:
+
+```bash
+RISE_SET_API_KEY=공공데이터포털_일반_인증키_Decoding
+```
+
+CLI로 설정할 때:
 
 ```bash
 npx wrangler secret put RISE_SET_API_KEY
