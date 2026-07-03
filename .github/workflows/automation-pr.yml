@@ -1,0 +1,218 @@
+name: Automation PR
+
+on:
+  workflow_dispatch:
+    inputs:
+      head_branch:
+        description: "Branch that already contains automation changes"
+        required: true
+      base_branch:
+        description: "Base branch for the draft PR"
+        required: false
+        default: "main"
+      task_id:
+        description: "Short task identifier for the PR title/body"
+        required: true
+      summary:
+        description: "Human-readable task summary"
+        required: true
+      create_pr:
+        description: "Create a draft PR when verification succeeds"
+        required: false
+        type: boolean
+        default: true
+
+# contents:write is needed to inspect/push refs when a future script-only automation branch is used.
+# pull-requests:write is needed to create a draft PR and submit a COMMENT review.
+# issues:write is reserved for PR timeline comments/failure notices if review submission is unavailable.
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: automation-pr-${{ github.event.inputs.head_branch }}
+  cancel-in-progress: false
+
+jobs:
+  open-draft-pr:
+    name: Verify branch and open draft PR
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout head branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.head_branch }}
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify candidate branch
+        id: verify
+        run: |
+          set -euo pipefail
+          npm run verify | tee verify.log
+          {
+            echo 'result=success'
+            echo 'log<<EOF'
+            tail -n 80 verify.log
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Check branch diff
+        id: diff
+        env:
+          BASE_BRANCH: ${{ github.event.inputs.base_branch }}
+          HEAD_BRANCH: ${{ github.event.inputs.head_branch }}
+        run: |
+          set -euo pipefail
+          git fetch origin "$BASE_BRANCH" "$HEAD_BRANCH"
+          if git diff --quiet "origin/$BASE_BRANCH...origin/$HEAD_BRANCH"; then
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
+            echo "No changes found between origin/$BASE_BRANCH and origin/$HEAD_BRANCH" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          echo "has_changes=true" >> "$GITHUB_OUTPUT"
+          {
+            echo 'files<<EOF'
+            git diff --name-only "origin/$BASE_BRANCH...origin/$HEAD_BRANCH"
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Create draft PR and automation review
+        if: ${{ github.event.inputs.create_pr == 'true' && steps.diff.outputs.has_changes == 'true' }}
+        uses: actions/github-script@v7
+        env:
+          BASE_BRANCH: ${{ github.event.inputs.base_branch }}
+          HEAD_BRANCH: ${{ github.event.inputs.head_branch }}
+          TASK_ID: ${{ github.event.inputs.task_id }}
+          TASK_SUMMARY: ${{ github.event.inputs.summary }}
+          VERIFY_LOG: ${{ steps.verify.outputs.log }}
+          CHANGED_FILES: ${{ steps.diff.outputs.files }}
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const base = process.env.BASE_BRANCH;
+            const head = process.env.HEAD_BRANCH;
+            const taskId = process.env.TASK_ID;
+            const taskSummary = process.env.TASK_SUMMARY;
+            const verifyLog = process.env.VERIFY_LOG || 'npm run verify completed successfully.';
+            const changedFiles = (process.env.CHANGED_FILES || '')
+              .split('\n')
+              .map((file) => file.trim())
+              .filter(Boolean);
+
+            const existing = await github.paginate(github.rest.pulls.list, {
+              owner,
+              repo,
+              state: 'open',
+              head: `${owner}:${head}`,
+              base,
+            });
+
+            const title = `🤖 자동화: ${taskId}`;
+            const body = [
+              '## Summary',
+              '',
+              taskSummary,
+              '',
+              '## Automation context',
+              '',
+              `- Task ID: \`${taskId}\``,
+              `- Head: \`${head}\``,
+              `- Base: \`${base}\``,
+              '- Mode: draft PR, no auto-approve, no auto-merge',
+              '',
+              '## Changed files',
+              '',
+              changedFiles.length > 0
+                ? changedFiles.map((file) => `- \`${file}\``).join('\n')
+                : '- No changed file list was captured.',
+              '',
+              '## Verification',
+              '',
+              '```text',
+              verifyLog.slice(-6000),
+              '```',
+              '',
+              '## Human checklist',
+              '',
+              '- [ ] Confirm the generated diff matches the requested task.',
+              '- [ ] Confirm no secret/env/deployment setting was changed unexpectedly.',
+              '- [ ] Confirm CI passed on this PR.',
+              '- [ ] Request Codex review or human review before marking ready.',
+            ].join('\n');
+
+            const pr = existing[0] ?? (await github.rest.pulls.create({
+              owner,
+              repo,
+              title,
+              head,
+              base,
+              body,
+              draft: true,
+              maintainer_can_modify: true,
+            })).data;
+
+            if (existing[0]) {
+              await github.rest.pulls.update({
+                owner,
+                repo,
+                pull_number: pr.number,
+                title,
+                body,
+              });
+            }
+
+            const reviewBody = [
+              '## Automation review',
+              '',
+              `Task \`${taskId}\` was verified by automation.`,
+              '',
+              '- `npm run verify`: passed',
+              '- Auto-approval: not performed',
+              '- Auto-merge: not performed',
+              '- Required next step: human/Codex review before merge',
+            ].join('\n');
+
+            await github.rest.pulls.createReview({
+              owner,
+              repo,
+              pull_number: pr.number,
+              event: 'COMMENT',
+              body: reviewBody,
+            });
+
+            await core.summary
+              .addHeading('Automation PR created')
+              .addLink(`#${pr.number} ${pr.title}`, pr.html_url)
+              .addRaw('\n')
+              .addList([
+                `Head: ${head}`,
+                `Base: ${base}`,
+                'Verification: npm run verify passed',
+                'Review: COMMENT review posted',
+              ])
+              .write();
+
+      - name: Report skipped PR creation
+        if: ${{ github.event.inputs.create_pr != 'true' || steps.diff.outputs.has_changes != 'true' }}
+        run: |
+          {
+            echo "## Automation PR not created"
+            echo ""
+            echo "- create_pr: ${{ github.event.inputs.create_pr }}"
+            echo "- has_changes: ${{ steps.diff.outputs.has_changes }}"
+            echo "- verify: passed"
+          } >> "$GITHUB_STEP_SUMMARY"
