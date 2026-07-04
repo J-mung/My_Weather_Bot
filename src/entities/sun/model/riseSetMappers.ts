@@ -79,12 +79,27 @@ export const normalizeRiseSetLocation = (district: string): string => {
   return firstToken.replace(/특별시|광역시|특별자치시|특별자치도|자치도|도|시|군|구$/g, "");
 };
 
-export const parseRiseSetTimeToMinutes = (time: string | null | undefined): number | null => {
-  if (!time) {
+const formatRiseSetApiValue = (value: string | number | null | undefined): string => {
+  if (value === null || value === undefined) {
+    return "";
+  }
+
+  return String(value).trim();
+};
+
+export const parseRiseSetTimeToMinutes = (
+  time: string | number | null | undefined,
+): number | null => {
+  if (time === null || time === undefined) {
     return null;
   }
 
-  const normalized = time.trim();
+  const trimmed = String(time).trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  const normalized = trimmed.padStart(4, "0");
   if (!/^\d{4}$/.test(normalized)) {
     return null;
   }
@@ -137,8 +152,8 @@ export const mapRiseSetInfo = (item: RiseSetInfoItemType): RiseSetSummary | null
   const dayLengthMinutes = sunsetMinutes - sunriseMinutes;
 
   return {
-    location: item.location ?? item.locatioan ?? "",
-    locdate: item.locdate ?? "",
+    location: formatRiseSetApiValue(item.location ?? item.locatioan),
+    locdate: formatRiseSetApiValue(item.locdate),
     sunriseText: formatRiseSetMinutes(sunriseMinutes),
     sunsetText: formatRiseSetMinutes(sunsetMinutes),
     sunriseMinutes,

@@ -6,8 +6,11 @@ export interface SunPathChartGeometry {
   peakX: number;
   baselineY: number;
   peakY: number;
-  sunrisePath: string;
-  sunsetPath: string;
+  sunPath: string;
+  currentSun: {
+    x: number;
+    y: number;
+  } | null;
 }
 
 export const getCurrentKoreaMinutes = (date: Date = new Date()): number => {
@@ -59,12 +62,14 @@ export const getSunlightStatusText = ({
 export const createSunPathChartGeometry = ({
   sunriseMinutes,
   sunsetMinutes,
+  currentMinutes,
   width = 320,
   baselineY = 78,
   peakY = 18,
 }: {
   sunriseMinutes: number;
   sunsetMinutes: number;
+  currentMinutes?: number;
   width?: number;
   baselineY?: number;
   peakY?: number;
@@ -76,6 +81,19 @@ export const createSunPathChartGeometry = ({
   const sunriseX = Math.round((sunriseMinutes / DAY_MINUTES) * width);
   const sunsetX = Math.round((sunsetMinutes / DAY_MINUTES) * width);
   const peakX = Math.round((sunriseX + sunsetX) / 2);
+  const controlY = 2 * peakY - baselineY;
+  const currentSun =
+    currentMinutes !== undefined &&
+    currentMinutes >= sunriseMinutes &&
+    currentMinutes <= sunsetMinutes
+      ? (() => {
+          const progress = (currentMinutes - sunriseMinutes) / (sunsetMinutes - sunriseMinutes);
+          const x = Math.round(sunriseX + (sunsetX - sunriseX) * progress);
+          const y = Math.round(baselineY - (baselineY - peakY) * 4 * progress * (1 - progress));
+
+          return { x, y };
+        })()
+      : null;
 
   return {
     sunriseX,
@@ -83,7 +101,7 @@ export const createSunPathChartGeometry = ({
     peakX,
     baselineY,
     peakY,
-    sunrisePath: `M ${sunriseX} ${baselineY} Q ${Math.round((sunriseX + peakX) / 2)} ${peakY} ${peakX} ${peakY}`,
-    sunsetPath: `M ${peakX} ${peakY} Q ${Math.round((peakX + sunsetX) / 2)} ${peakY} ${sunsetX} ${baselineY}`,
+    sunPath: `M ${sunriseX} ${baselineY} Q ${peakX} ${controlY} ${sunsetX} ${baselineY}`,
+    currentSun,
   };
 };

@@ -36,6 +36,74 @@ const parseRiseSetItemFromXml = (xml: string): RiseSetInfoItemType | null => {
   };
 };
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null;
+
+const normalizeRiseSetItem = (value: unknown): RiseSetInfoItemType | null => {
+  if (!isRecord(value)) {
+    return null;
+  }
+
+  return value as RiseSetInfoItemType;
+};
+
+const parseRiseSetPayloadFromJson = (
+  payload: unknown,
+): {
+  resultCode?: string;
+  resultMsg?: string;
+  item: RiseSetInfoItemType | null;
+} => {
+  if (!isRecord(payload) || !isRecord(payload.response)) {
+    return { item: null };
+  }
+
+  const response = payload.response;
+  const header = isRecord(response.header) ? response.header : {};
+  const body = isRecord(response.body) ? response.body : {};
+  const items = isRecord(body.items) ? body.items : {};
+  const rawItem = Array.isArray(items.item) ? items.item[0] : items.item;
+
+  return {
+    resultCode:
+      header.resultCode === undefined || header.resultCode === null
+        ? undefined
+        : String(header.resultCode),
+    resultMsg:
+      header.resultMsg === undefined || header.resultMsg === null
+        ? undefined
+        : String(header.resultMsg),
+    item: normalizeRiseSetItem(rawItem),
+  };
+};
+
+const parseRiseSetPayload = (
+  payload: unknown,
+): {
+  resultCode?: string;
+  resultMsg?: string;
+  item: RiseSetInfoItemType | null;
+} => {
+  if (typeof payload !== "string") {
+    return parseRiseSetPayloadFromJson(payload);
+  }
+
+  const text = payload.trim();
+  if (text.startsWith("{")) {
+    try {
+      return parseRiseSetPayloadFromJson(JSON.parse(text));
+    } catch {
+      return { item: null };
+    }
+  }
+
+  return {
+    resultCode: parseXmlTag(text, "resultCode"),
+    resultMsg: parseXmlTag(text, "resultMsg"),
+    item: parseRiseSetItemFromXml(text),
+  };
+};
+
 export const fetchRiseSetInfo = async ({
   locdate,
   location,
@@ -50,12 +118,10 @@ export const fetchRiseSetInfo = async ({
       },
       responseType: "text",
   });
-  const xml = String(response.data);
-  const resultCode = parseXmlTag(xml, "resultCode");
-  const item = parseRiseSetItemFromXml(xml);
+  const { resultCode, resultMsg, item } = parseRiseSetPayload(response.data);
 
   if (resultCode && resultCode !== "00") {
-    throw new Error(parseXmlTag(xml, "resultMsg") ?? "출몰시각 API 오류");
+    throw new Error(resultMsg ?? "출몰시각 API 오류");
   }
 
   if (!item) {

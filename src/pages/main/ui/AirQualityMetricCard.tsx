@@ -1,5 +1,4 @@
 import { cn } from "@/shared/lib/cn";
-import { ErrorCode } from "@/shared/ui/error-code";
 import { Tooltip } from "@/shared/ui/tooltip";
 import {
   AIR_QUALITY_GRADE_LABEL,
@@ -8,6 +7,7 @@ import {
   getAirQualityGrade,
 } from "../lib/air-quality-metric-card.lib";
 import type { AirQualityMetricCardProps } from "../lib/air-quality-metric-card.types";
+import { MetricStateCard } from "./MetricStateCard";
 import { MetricSkeletonCard } from "./MetricSkeletonCard";
 import { mainPageStyles } from "./styles";
 
@@ -52,16 +52,12 @@ export const AirQualityMetricCard = ({
         </span>
       </div>
       {isError ? (
-        <div
-          className={cn(
-            "mt-6 flex flex-1 flex-col justify-center rounded-2xl bg-[var(--surface-soft)] px-4 py-5 text-center",
-          )}
-        >
-          <p className={cn("break-words text-sm leading-6 text-[var(--text-sub)]")}>
-            {description}
-            <ErrorCode code={errorCode} />
-          </p>
-        </div>
+        <MetricStateCard
+          title={"대기질 정보를 불러오지 못했어요"}
+          description={description}
+          code={errorCode}
+          iconName={"cloudAlert"}
+        />
       ) : (
         <>
           <strong className={cn(mainPageStyles.metricValue)}>

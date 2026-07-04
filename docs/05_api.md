@@ -55,10 +55,11 @@
 로컬 Vite 개발 환경에서 사용자가 `.env`에 기록한 값:
 
 ```bash
+VITE_RISE_SET_API_BASE_URL=https://apis.data.go.kr/B090041/openapi/service/RiseSetInfoService
 VITE_RISE_SET_API_KEY=공공데이터포털_일반_인증키_Decoding
 ```
 
-주의: 현재 구현은 클라이언트에서 이 값을 직접 읽지 않는다. 일출/일몰 API 키는 Worker가 서버 측 환경 변수 `RISE_SET_API_KEY`로 주입하는 구조가 안전하다. 로컬 Worker 프록시를 함께 실행할 때는 `.dev.vars`에도 다음 값을 둔다.
+주의: 로컬 Vite 개발 서버는 `VITE_RISE_SET_API_BASE_URL`을 dev proxy의 upstream으로 읽고, `VITE_RISE_SET_API_KEY`를 upstream 요청의 `serviceKey`로 주입한다. 프로덕션에서는 클라이언트가 이 값을 직접 읽지 않고 Worker가 서버 측 환경 변수 `RISE_SET_API_KEY`로 주입하는 구조가 안전하다. 로컬 Worker 프록시를 함께 실행할 때는 `.dev.vars`에도 다음 값을 둔다.
 
 ```bash
 RISE_SET_API_KEY=공공데이터포털_일반_인증키_Decoding

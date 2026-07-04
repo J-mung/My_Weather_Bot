@@ -48,6 +48,17 @@ const loadLocalProxyEnv = (mode: string): Record<string, string> => ({
   ...loadEnv(mode, process.cwd(), ""),
 });
 
+const normalizeEnvValue = (value?: string): string | undefined => {
+  if (!value) {
+    return undefined;
+  }
+
+  const trimmed = value.trim().replace(/;+$/g, "").trim();
+  const unquoted = trimmed.replace(/^['"]|['"]$/g, "").trim();
+
+  return unquoted || undefined;
+};
+
 // 환경변수 우선순위에 따라 날씨 API base URL 결정
 const resolveWeatherApiBaseUrl = (env: Record<string, string>) =>
   env.API_BASE_URL || env.VITE_API_BASE_URL;
@@ -93,6 +104,16 @@ const resolveRadarApiKey = (env: Record<string, string>) =>
   env.APIHUB_API_KEY ||
   env.API_KEY ||
   env.VITE_API_KEY;
+
+// 환경변수 우선순위에 따라 한국천문연구원 출몰시각 API base URL 결정
+const resolveRiseSetApiBaseUrl = (env: Record<string, string>) =>
+  normalizeEnvValue(env.RISE_SET_API_BASE_URL || env.VITE_RISE_SET_API_BASE_URL);
+
+// 환경변수 우선순위에 따라 한국천문연구원 출몰시각 API key 결정
+const resolveRiseSetApiKey = (env: Record<string, string>) =>
+  normalizeEnvValue(
+    env.RISE_SET_API_KEY || env.VITE_RISE_SET_API_KEY || env.API_KEY || env.VITE_API_KEY,
+  );
 
 // /api/kakao/coord2regioncode 요청을 Kakao upstream 경로로 재작성
 const buildKakaoCoord2RegionRewritePath = (path: string): string => {
@@ -164,6 +185,19 @@ const buildAirQualityRewritePath = (path: string, apiKey?: string): string => {
 
   if (!url.searchParams.has("returnType")) {
     url.searchParams.set("returnType", "json");
+  }
+
+  const query = url.searchParams.toString();
+  return query ? `${endpoint}?${query}` : endpoint;
+};
+
+// /api/rise-set/* 요청을 한국천문연구원 출몰시각 upstream 경로로 재작성하며 serviceKey 주입
+const buildRiseSetRewritePath = (path: string, apiKey?: string): string => {
+  const url = new URL(path, "http://localhost");
+  const endpoint = url.pathname.replace(/^\/api\/rise-set\//, "/");
+
+  if (apiKey) {
+    url.searchParams.set("serviceKey", apiKey);
   }
 
   const query = url.searchParams.toString();
@@ -411,6 +445,13 @@ const createAirQualityProxy = (baseUrl: string, apiKey?: string) => ({
   rewrite: (path: string) => buildAirQualityRewritePath(path, apiKey),
 });
 
+// 한국천문연구원 출몰시각 API 전용 dev 프록시 생성
+const createRiseSetProxy = (baseUrl: string, apiKey?: string) => ({
+  target: baseUrl,
+  changeOrigin: true,
+  rewrite: (path: string) => buildRiseSetRewritePath(path, apiKey),
+});
+
 // 기상청 API 전용 dev 프록시 생성
 const createWeatherProxy = (baseUrl: string, apiKey?: string) => ({
   target: baseUrl,
@@ -429,7 +470,7 @@ const escapeRegex = (value: string): string => value.replace(/[.*+?^${}()|[\]\\]
 
 const buildWeatherProxyPattern = (radarApiProxyPath?: string): string => {
   const radarApiSegment = radarApiProxyPath?.replace(/^\/api\/?/, "").split("/")[0];
-  const excludedSegments = ["kakao", "air-quality", radarApiSegment]
+  const excludedSegments = ["kakao", "air-quality", "rise-set", radarApiSegment]
     .filter((segment): segment is string => Boolean(segment))
     .map(escapeRegex)
     .join("|");
@@ -450,6 +491,8 @@ export default defineConfig(({ mode }) => {
   const radarApiProxyPath = resolveRadarApiProxyPath(env);
   const radarApiBaseUrl = resolveRadarApiBaseUrl(env);
   const radarApiKey = resolveRadarApiKey(env);
+  const riseSetApiBaseUrl = resolveRiseSetApiBaseUrl(env);
+  const riseSetApiKey = resolveRiseSetApiKey(env);
 
   return {
     plugins: [
@@ -472,6 +515,9 @@ export default defineConfig(({ mode }) => {
           : {}),
         ...(airKoreaApiBaseUrl
           ? { "/api/air-quality": createAirQualityProxy(airKoreaApiBaseUrl, airKoreaApiKey) }
+          : {}),
+        ...(riseSetApiBaseUrl
+          ? { "/api/rise-set": createRiseSetProxy(riseSetApiBaseUrl, riseSetApiKey) }
           : {}),
         [buildWeatherProxyPattern(radarApiProxyPath)]: createWeatherProxy(
           weatherApiBaseUrl,
