@@ -98,5 +98,22 @@ RISE_SET_API_BASE_URL = "https://apis.data.go.kr/B090041/openapi/service/RiseSet
 ### UI 정책
 
 - API 실패는 전체 날씨 화면 실패로 전파하지 않는다.
-- 실패 시 일출/일몰 카드만 `--:--`와 안내 문구를 표시한다.
+- API 요청/인증/서버 오류는 각 카드의 요청 에러 상태로 표시한다.
+- API 요청은 성공했지만 `item`, `sunrise`, `sunset` 등 화면 표시용 데이터가 없거나 기상청 `NO_DATA` 응답이면 no-data 상태로 표시한다.
+- no-data는 에러 코드가 아니라 상태 코드로 표시한다. 사용자 메시지에는 출처명을 직접 쓰지 않고, 상태 코드로 출처와 의미를 구분한다.
 - 아크 라인 차트는 실제 천문 고도 계산이 아니라 낮 시간 진행을 설명하는 시각화다.
+
+### no-data 상태 코드
+
+| 코드 | 출처 구분 | 의미 |
+| --- | --- | --- |
+| `MWB-NODATA-KMA-NOW` | KMA | 현재 날씨 카드에 표시할 현재 관측/요약 데이터 없음 |
+| `MWB-NODATA-KMA-HOURLY` | KMA | 시간대별 예보 카드에 표시할 예보 데이터 없음 |
+| `MWB-NODATA-KMA-POP` | KMA | 강수확률 카드에 표시할 강수 예보 데이터 없음 |
+| `MWB-NODATA-KMA-WIND` | KMA | 풍속 카드에 표시할 풍속 관측값 없음 |
+| `MWB-NODATA-KMA-OUTFIT` | KMA | 옷차림 추천 산출에 필요한 날씨 데이터 없음 |
+| `MWB-NODATA-KMA-BOOKMARK-CURRENT` | KMA | 북마크 화면 현재 위치 예보 카드에 표시할 예보 데이터 없음 |
+| `MWB-NODATA-KMA-BOOKMARK-PREVIEW` | KMA | 북마크 지역 미리보기 카드에 표시할 예보 데이터 없음 |
+| `MWB-NODATA-AIRKOREA-PM10` | AirKorea | 미세먼지 관측값 없음 |
+| `MWB-NODATA-AIRKOREA-PM25` | AirKorea | 초미세먼지 관측값 없음 |
+| `MWB-NODATA-KASI-SUN` | KASI | 일출·일몰 카드에 표시할 출몰시각 데이터 없음 |

@@ -30,6 +30,7 @@ export const APP_ERROR = {
   LATLON_LOOKUP_RETRY_LATER: "LATLON_LOOKUP_RETRY_LATER",
   LATLON_LOOKUP_UNEXPECTED: "LATLON_LOOKUP_UNEXPECTED",
   WEATHER_FETCH: "WEATHER_FETCH",
+  SUNRISE_SUNSET: "SUNRISE_SUNSET",
   AIR_QUALITY: "AIR_QUALITY",
   MAP_LOAD: "MAP_LOAD",
   RADAR_CONFIG: "RADAR_CONFIG",
@@ -71,6 +72,7 @@ export const APP_ERROR_CODE = {
   [APP_ERROR.LATLON_LOOKUP_RETRY_LATER]: "MWB-LOCATION-203",
   [APP_ERROR.LATLON_LOOKUP_UNEXPECTED]: "MWB-LOCATION-204",
   [APP_ERROR.WEATHER_FETCH]: "MWB-WEATHER-901",
+  [APP_ERROR.SUNRISE_SUNSET]: "MWB-SUN-001",
   [APP_ERROR.AIR_QUALITY]: "MWB-AIRQUALITY-001",
   [APP_ERROR.MAP_LOAD]: "MWB-MAP-001",
   [APP_ERROR.RADAR_CONFIG]: "MWB-RADAR-001",
@@ -260,6 +262,12 @@ export const appErrorMetaMap = {
     code: APP_ERROR_CODE[APP_ERROR.WEATHER_FETCH],
     title: "날씨 정보를 불러오지 못했어요",
     description: "날씨 정보를 가져오는 중 문제가 발생했습니다.\n잠시 후 다시 시도해 주세요.",
+    actionLabel: "다시 시도",
+  },
+  [APP_ERROR.SUNRISE_SUNSET]: {
+    code: APP_ERROR_CODE[APP_ERROR.SUNRISE_SUNSET],
+    title: "일출·일몰 정보를 불러오지 못했어요",
+    description: "일출·일몰 정보를 요청하는 중 문제가 발생했어요.\n잠시 후 다시 확인해 주세요.",
     actionLabel: "다시 시도",
   },
   [APP_ERROR.AIR_QUALITY]: {

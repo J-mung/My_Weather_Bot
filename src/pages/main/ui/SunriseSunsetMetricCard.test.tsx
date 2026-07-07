@@ -27,25 +27,38 @@ describe("SunriseSunsetMetricCard", () => {
     expect(markup).not.toContain("일출·일몰 정보를 불러오지 못했어요");
   });
 
-  it("renders no-data state for failed response handling", () => {
+  it("renders no-data state for successful empty response handling", () => {
     const markup = renderToStaticMarkup(
-      <SunriseSunsetMetricCard data={null} isLoading={false} isError />,
+      <SunriseSunsetMetricCard data={null} isLoading={false} isError={false} isNoData />,
     );
 
-    expect(markup).toContain("일출·일몰 정보를 불러오지 못했어요");
-    expect(markup).toContain("현재 이 지역의 일출·일몰 정보를 확인할 수 없어요.");
+    expect(markup).toContain("이 지역의 일출·일몰 정보가 아직 없어요");
+    expect(markup).toContain("오늘의 일출·일몰 데이터가 아직 없어요.");
+    expect(markup).not.toContain("한국천문연구원");
     expect(markup).toContain("잠시 후 다시 확인해 주세요.");
+    expect(markup).toContain("src=\"/images/no_data_image.png\"");
+    expect(markup).toContain("상태 코드:");
+    expect(markup).toContain("MWB-NODATA-KASI-SUN");
+    expect(markup).not.toContain("에러 코드:");
     expect(markup).not.toContain("--:--");
     expect(markup).not.toContain("로컬 환경 변수");
     expect(markup).not.toContain("API 응답");
   });
 
-  it("keeps failed query state in no-data even if stale data is present", () => {
+  it("keeps failed query state in error even if stale data is present", () => {
     const markup = renderToStaticMarkup(
-      <SunriseSunsetMetricCard data={summary} isLoading={false} isError />,
+      <SunriseSunsetMetricCard
+        data={summary}
+        isLoading={false}
+        isError
+        errorCode={"MWB-SUN-001"}
+      />,
     );
 
     expect(markup).toContain("일출·일몰 정보를 불러오지 못했어요");
+    expect(markup).toContain("일출·일몰 정보를 요청하는 중 문제가 발생했어요.");
+    expect(markup).toContain("에러 코드:");
+    expect(markup).toContain("MWB-SUN-001");
     expect(markup).not.toContain("05:16");
     expect(markup).not.toContain("19:57");
   });

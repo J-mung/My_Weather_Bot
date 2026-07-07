@@ -4,6 +4,7 @@ import {
   formatAirQualityValue,
   getAirQualityDescription,
   getAirQualityGrade,
+  getAirQualityNoDataDescription,
 } from "./air-quality-metric-card.lib";
 
 const metric: AirQualityMetric = {
@@ -16,6 +17,9 @@ describe("air quality metric card display helpers", () => {
   it("로딩/오류/값 없음 상태에서는 unavailable 등급을 표시한다", () => {
     expect(getAirQualityGrade({ metric, isLoading: true, isError: false })).toBe("unavailable");
     expect(getAirQualityGrade({ metric, isLoading: false, isError: true })).toBe("unavailable");
+    expect(
+      getAirQualityGrade({ metric, isLoading: false, isError: false, isNoData: true }),
+    ).toBe("unavailable");
     expect(
       getAirQualityGrade({
         metric: { value: null, grade: "unavailable", flag: null },
@@ -47,6 +51,20 @@ describe("air quality metric card display helpers", () => {
         isError: false,
       }),
     ).toBe("점검 중");
+    expect(
+      getAirQualityNoDataDescription({
+        metric: unavailableMetric,
+        label: "미세먼지",
+        displayDistrict: "복대동",
+      }),
+    ).toBe("점검 중");
+    expect(
+      getAirQualityNoDataDescription({
+        metric: { value: null, grade: "unavailable", flag: null },
+        label: "초미세먼지",
+        displayDistrict: "복대동",
+      }),
+    ).toBe("복대동의 초미세먼지 관측값이 아직 제공되지 않았어요.");
   });
 
   it("상태별 설명 문구를 반환한다", () => {

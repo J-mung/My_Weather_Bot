@@ -22,6 +22,10 @@ export const useAirQualitySummary = (
   isLoading: boolean;
   isFetching: boolean;
   isError: boolean;
+  noData: {
+    pm10: boolean;
+    pm25: boolean;
+  };
   error: AppErrorMeta | null;
 } => {
   const sidoName = useMemo(() => resolveSidoName(district), [district]);
@@ -52,11 +56,18 @@ export const useAirQualitySummary = (
     return toAirQualitySummary(sidoName, station);
   }, [query.data, sidoName, stationKeywords]);
 
+  const isSuccessfulEmptyResponse = query.isSuccess && data === null;
+  const noData = {
+    pm10: query.isSuccess && (isSuccessfulEmptyResponse || data?.pm10.value === null),
+    pm25: query.isSuccess && (isSuccessfulEmptyResponse || data?.pm25.value === null),
+  };
+
   return {
     data,
     isLoading: query.isLoading,
     isFetching: query.isFetching,
     isError: query.isError,
+    noData,
     error: query.isError ? appErrorMetaMap[APP_ERROR.AIR_QUALITY] : null,
   };
 };

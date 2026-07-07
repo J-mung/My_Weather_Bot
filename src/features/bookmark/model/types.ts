@@ -33,6 +33,7 @@ export interface BookmarkForecastPreview {
   isLoading: boolean;
   isFetching: boolean;
   isError: boolean;
+  isNoData: boolean;
   error: AppError | null;
   refresh: () => Promise<void>;
 }

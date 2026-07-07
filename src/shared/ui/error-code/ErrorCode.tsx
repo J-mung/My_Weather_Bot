@@ -2,10 +2,11 @@ import { cn } from "@/shared/lib/cn";
 
 type ErrorCodeProps = {
   code: string | null | undefined;
+  label?: string;
   className?: string;
 };
 
-export const ErrorCode = ({ code, className }: ErrorCodeProps) => {
+export const ErrorCode = ({ code, label = "에러 코드", className }: ErrorCodeProps) => {
   if (!code) {
     return null;
   }
@@ -17,7 +18,7 @@ export const ErrorCode = ({ code, className }: ErrorCodeProps) => {
         className,
       )}
     >
-      에러 코드: <code className={cn("font-mono")}>{code}</code>
+      {label}: <code className={cn("font-mono")}>{code}</code>
     </span>
   );
 };

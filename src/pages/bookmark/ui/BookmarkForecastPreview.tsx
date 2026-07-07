@@ -1,8 +1,10 @@
 import type { GridCoord } from "@/entities/weather/model/weather.types";
 import { useBookmarkForecastPreview } from "@/features/bookmark/model/useBookmarkForecastPreview";
+import { NO_DATA_STATUS_CODE } from "@/shared/api/no-data-status-codes";
 import { cn } from "@/shared/lib/cn";
 import { ErrorNotice } from "@/shared/ui/error-notice";
 import { Icon } from "@/shared/ui/icon";
+import { MetricStateCard } from "@/shared/ui/metric-state-card";
 import { Skeleton } from "@/shared/ui/skeleton";
 import { useEffect, useRef, useState } from "react";
 import { getBookmarkConditionDisplay } from "../lib/bookmark-forecast-display.lib";
@@ -19,6 +21,19 @@ const formatForecastTemperature = (value: number | null): string => {
 
 const formatTemperatureRange = (todayMax: number, todayMin: number): string =>
   `최고 ${formatTemperature(todayMax)} · 최저 ${formatTemperature(todayMin)}`;
+
+export const BookmarkForecastPreviewNoData = () => (
+  <div className={cn(bookmarkSummaryStyles.summaryStatusWrap)}>
+    <MetricStateCard
+      title={"예보 데이터가 아직 없어요"}
+      description={"북마크 지역의 예보 데이터가 아직 준비되지 않았어요."}
+      code={NO_DATA_STATUS_CODE.BOOKMARK_PREVIEW}
+      codeLabel={"상태 코드"}
+      imageSrc={null}
+      tone={"info"}
+    />
+  </div>
+);
 
 const useVisibleOnce = () => {
   const targetRef = useRef<HTMLDivElement>(null);
@@ -59,7 +74,7 @@ const useVisibleOnce = () => {
 
 export const BookmarkForecastPreview = ({ nx, ny }: GridCoord) => {
   const { targetRef, isVisible } = useVisibleOnce();
-  const { data, isLoading, error } = useBookmarkForecastPreview(
+  const { data, isLoading, error, isNoData } = useBookmarkForecastPreview(
     { nx, ny },
     { enabled: isVisible },
   );
@@ -83,6 +98,10 @@ export const BookmarkForecastPreview = ({ nx, ny }: GridCoord) => {
         className={cn(bookmarkSummaryStyles.summaryStatusWrap)}
       />
     );
+  }
+
+  if (isNoData) {
+    return <BookmarkForecastPreviewNoData />;
   }
 
   return (

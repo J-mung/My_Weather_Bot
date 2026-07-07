@@ -1,5 +1,7 @@
 import { mapRiseSetInfo, type RiseSetSummary } from "@/entities/sun/model/riseSetMappers";
+import { APP_ERROR } from "@/shared/api/app-errors";
 import { getApiClient } from "@/shared/api/axios";
+import { AppError, isAppError } from "@/shared/api/types";
 import type { RiseSetInfoItemType } from "./rise-set-api.types";
 
 const riseSetApiClient = getApiClient("riseSet");
@@ -110,28 +112,40 @@ export const fetchRiseSetInfo = async ({
 }: {
   locdate: string;
   location: string;
-}): Promise<RiseSetSummary> => {
-  const response = await riseSetApiClient.get("getAreaRiseSetInfo", {
+}): Promise<RiseSetSummary | null> => {
+  try {
+    const response = await riseSetApiClient.get("getAreaRiseSetInfo", {
       params: {
         locdate,
         location,
       },
       responseType: "text",
-  });
-  const { resultCode, resultMsg, item } = parseRiseSetPayload(response.data);
+    });
+    const { resultCode, resultMsg, item } = parseRiseSetPayload(response.data);
 
-  if (resultCode && resultCode !== "00") {
-    throw new Error(resultMsg ?? "출몰시각 API 오류");
+    if (!resultCode) {
+      throw new AppError(APP_ERROR.SUNRISE_SUNSET, response.data);
+    }
+
+    if (resultCode && resultCode !== "00") {
+      throw new AppError(APP_ERROR.SUNRISE_SUNSET, { resultCode, resultMsg });
+    }
+
+    if (!item) {
+      return null;
+    }
+
+    const mapped = mapRiseSetInfo(item);
+    if (!mapped) {
+      return null;
+    }
+
+    return mapped;
+  } catch (error) {
+    if (isAppError(error)) {
+      throw error;
+    }
+
+    throw new AppError(APP_ERROR.SUNRISE_SUNSET, error);
   }
-
-  if (!item) {
-    throw new Error("출몰시각 응답에 item이 없습니다.");
-  }
-
-  const mapped = mapRiseSetInfo(item);
-  if (!mapped) {
-    throw new Error("출몰시각 응답을 표시 형식으로 변환하지 못했습니다.");
-  }
-
-  return mapped;
 };

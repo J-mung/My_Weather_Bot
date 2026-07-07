@@ -1,8 +1,10 @@
 import { weatherConditionMeta } from "@/entities/weather/model/weather-condition-meta";
+import { NO_DATA_STATUS_CODE } from "@/shared/api/no-data-status-codes";
 import { cn } from "@/shared/lib/cn";
 import Button, { IconButton } from "@/shared/ui/button";
 import { ErrorNotice } from "@/shared/ui/error-notice";
 import { Icon, type IconName } from "@/shared/ui/icon";
+import { MetricStateCard } from "./MetricStateCard";
 import { Tooltip } from "@/shared/ui/tooltip";
 import { NowInfoSkeletonCard } from "./NowInfoSkeletonCard";
 import { nowInfoCardStyles } from "./styles";
@@ -25,6 +27,7 @@ export const NowInfoCard = ({
   isLoading,
   isFetching,
   error,
+  isNoData = false,
   refresh,
 }: NowInfoCardProps) => {
   const dateInfo = new Intl.DateTimeFormat("ko-KR", {
@@ -47,6 +50,22 @@ export const NowInfoCard = ({
 
   if (isLoading) {
     return <NowInfoSkeletonCard />;
+  }
+
+  if (isNoData) {
+    return (
+      <div className={cn(nowInfoCardStyles.root, nowInfoCardStyles.error)}>
+        <MetricStateCard
+          title={"현재 날씨 데이터가 아직 없어요"}
+          description={
+            "현재 위치의 날씨 데이터가 아직 준비되지 않았어요.\n잠시 후 다시 확인해 주세요."
+          }
+          code={NO_DATA_STATUS_CODE.WEATHER_NOW}
+          codeLabel={"상태 코드"}
+          tone={"info"}
+        />
+      </div>
+    );
   }
 
   if (error) {

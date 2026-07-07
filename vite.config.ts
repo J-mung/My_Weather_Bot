@@ -3,7 +3,7 @@ import react from "@vitejs/plugin-react";
 import fs from "node:fs";
 import path from "node:path";
 import { defineConfig, loadEnv } from "vite";
-import type { Plugin } from "vite";
+import type { Plugin, ProxyOptions } from "vite";
 
 const KAKAO_COORD2REGION_PATH = "/v2/local/geo/coord2regioncode.json";
 const KAKAO_ADDRESS_SEARCH_PATH = "/v2/local/search/address.json";
@@ -432,10 +432,16 @@ const createKakaoProxy = (baseUrl: string, apiKey?: string) => ({
 });
 
 // Kakao 지도 SDK 전용 dev 프록시 생성
-const createKakaoMapSdkProxy = (apiKey?: string) => ({
+const createKakaoMapSdkProxy = (apiKey?: string): ProxyOptions => ({
   target: "https://dapi.kakao.com",
   changeOrigin: true,
   rewrite: (path: string) => buildKakaoMapSdkRewritePath(path, apiKey),
+  configure: (proxy) => {
+    proxy.on("proxyReq", (proxyReq) => {
+      proxyReq.removeHeader("origin");
+      proxyReq.removeHeader("referer");
+    });
+  },
 });
 
 // AirKorea API 전용 dev 프록시 생성
