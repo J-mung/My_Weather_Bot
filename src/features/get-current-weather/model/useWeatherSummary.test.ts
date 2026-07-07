@@ -34,7 +34,7 @@ describe("getWeatherSummaryQueryState", () => {
     });
   });
 
-  it("핵심 날씨 조회가 실패하면 에러로 전파한다", () => {
+  it("핵심 날씨 조회가 NOT_FOUND로 끝나면 no-data로 분리한다", () => {
     const error = new AppError(APP_ERROR.ULTRA_NOW_NOT_FOUND);
     const state = getWeatherSummaryQueryState({
       ultraNow: {
@@ -52,7 +52,32 @@ describe("getWeatherSummaryQueryState", () => {
     expect(state).toMatchObject({
       hasRequiredData: false,
       isLoading: false,
+      isError: false,
+      isNoData: true,
+      error: null,
+    });
+  });
+
+  it("핵심 날씨 조회가 요청 에러로 실패하면 에러로 전파한다", () => {
+    const error = new AppError(APP_ERROR.ULTRA_NOW_RETRY_LATER);
+    const state = getWeatherSummaryQueryState({
+      ultraNow: {
+        data: undefined,
+        isLoading: false,
+        isFetching: false,
+        isError: true,
+        error,
+      },
+      ultraForecast: readyQuery(),
+      shortForecast: readyQuery(),
+      todayTempRange: readyQuery(),
+    });
+
+    expect(state).toMatchObject({
+      hasRequiredData: false,
+      isLoading: false,
       isError: true,
+      isNoData: false,
       error,
     });
   });

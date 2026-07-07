@@ -1,4 +1,5 @@
 import type { RiseSetSummary } from "@/entities/sun/model/riseSetMappers";
+import { NO_DATA_STATUS_CODE } from "@/shared/api/no-data-status-codes";
 import { cn } from "@/shared/lib/cn";
 import {
   createSunPathChartGeometry,
@@ -69,24 +70,31 @@ export const SunriseSunsetMetricCard = ({
   data,
   isLoading,
   isError,
+  isNoData = false,
+  errorCode,
 }: {
   data: RiseSetSummary | null;
   isLoading: boolean;
   isError: boolean;
+  isNoData?: boolean;
+  errorCode?: string | null;
 }) => {
   if (isLoading) {
     return <MetricSkeletonCard className="sm:col-span-2 xl:col-span-4" />;
   }
 
   const currentMinutes = getCurrentKoreaMinutes();
+  const displayData = data && !isError && !isNoData ? data : null;
   const statusText =
-    data && !isError
+    displayData
       ? getSunlightStatusText({
           currentMinutes,
-          sunriseMinutes: data.sunriseMinutes,
-          sunsetMinutes: data.sunsetMinutes,
+          sunriseMinutes: displayData.sunriseMinutes,
+          sunsetMinutes: displayData.sunsetMinutes,
         })
-      : "현재 이 지역의 일출·일몰 정보를 확인할 수 없어요.\n잠시 후 다시 확인해 주세요.";
+      : isNoData
+        ? "오늘의 일출·일몰 데이터가 아직 없어요.\n잠시 후 다시 확인해 주세요."
+        : "일출·일몰 정보를 요청하는 중 문제가 발생했어요.\n잠시 후 다시 확인해 주세요.";
 
   return (
     <div className={cn(mainPageStyles.metricCard, "sm:col-span-2", "xl:col-span-4")}>
@@ -94,17 +102,23 @@ export const SunriseSunsetMetricCard = ({
         <span className={cn(mainPageStyles.metricHeaderLabel)}>일출 · 일몰</span>
       </div>
 
-      {data && !isError ? (
+      {displayData ? (
         <>
-          <SunPathChart data={data} currentMinutes={currentMinutes} />
+          <SunPathChart data={displayData} currentMinutes={currentMinutes} />
           <p className={cn(mainPageStyles.metricDescription)}>
-            낮 {data.dayLengthText} · {statusText}
+            낮 {displayData.dayLengthText} · {statusText}
           </p>
         </>
       ) : (
         <MetricStateCard
-          title={"일출·일몰 정보를 불러오지 못했어요"}
+          title={
+            isNoData
+              ? "이 지역의 일출·일몰 정보가 아직 없어요"
+              : "일출·일몰 정보를 불러오지 못했어요"
+          }
           description={statusText}
+          code={isNoData ? NO_DATA_STATUS_CODE.SUNRISE_SUNSET : errorCode}
+          codeLabel={isNoData ? "상태 코드" : "에러 코드"}
           iconName={"wbSunny"}
           tone={"info"}
         />

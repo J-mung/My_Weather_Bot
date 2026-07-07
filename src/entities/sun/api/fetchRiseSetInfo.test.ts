@@ -1,3 +1,5 @@
+import { APP_ERROR } from "@/shared/api/app-errors";
+import { AppError } from "@/shared/api/types";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fetchRiseSetInfo } from "./fetchRiseSetInfo";
 
@@ -94,7 +96,7 @@ describe("fetchRiseSetInfo", () => {
     });
   });
 
-  it("throws API result message for KASI failure response", async () => {
+  it("throws app error for KASI failure response", async () => {
     riseSetGetMock.mockResolvedValue({
       data: {
         response: {
@@ -106,12 +108,15 @@ describe("fetchRiseSetInfo", () => {
       },
     });
 
-    await expect(fetchRiseSetInfo({ locdate: "20260704", location: "서울" })).rejects.toThrow(
-      "SERVICE KEY IS NOT REGISTERED ERROR.",
-    );
+    await expect(fetchRiseSetInfo({ locdate: "20260704", location: "서울" })).rejects.toMatchObject({
+      type: APP_ERROR.SUNRISE_SUNSET,
+      meta: {
+        code: "MWB-SUN-001",
+      },
+    });
   });
 
-  it("throws when KASI success response has no item", async () => {
+  it("returns no-data when KASI success response has no item", async () => {
     riseSetGetMock.mockResolvedValue({
       data: {
         response: {
@@ -126,12 +131,10 @@ describe("fetchRiseSetInfo", () => {
       },
     });
 
-    await expect(fetchRiseSetInfo({ locdate: "20260704", location: "서울" })).rejects.toThrow(
-      "출몰시각 응답에 item이 없습니다.",
-    );
+    await expect(fetchRiseSetInfo({ locdate: "20260704", location: "서울" })).resolves.toBeNull();
   });
 
-  it("throws when KASI item cannot be mapped into display times", async () => {
+  it("returns no-data when KASI item cannot be mapped into display times", async () => {
     riseSetGetMock.mockResolvedValue({
       data: {
         response: {
@@ -153,16 +156,30 @@ describe("fetchRiseSetInfo", () => {
       },
     });
 
-    await expect(fetchRiseSetInfo({ locdate: "20260704", location: "서울" })).rejects.toThrow(
-      "출몰시각 응답을 표시 형식으로 변환하지 못했습니다.",
-    );
+    await expect(fetchRiseSetInfo({ locdate: "20260704", location: "서울" })).resolves.toBeNull();
   });
 
-  it("propagates request failures to React Query", async () => {
+  it("throws app error when KASI response shape is invalid", async () => {
+    riseSetGetMock.mockResolvedValue({
+      data: "<not-a-rise-set-response />",
+    });
+
+    await expect(fetchRiseSetInfo({ locdate: "20260704", location: "서울" })).rejects.toBeInstanceOf(
+      AppError,
+    );
+    await expect(fetchRiseSetInfo({ locdate: "20260704", location: "서울" })).rejects.toMatchObject({
+      type: APP_ERROR.SUNRISE_SUNSET,
+    });
+  });
+
+  it("wraps request failures into app error for React Query", async () => {
     riseSetGetMock.mockRejectedValue(new Error("Network Error"));
 
-    await expect(fetchRiseSetInfo({ locdate: "20260704", location: "서울" })).rejects.toThrow(
-      "Network Error",
-    );
+    await expect(fetchRiseSetInfo({ locdate: "20260704", location: "서울" })).rejects.toMatchObject({
+      type: APP_ERROR.SUNRISE_SUNSET,
+      meta: {
+        code: "MWB-SUN-001",
+      },
+    });
   });
 });

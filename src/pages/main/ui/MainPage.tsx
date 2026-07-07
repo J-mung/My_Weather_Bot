@@ -5,6 +5,7 @@ import { readBookmarkFromStorage } from "@/features/bookmark/model/useBookmarks"
 import { useWeatherSummary } from "@/features/get-current-weather/model/useWeatherSummary";
 import { useCurrentLocationRegion } from "@/features/location-current/model";
 import { useSunriseSunsetSummary } from "@/features/sunrise-sunset/model/useSunriseSunsetSummary";
+import { NO_DATA_STATUS_CODE } from "@/shared/api/no-data-status-codes";
 import { cn } from "@/shared/lib/cn";
 import { IconInput } from "@/shared/ui/input";
 import { KakaoRegionMap } from "@/shared/ui/map";
@@ -16,6 +17,7 @@ import { AirQualityMetricCard } from "./AirQualityMetricCard";
 import { FavoritePreviewPanel } from "./FavoritePreviewPanel";
 import { HourlyInfoCard } from "./HourlyInfoCard";
 import { LocationPermissionDialog } from "./LocationPermissionDialog";
+import { MetricStateCard } from "./MetricStateCard";
 import { MetricSkeletonCard } from "./MetricSkeletonCard";
 import { NowInfoCard } from "./NowInfoCard";
 import { SunriseSunsetMetricCard } from "./SunriseSunsetMetricCard";
@@ -84,7 +86,14 @@ export default function MainPage() {
   const isWeatherEnabled = displayDistrict
     ? hasResolvedGridCoord(param)
     : currentLocation.status === "success";
-  const { data, isLoading, isFetching, error, refresh } = useWeatherSummary(weatherParam, {
+  const {
+    data,
+    isLoading,
+    isFetching,
+    error: rawWeatherError,
+    isNoData: isWeatherNoDataResponse,
+    refresh,
+  } = useWeatherSummary(weatherParam, {
     enabled: isWeatherEnabled,
   });
 
@@ -104,7 +113,9 @@ export default function MainPage() {
 
   const locationLabel = displayDistrict || currentLocation.regionName;
   const aliasLabel = displayAlias || currentLocation.regionName;
-  const isWeatherPending = !error && (isLoading || !data);
+  const isWeatherNoData = isWeatherNoDataResponse;
+  const weatherError = rawWeatherError;
+  const isWeatherPending = !weatherError && !isWeatherNoData && (isLoading || !data);
   const airQuality = useAirQualitySummary(locationLabel);
   const sunriseSunset = useSunriseSunsetSummary(locationLabel, {
     enabled: Boolean(locationLabel),
@@ -162,16 +173,18 @@ export default function MainPage() {
               data={data}
               isLoading={isWeatherPending}
               isFetching={isFetching}
-              error={error}
+              error={weatherError}
+              isNoData={isWeatherNoData}
               refresh={refresh}
             />
           </div>
-          {!error && (
+          {!weatherError && (
             <div className={cn(mainPageStyles.section)}>
               <OutfitRecommendationCard
                 recommendation={data?.outfitRecommendation ?? null}
                 isLoading={isWeatherPending}
                 isFetching={isFetching}
+                isNoData={isWeatherNoData}
               />
             </div>
           )}
@@ -190,7 +203,7 @@ export default function MainPage() {
                 className={cn(mainPageStyles.sectionActionButton)}
                 aria-expanded={isHourlyDetailOpen}
                 aria-controls={"hourly-forecast-detail"}
-                disabled={isWeatherPending || Boolean(error)}
+                disabled={isWeatherPending || Boolean(weatherError) || isWeatherNoData}
                 onClick={() => setIsHourlyDetailOpen((prev) => !prev)}
               >
                 {isHourlyDetailOpen ? "접기" : "24시간 보기"}
@@ -200,7 +213,8 @@ export default function MainPage() {
               data={data}
               isLoading={isWeatherPending}
               isFetching={isFetching}
-              error={error}
+              error={weatherError}
+              isNoData={isWeatherNoData}
               refresh={refresh}
               isDetailOpen={isHourlyDetailOpen}
             />
@@ -214,6 +228,7 @@ export default function MainPage() {
               displayDistrict={getAirQualityDisplayDistrict(districtDisplay.fullDistrict)}
               isLoading={isAirQualityPending}
               isError={airQuality.isError}
+              isNoData={airQuality.noData.pm10}
               errorCode={airQuality.error?.code}
             />
 
@@ -224,6 +239,7 @@ export default function MainPage() {
               displayDistrict={getAirQualityDisplayDistrict(districtDisplay.fullDistrict)}
               isLoading={isAirQualityPending}
               isError={airQuality.isError}
+              isNoData={airQuality.noData.pm25}
               errorCode={airQuality.error?.code}
             />
 
@@ -234,17 +250,31 @@ export default function MainPage() {
                 <div className={cn(mainPageStyles.metricHeader)}>
                   <span className={cn(mainPageStyles.metricHeaderLabel)}>강수확률</span>
                 </div>
-                <strong className={cn(mainPageStyles.metricValue)}>
-                  {formatProbability(data?.precipitation.probability)}
-                  <span className={cn(mainPageStyles.metricUnit)}>%</span>
-                </strong>
-                <p className={cn(mainPageStyles.metricDescription)}>
-                  {data?.precipitation.rainAmountText || data?.precipitation.snowAmountText
-                    ? [data.precipitation.rainAmountText, data.precipitation.snowAmountText]
-                        .filter(Boolean)
-                        .join(" · ")
-                    : "강수 가능성을 확인하고 우산을 준비하세요."}
-                </p>
+                {isWeatherNoData ? (
+                  <MetricStateCard
+                    title={"강수확률 정보가 아직 없어요"}
+                    description={
+                      "강수 예보 데이터가 아직 준비되지 않았어요.\n잠시 후 다시 확인해 주세요."
+                    }
+                    code={NO_DATA_STATUS_CODE.WEATHER_PRECIPITATION}
+                    codeLabel={"상태 코드"}
+                    tone={"info"}
+                  />
+                ) : (
+                  <>
+                    <strong className={cn(mainPageStyles.metricValue)}>
+                      {formatProbability(data?.precipitation.probability)}
+                      <span className={cn(mainPageStyles.metricUnit)}>%</span>
+                    </strong>
+                    <p className={cn(mainPageStyles.metricDescription)}>
+                      {data?.precipitation.rainAmountText || data?.precipitation.snowAmountText
+                        ? [data.precipitation.rainAmountText, data.precipitation.snowAmountText]
+                            .filter(Boolean)
+                            .join(" · ")
+                        : "강수 가능성을 확인하고 우산을 준비하세요."}
+                    </p>
+                  </>
+                )}
               </div>
             )}
 
@@ -255,13 +285,27 @@ export default function MainPage() {
                 <div className={cn(mainPageStyles.metricHeader)}>
                   <span className={cn(mainPageStyles.metricHeaderLabel)}>풍속</span>
                 </div>
-                <strong className={cn(mainPageStyles.metricValue)}>
-                  {data?.now.windSpeedMs ?? "--"}
-                  <span className={cn(mainPageStyles.metricUnit)}>m/s</span>
-                </strong>
-                <p className={cn(mainPageStyles.metricDescription)}>
-                  강풍이면 겉옷과 우산 고정에 주의하세요.
-                </p>
+                {isWeatherNoData ? (
+                  <MetricStateCard
+                    title={"풍속 정보가 아직 없어요"}
+                    description={
+                      "현재 풍속 관측값이 아직 준비되지 않았어요.\n잠시 후 다시 확인해 주세요."
+                    }
+                    code={NO_DATA_STATUS_CODE.WEATHER_WIND}
+                    codeLabel={"상태 코드"}
+                    tone={"info"}
+                  />
+                ) : (
+                  <>
+                    <strong className={cn(mainPageStyles.metricValue)}>
+                      {data?.now.windSpeedMs ?? "--"}
+                      <span className={cn(mainPageStyles.metricUnit)}>m/s</span>
+                    </strong>
+                    <p className={cn(mainPageStyles.metricDescription)}>
+                      강풍이면 겉옷과 우산 고정에 주의하세요.
+                    </p>
+                  </>
+                )}
               </div>
             )}
 
@@ -269,6 +313,8 @@ export default function MainPage() {
               data={sunriseSunset.data}
               isLoading={sunriseSunset.isLoading}
               isError={sunriseSunset.isError}
+              isNoData={sunriseSunset.isNoData}
+              errorCode={sunriseSunset.error?.meta.code}
             />
           </div>
 

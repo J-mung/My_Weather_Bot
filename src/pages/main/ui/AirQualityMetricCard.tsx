@@ -1,3 +1,4 @@
+import { NO_DATA_STATUS_CODE } from "@/shared/api/no-data-status-codes";
 import { cn } from "@/shared/lib/cn";
 import { Tooltip } from "@/shared/ui/tooltip";
 import {
@@ -5,6 +6,7 @@ import {
   formatAirQualityValue,
   getAirQualityDescription,
   getAirQualityGrade,
+  getAirQualityNoDataDescription,
 } from "../lib/air-quality-metric-card.lib";
 import type { AirQualityMetricCardProps } from "../lib/air-quality-metric-card.types";
 import { MetricStateCard } from "./MetricStateCard";
@@ -18,16 +20,22 @@ export const AirQualityMetricCard = ({
   displayDistrict,
   isLoading,
   isError,
+  isNoData = false,
   errorCode,
 }: AirQualityMetricCardProps) => {
-  const grade = getAirQualityGrade({ metric, isLoading, isError });
-  const description = getAirQualityDescription({
-    metric,
-    label,
-    displayDistrict,
-    isLoading,
-    isError,
-  });
+  const grade = getAirQualityGrade({ metric, isLoading, isError, isNoData });
+  const noDataCode = label.includes("초")
+    ? NO_DATA_STATUS_CODE.AIR_QUALITY_PM25
+    : NO_DATA_STATUS_CODE.AIR_QUALITY_PM10;
+  const description = isNoData
+    ? getAirQualityNoDataDescription({ metric, label, displayDistrict })
+    : getAirQualityDescription({
+        metric,
+        label,
+        displayDistrict,
+        isLoading,
+        isError,
+      });
 
   if (isLoading) {
     return <MetricSkeletonCard showBadge />;
@@ -57,6 +65,15 @@ export const AirQualityMetricCard = ({
           description={description}
           code={errorCode}
           iconName={"cloudAlert"}
+        />
+      ) : isNoData ? (
+        <MetricStateCard
+          title={`${label} 정보가 아직 없어요`}
+          description={description}
+          code={noDataCode}
+          codeLabel={"상태 코드"}
+          iconName={"cloudAlert"}
+          tone={"info"}
         />
       ) : (
         <>

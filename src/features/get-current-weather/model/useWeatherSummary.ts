@@ -12,6 +12,7 @@ import type {
   SummaryDomain,
   TemperatureSummary,
 } from "@/entities/weather/model/weather.types";
+import { APP_ERROR, type AppErrorType } from "@/shared/api/app-errors";
 import type { AppError } from "@/shared/api/types";
 
 type WeatherSummaryQuerySnapshot = {
@@ -29,6 +30,15 @@ type WeatherSummaryQueryStateInput = {
   todayTempRange: WeatherSummaryQuerySnapshot;
 };
 
+const weatherNoDataErrorTypes = new Set<AppErrorType>([
+  APP_ERROR.ULTRA_NOW_NOT_FOUND,
+  APP_ERROR.ULTRA_FORECAST_NOT_FOUND,
+  APP_ERROR.SHORT_FORECAST_NOT_FOUND,
+]);
+
+const isWeatherNoDataError = (error: AppError | null): boolean =>
+  Boolean(error && weatherNoDataErrorTypes.has(error.type));
+
 export const getWeatherSummaryQueryState = ({
   ultraNow,
   ultraForecast,
@@ -39,17 +49,23 @@ export const getWeatherSummaryQueryState = ({
   isLoading: boolean;
   isFetching: boolean;
   isError: boolean;
+  isNoData: boolean;
   error: AppError | null;
 } => {
   const requiredQueries = [ultraNow, ultraForecast, shortForecast];
   const allQueries = [...requiredQueries, todayTempRange];
-  const error = ultraNow.error ?? ultraForecast.error ?? shortForecast.error ?? null;
+  const requiredErrors = requiredQueries
+    .map((query) => query.error)
+    .filter((error): error is AppError => Boolean(error));
+  const error = requiredErrors.find((queryError) => !isWeatherNoDataError(queryError)) ?? null;
+  const isNoData = requiredErrors.length > 0 && requiredErrors.every(isWeatherNoDataError);
 
   return {
     hasRequiredData: requiredQueries.every((query) => Boolean(query.data)),
     isLoading: requiredQueries.some((query) => query.isLoading),
     isFetching: allQueries.some((query) => query.isFetching),
     isError: Boolean(error),
+    isNoData,
     error,
   };
 };
@@ -69,6 +85,7 @@ export const useWeatherSummary = (
   isLoading: boolean;
   isFetching: boolean;
   isError: boolean;
+  isNoData: boolean;
   error: AppError | null;
   refresh: () => Promise<void>;
 } => {
@@ -106,6 +123,7 @@ export const useWeatherSummary = (
       isLoading: queryState.isLoading,
       isFetching: queryState.isFetching,
       isError: queryState.isError,
+      isNoData: queryState.isNoData,
       error: queryState.error,
       refresh,
     };
@@ -136,6 +154,7 @@ export const useWeatherSummary = (
     isLoading: queryState.isLoading,
     isFetching: queryState.isFetching,
     isError: queryState.isError,
+    isNoData: false,
     error: queryState.error,
     refresh,
   };

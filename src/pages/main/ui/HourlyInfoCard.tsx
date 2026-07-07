@@ -1,6 +1,7 @@
 import { useRef, type MouseEvent } from "react";
 
 import { weatherConditionMeta } from "@/entities/weather/model/weather-condition-meta";
+import { NO_DATA_STATUS_CODE } from "@/shared/api/no-data-status-codes";
 import { cn } from "@/shared/lib/cn";
 import { IconButton } from "@/shared/ui/button";
 import { ErrorNotice } from "@/shared/ui/error-notice";
@@ -12,6 +13,7 @@ import {
   getHourlyPrecipitationAriaLabel,
 } from "../lib/hourly-forecast-display.lib";
 import { HourlyInfoSkeletonCard } from "./HourlyInfoSkeletonCard";
+import { MetricStateCard } from "./MetricStateCard";
 import { hourlyInfoCardStyles } from "./styles";
 import type { HourlyInfoCardProps } from "./types";
 
@@ -38,6 +40,7 @@ export const HourlyInfoCard = ({
   isLoading,
   isFetching,
   error,
+  isNoData = false,
   refresh,
   isDetailOpen = false,
 }: HourlyInfoCardProps) => {
@@ -80,6 +83,22 @@ export const HourlyInfoCard = ({
     return (
       <div className={cn(hourlyInfoCardStyles.viewport)}>
         <HourlyInfoSkeletonCard />
+      </div>
+    );
+  }
+
+  if (isNoData) {
+    return (
+      <div className={cn(hourlyInfoCardStyles.viewport)}>
+        <MetricStateCard
+          title={"시간대별 예보가 아직 없어요"}
+          description={
+            "시간대별 예보 데이터가 아직 준비되지 않았어요.\n잠시 후 다시 확인해 주세요."
+          }
+          code={NO_DATA_STATUS_CODE.WEATHER_HOURLY}
+          codeLabel={"상태 코드"}
+          tone={"info"}
+        />
       </div>
     );
   }

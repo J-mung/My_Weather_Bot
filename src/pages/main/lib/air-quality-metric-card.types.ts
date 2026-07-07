@@ -9,5 +9,6 @@ export type AirQualityMetricCardProps = {
   displayDistrict: string;
   isLoading: boolean;
   isError: boolean;
+  isNoData?: boolean;
   errorCode?: string | null;
 };

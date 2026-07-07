@@ -1,5 +1,7 @@
+import { NO_DATA_STATUS_CODE } from "@/shared/api/no-data-status-codes";
 import { cn } from "@/shared/lib/cn";
 import { Skeleton } from "@/shared/ui/skeleton";
+import { MetricStateCard } from "./MetricStateCard";
 import { outfitRecommendationCardStyles } from "./styles";
 import type { OutfitRecommendationCardProps } from "./types";
 
@@ -44,9 +46,26 @@ export const OutfitRecommendationCard = ({
   recommendation,
   isLoading,
   isFetching,
+  isNoData = false,
 }: OutfitRecommendationCardProps) => {
   if (isLoading) {
     return <OutfitRecommendationSkeletonCard />;
+  }
+
+  if (isNoData) {
+    return (
+      <div className={cn(outfitRecommendationCardStyles.root)}>
+        <MetricStateCard
+          title={"오늘의 옷차림 정보가 아직 없어요"}
+          description={
+            "날씨 데이터가 아직 없어 옷차림을 추천할 수 없어요.\n잠시 후 다시 확인해 주세요."
+          }
+          code={NO_DATA_STATUS_CODE.WEATHER_OUTFIT}
+          codeLabel={"상태 코드"}
+          tone={"info"}
+        />
+      </div>
+    );
   }
 
   if (!recommendation) {

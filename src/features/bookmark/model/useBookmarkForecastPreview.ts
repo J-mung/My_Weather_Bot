@@ -1,7 +1,12 @@
 import { WeatherApiType } from "@/entities/weather/api/weather-api.constants";
 import { getTemperatureSummary } from "@/entities/weather/model/temperatureMappers";
 import { useWeatherQuery } from "@/entities/weather/model/useWeatherQuery";
+import { APP_ERROR } from "@/shared/api/app-errors";
+import type { AppError } from "@/shared/api/types";
 import type { BookmarkForecastPreview, BookmarkForecastPreviewReq } from "./types";
+
+export const isBookmarkForecastNoDataError = (error: AppError | null): boolean =>
+  error?.type === APP_ERROR.SHORT_FORECAST_NOT_FOUND;
 
 export const useBookmarkForecastPreview = (
   param: BookmarkForecastPreviewReq,
@@ -12,6 +17,7 @@ export const useBookmarkForecastPreview = (
   });
 
   const { isLoading, isFetching, isError, data, error } = forecastQuery;
+  const isNoData = isBookmarkForecastNoDataError(error);
   const refresh = async () => {
     await forecastQuery.refresh();
   };
@@ -21,8 +27,9 @@ export const useBookmarkForecastPreview = (
       data: null,
       isLoading,
       isFetching,
-      isError,
-      error,
+      isError: isNoData ? false : isError,
+      isNoData,
+      error: isNoData ? null : error,
       refresh,
     };
   }
@@ -40,6 +47,7 @@ export const useBookmarkForecastPreview = (
     isLoading,
     isFetching,
     isError,
+    isNoData: false,
     error,
     refresh,
   };

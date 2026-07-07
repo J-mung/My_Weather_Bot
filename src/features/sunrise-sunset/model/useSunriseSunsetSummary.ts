@@ -4,6 +4,8 @@ import {
   normalizeRiseSetLocation,
   type RiseSetSummary,
 } from "@/entities/sun/model/riseSetMappers";
+import type { AppError } from "@/shared/api/types";
+import { isAppError } from "@/shared/api/types";
 import { useQuery } from "@tanstack/react-query";
 
 const HOUR = 60 * 60 * 1000;
@@ -20,6 +22,8 @@ export const useSunriseSunsetSummary = (
   isLoading: boolean;
   isFetching: boolean;
   isError: boolean;
+  isNoData: boolean;
+  error: AppError | null;
 } => {
   const locdate = getKoreaTodayLocdate();
   const location = normalizeRiseSetLocation(district);
@@ -40,5 +44,7 @@ export const useSunriseSunsetSummary = (
     isLoading: enabled && query.isLoading,
     isFetching: enabled && query.isFetching,
     isError: query.isError,
+    isNoData: query.isSuccess && query.data === null,
+    error: isAppError(query.error) ? query.error : null,
   };
 };

@@ -8,6 +8,7 @@ export interface HourlyInfoCardProps {
   isLoading: boolean;
   isFetching: boolean;
   error: AppError | null;
+  isNoData?: boolean;
   refresh: () => Promise<void>;
   isDetailOpen?: boolean;
 }
@@ -21,6 +22,7 @@ export interface NowInfoCardProps {
   isLoading: boolean;
   isFetching: boolean;
   error: AppError | null;
+  isNoData?: boolean;
   refresh: () => Promise<void>;
 }
 
@@ -28,6 +30,7 @@ export interface OutfitRecommendationCardProps {
   recommendation: OutfitRecommendation | null;
   isLoading: boolean;
   isFetching: boolean;
+  isNoData?: boolean;
 }
 
 export interface FavoritePreviewPanelProps {

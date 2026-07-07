@@ -16,12 +16,14 @@ export const getAirQualityGrade = ({
   metric,
   isLoading,
   isError,
+  isNoData = false,
 }: {
   metric: AirQualityMetric | undefined;
   isLoading: boolean;
   isError: boolean;
+  isNoData?: boolean;
 }): AirQualityGrade => {
-  if (isError || isLoading || typeof metric?.value !== "number") {
+  if (isError || isNoData || isLoading || typeof metric?.value !== "number") {
     return "unavailable";
   }
 
@@ -62,4 +64,20 @@ export const getAirQualityDescription = ({
   }
 
   return `${displayDistrict || "선택 지역"} 기준 ${label} ${AIR_QUALITY_GRADE_LABEL[metric.grade]}`;
+};
+
+export const getAirQualityNoDataDescription = ({
+  metric,
+  label,
+  displayDistrict,
+}: {
+  metric: AirQualityMetric | undefined;
+  label: AirQualityMetricLabel;
+  displayDistrict: string;
+}): string => {
+  if (metric?.flag) {
+    return metric.flag;
+  }
+
+  return `${displayDistrict || "선택 지역"}의 ${label} 관측값이 아직 제공되지 않았어요.`;
 };
